@@ -1,0 +1,13 @@
+2026/01/23 11:45:28 [INIT] Iniciando...
+2026/01/23 11:45:28 [INIT] Intentando conectar a: host=localhost port=5432 user=postgres password=password dbname=face_attendance sslmode=disable
+2026/01/23 11:45:28 [INIT] ✅ Conectado a PostgreSQL
+2026/01/23 11:45:28 ✅ Tablas creadas/verificadas
+2026/01/23 11:45:28 [INIT] ✅ Inicialización completada
+2026/01/23 11:45:28 📋 Inicializando servidor Face Attendance...
+2026/01/23 11:45:28 ✅ Listener creado en puerto 50051
+2026/01/23 11:45:28 ✅ Servidor gRPC creado
+2026/01/23 11:45:28 ✅ Servicio registrado
+2026/01/23 11:45:28 🚀 Servidor gRPC escuchando en puerto 50051...
+2026/01/23 11:45:28    Direcciones:
+2026/01/23 11:45:28    - localhost:50051
+2026/01/23 11:45:28    - 127.0.0.1:50051

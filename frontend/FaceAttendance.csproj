@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <StartupObject>FaceAttendance.Program</StartupObject>
+    <NoWarn>$(NoWarn);NU1603;NU1903;NETSDK1137</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- gRPC Client -->
+    <PackageReference Include="Grpc.Net.Client" Version="2.60.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.60.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Google.Protobuf" Version="3.25.1" />
+    
+    <!-- Base de datos -->
+    <PackageReference Include="Npgsql" Version="8.0.1" />
+    
+    <!-- OpenCV para procesamiento de imágenes -->
+    <PackageReference Include="OpenCvSharp4" Version="4.8.1.20240113" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.8.1.20240113" />
+  </ItemGroup>
+
+  <!-- Archivos .proto para generar código gRPC -->
+  <!-- Comentado: Se usan clases C# manuales en lugar de generar desde proto -->
+  <!--
+  <ItemGroup>
+    <Protobuf Include="..\backend\proto\face_recognition.proto" GrpcServices="Client" />
+  </ItemGroup>
+  -->
+
+</Project>

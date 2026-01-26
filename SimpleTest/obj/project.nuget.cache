@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "YFAjtnE+COU=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\EQUIPO\\ProyectoCSharp\\SimpleTest\\SimpleTest.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\EQUIPO\\.nuget\\packages\\grpc.core.api\\2.76.0\\grpc.core.api.2.76.0.nupkg.sha512",
+    "C:\\Users\\EQUIPO\\.nuget\\packages\\grpc.net.client\\2.76.0\\grpc.net.client.2.76.0.nupkg.sha512",
+    "C:\\Users\\EQUIPO\\.nuget\\packages\\grpc.net.common\\2.76.0\\grpc.net.common.2.76.0.nupkg.sha512",
+    "C:\\Users\\EQUIPO\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.0\\microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\EQUIPO\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.0\\microsoft.extensions.logging.abstractions.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

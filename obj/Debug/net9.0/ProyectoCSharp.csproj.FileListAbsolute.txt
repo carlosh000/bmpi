@@ -1,0 +1,14 @@
+C:\Users\EQUIPO\ProyectoCSharp\bin\Debug\net9.0\ProyectoCSharp.exe
+C:\Users\EQUIPO\ProyectoCSharp\bin\Debug\net9.0\ProyectoCSharp.deps.json
+C:\Users\EQUIPO\ProyectoCSharp\bin\Debug\net9.0\ProyectoCSharp.runtimeconfig.json
+C:\Users\EQUIPO\ProyectoCSharp\bin\Debug\net9.0\ProyectoCSharp.dll
+C:\Users\EQUIPO\ProyectoCSharp\bin\Debug\net9.0\ProyectoCSharp.pdb
+C:\Users\EQUIPO\ProyectoCSharp\obj\Debug\net9.0\ProyectoCSharp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\EQUIPO\ProyectoCSharp\obj\Debug\net9.0\ProyectoCSharp.AssemblyInfoInputs.cache
+C:\Users\EQUIPO\ProyectoCSharp\obj\Debug\net9.0\ProyectoCSharp.AssemblyInfo.cs
+C:\Users\EQUIPO\ProyectoCSharp\obj\Debug\net9.0\ProyectoCSharp.csproj.CoreCompileInputs.cache
+C:\Users\EQUIPO\ProyectoCSharp\obj\Debug\net9.0\ProyectoCSharp.dll
+C:\Users\EQUIPO\ProyectoCSharp\obj\Debug\net9.0\refint\ProyectoCSharp.dll
+C:\Users\EQUIPO\ProyectoCSharp\obj\Debug\net9.0\ProyectoCSharp.pdb
+C:\Users\EQUIPO\ProyectoCSharp\obj\Debug\net9.0\ProyectoCSharp.genruntimeconfig.cache
+C:\Users\EQUIPO\ProyectoCSharp\obj\Debug\net9.0\ref\ProyectoCSharp.dll

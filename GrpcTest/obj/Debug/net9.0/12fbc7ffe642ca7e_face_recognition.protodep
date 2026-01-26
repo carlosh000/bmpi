@@ -1,0 +1,2 @@
+obj\Debug\net9.0\Protos/FaceRecognition.cs \
+obj\Debug\net9.0\Protos/FaceRecognitionGrpc.cs: Protos/face_recognition.proto
