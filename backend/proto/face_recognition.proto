@@ -2,69 +2,50 @@ syntax = "proto3";
 
 package face_recognition;
 
-option go_package = "github.com/example/face-attendance/backend/pb";
-option csharp_namespace = "FaceAttendance.Pb";
+option go_package = "bmapi/pb";
 
-// Servicio gRPC para reconocimiento facial
 service FaceRecognitionService {
-  // Registrar nuevo empleado con foto
   rpc RegisterEmployee (RegisterEmployeeRequest) returns (RegisterEmployeeResponse);
-  
-  // Reconocer persona en foto/video
   rpc RecognizeFace (RecognizeFaceRequest) returns (RecognizeFaceResponse);
-  
-  // Registrar asistencia
   rpc LogAttendance (AttendanceRequest) returns (AttendanceResponse);
-  
-  // Obtener empleados registrados
   rpc ListEmployees (Empty) returns (EmployeeList);
 }
 
-// Mensajes
-message Empty {}
-
 message RegisterEmployeeRequest {
-  int32 employee_id = 1;
-  string name = 2;
-  string email = 3;
-  bytes face_image = 4; // Foto en bytes
+  string name = 1;
+  string employee_id = 2;
+  bytes image = 3;
 }
 
 message RegisterEmployeeResponse {
   bool success = 1;
   string message = 2;
-  int32 employee_id = 3;
 }
 
 message RecognizeFaceRequest {
-  bytes image = 1; // Foto/frame de cámara
-  float confidence_threshold = 2; // 0.0 a 1.0
+  bytes image = 1;
 }
 
 message RecognizeFaceResponse {
-  bool found = 1;
-  int32 employee_id = 2;
-  string name = 3;
-  float confidence = 4; // Nivel de confianza (0-1)
-  string message = 5;
+  bool recognized = 1;
+  string employee_id = 2;
+  float confidence = 3;
 }
 
 message AttendanceRequest {
-  int32 employee_id = 1;
-  string timestamp = 2;
-  string location = 3;
+  string employee_id = 1;
 }
 
 message AttendanceResponse {
   bool success = 1;
   string message = 2;
-  int64 attendance_id = 3;
 }
 
+message Empty {}
+
 message Employee {
-  int32 id = 1;
-  string name = 2;
-  string email = 3;
+  string name = 1;
+  string employee_id = 2;
 }
 
 message EmployeeList {
