@@ -1,183 +1,109 @@
-# 🎯 Face Attendance System
+# BMPI - Sistema de Asistencia con Reconocimiento Facial
 
-Sistema de reconocimiento facial para control de asistencia de empleados. Arquitectura de 3 capas: C# (Frontend), Go (Backend gRPC), Python (IA).
+Sistema para registrar automáticamente entradas y salidas de empleados mediante reconocimiento facial.
 
-## 📁 Estructura del Proyecto
+## Stack objetivo (versión actual)
 
-```
-ProyectoCSharp/
-├── frontend/                 # C# Windows Forms UI
-│   ├── FaceAttendance.csproj
-│   ├── MainForm.cs          # Interfaz principal
-│   ├── Program.cs           # Entry point
-│   ├── FaceRecognitionClient.cs
-│   ├── FaceRecognitionMessages.cs  # Tipos Protobuf
-│   └── bin/Debug/net8.0-windows/FaceAttendance.exe
-│
-├── backend/                  # Go gRPC Server
-│   ├── main.go              # Servidor principal
-│   ├── pb_wrapper.go        # Definiciones de tipos
-│   ├── go.mod
-│   ├── go.sum
-│   └── face-attendance.exe  # Ejecutable compilado
-│
-├── ml-model/                # Python IA
-│   ├── face_recognition_service.py
-│   ├── requirements.txt
-│   └── models/
-│
-└── README.md (este archivo)
-```
+- **Frontend:** Angular (app web).
+- **Backend:** API/servicio de asistencia y reconocimiento facial.
+- **IA:** extracción y comparación de vectores faciales.
+- **Base de datos:** PostgreSQL.
 
-## 🚀 Cómo Ejecutar
+> Nota: el frontend objetivo ya **no** contempla C# / Windows Forms.
 
-### 1. Iniciar el Servidor Go (Backend)
+## ¿Cómo funciona?
 
-```bash
-cd backend
-.\face-attendance.exe
-```
+El sistema conecta tres componentes principales:
 
-El servidor escuchará en: `http://localhost:50051`
+1. **Frontend Angular** (interfaz de operación y administración)
+2. **Cámara + motor de reconocimiento facial** (captura, detección, extracción y comparación biométrica)
+3. **PostgreSQL** (almacenamiento de empleados y asistencias)
 
-### 2. Iniciar la Aplicación C# (Frontend)
+## Flujo operativo completo
 
-```bash
-cd frontend
-dotnet run
-# O ejecutar directamente:
-.\bin\Debug\net8.0-windows\FaceAttendance.exe
-```
+1. **Captura del empleado frente a cámara**
+   - Se toma imagen/video en tiempo real.
 
-### 3. Configurar Python (Opcional - IA)
+2. **Detección de rostro**
+   - El sistema verifica si hay una cara visible.
+   - En esta fase no se guarda ningún registro de asistencia.
 
-```bash
-cd ml-model
-pip install -r requirements.txt
-```
+3. **Extracción biométrica**
+   - El rostro se convierte en un **vector biométrico** (embedding facial).
+   - Este vector es la representación matemática del rostro.
 
-## 🔧 Componentes
+4. **Comparación contra empleados registrados**
+   - Se compara el vector capturado contra vectores almacenados.
+   - Resultado:
+     - ✅ Coincide: empleado identificado.
+     - ❌ No coincide: persona no registrada.
 
-### Frontend (C#)
-- **Framework**: .NET 8.0 Windows Forms
-- **Cliente gRPC**: `Grpc.Net.Client`
-- **Dependencias**: 
-  - Google.Protobuf v3.25.1
-  - Npgsql (PostgreSQL driver)
-  - OpenCvSharp4 (procesamiento de imágenes)
+5. **Registro automático de asistencia**
+   - Si hay coincidencia, se guarda en PostgreSQL:
+     - ID de empleado
+     - fecha
+     - hora exacta
+     - tipo de marca (entrada/salida según reglas de horario)
 
-**Estado**: ✅ Compilado sin errores
+6. **Control de duplicados**
+   - Se aplica una ventana de tiempo para evitar múltiples marcas consecutivas del mismo empleado.
 
-### Backend (Go)
-- **gRPC Server**: `google.golang.org/grpc`
-- **Base de Datos**: PostgreSQL con `github.com/lib/pq`
-- **Puerto**: 50051
+## Alta inicial de empleados
 
-**Estado**: ✅ Compilado correctamente
+Antes de operar en automático, cada empleado debe registrarse:
 
-### Servicios gRPC Disponibles
-- `RegisterEmployee` - Registrar empleado con foto
-- `RecognizeFace` - Reconocer rostro en imagen
-- `LogAttendance` - Registrar asistencia
-- `ListEmployees` - Listar todos los empleados
+1. Captura de múltiples imágenes del rostro.
+2. Generación del vector facial.
+3. Guardado del vector junto con datos administrativos:
+   - nombre
+   - número de empleado
+   - área/departamento
+   - estatus (activo/inactivo)
 
-### Python (IA)
-- **Librería**: face_recognition (dlib-based)
-- **Función**: Extraer embeddings faciales y comparar rostros
-- **Entrada**: Imagen (JPEG/PNG)
-- **Salida**: JSON con resultado de reconocimiento
+## Modelo de datos (PostgreSQL)
 
-**Estado**: ⏳ Implementación en progreso
+### Empleados
+- Datos personales y administrativos.
+- Vector biométrico facial.
 
-## 💾 Base de Datos (PostgreSQL)
+### Asistencias
+- Empleado identificado.
+- Fecha.
+- Hora.
+- Tipo de marca (entrada/salida).
 
-### Tablas
+### Registros de sistema (opcional)
+- Intentos fallidos.
+- Rostros no reconocidos.
 
-```sql
--- Empleados
-CREATE TABLE employees (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    face_embedding BYTEA NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+## Entorno de ejecución actual
 
--- Asistencia
-CREATE TABLE attendance (
-    id SERIAL PRIMARY KEY,
-    employee_id INTEGER REFERENCES employees(id),
-    check_in TIMESTAMP,
-    check_out TIMESTAMP,
-    location VARCHAR(100),
-    date DATE DEFAULT CURRENT_DATE
-);
-```
+Actualmente el sistema está planteado para ejecutarse en una **PC local dentro de BMPI**:
 
-### Configuración Conexión
-```
-Host: localhost
-Port: 5432
-User: postgres
-Password: password
-Database: face_attendance
-```
+- Frontend Angular para operación del sistema.
+- Cámara conectada directamente al equipo.
+- PostgreSQL en la misma máquina.
+- Procesamiento y registro en entorno local.
 
-## 📊 Flujo de Ejecución
+La arquitectura permite migrar después a un servidor interno, cambiando configuración de conexión sin alterar el flujo principal.
 
-1. **C# Frontend** captura imagen de cámara
-2. **C# Frontend** envía a **Go Backend** vía gRPC
-3. **Go Backend** llama a **Python** para procesamiento
-4. **Python** extrae embedding facial y compara
-5. **Go Backend** registra resultado en **PostgreSQL**
-6. **Go Backend** retorna resultado al **C# Frontend**
-7. **C# Frontend** muestra resultado y registra asistencia
+## Resumen rápido
 
-## 🔐 Seguridad
+📷 La cámara detecta un rostro.
 
-⚠️ **DESARROLLO ONLY** - No usar en producción:
-- Credenciales PostgreSQL hardcodeadas
-- SSL deshabilitado
-- Sin autenticación gRPC
+🧠 El sistema lo convierte en vector biométrico.
 
-Para producción:
-- Usar variables de entorno para credenciales
-- Habilitar SSL/TLS
-- Implementar autenticación
-- Usar secrets management
+🔍 Se compara contra empleados registrados.
 
-## 📝 Notas Técnicas
+✅ Si coincide, se registra la asistencia automáticamente.
 
-- **Protobuf**: Versión simplificada sin generación completa de protoc
-- **gRPC**: Servidor básico sin descriptor completo
-- **Base de Datos**: Conexión sin pool de conexiones
-- **Python**: Se ejecuta como subprocess desde Go
+🗄️ Todo queda almacenado en PostgreSQL.
 
-## 🐛 Troubleshooting
+## Limpieza del repositorio
 
-### El servidor Go se cierra inmediatamente
-- Verificar que PostgreSQL esté corriendo (si se quiere BD)
-- Verificar que el puerto 50051 no esté ocupado
+Se retiraron componentes legacy de C#/.NET (proyectos de prueba y artefactos compilados) para mantener el repositorio enfocado en la arquitectura actual:
 
-### C# no conecta a Go
-- Verificar que Go está escuchando en `localhost:50051`
-- Verificar firewall
-
-### Python no funciona
-- Verificar que `python` está en PATH
-- Instalar dependencias: `pip install -r requirements.txt`
-
-## 🎯 Próximos Pasos
-
-- [ ] Implementar generación completa de código Protobuf
-- [ ] Agregar pool de conexiones PostgreSQL
-- [ ] Implementar autenticación gRPC
-- [ ] Agregar logging centralizado
-- [ ] Implementar caché de embeddings
-- [ ] Agregar UI mejorada con imágenes en tiempo real
-- [ ] Dockerizar componentes
-
----
-
-**Última actualización**: 23/01/2026
-**Estado**: 🟡 En desarrollo - Backend básico funcionando
+- Frontend Angular
+- Backend Go
+- IA en Python
+- PostgreSQL
