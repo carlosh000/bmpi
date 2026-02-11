@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package face_recognition;
 
-option go_package = "bmapi/pb";
+option go_package = "github.com/example/face-attendance/backend/pb;pb";
 
 service FaceRecognitionService {
   rpc RegisterEmployee (RegisterEmployeeRequest) returns (RegisterEmployeeResponse);
