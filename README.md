@@ -107,3 +107,17 @@ Se retiraron componentes legacy de C#/.NET (proyectos de prueba y artefactos com
 - Backend Go
 - IA en Python
 - PostgreSQL
+
+
+## Verificación rápida de IA y Backend
+
+Puedes validar el estado técnico con:
+
+```bash
+scripts/verificar_ia_backend.sh
+```
+
+Este script comprueba:
+- compilación y pruebas del backend Go,
+- consistencia del contrato protobuf generado en Go,
+- dependencias mínimas de IA en Python (`cv2`, `face_recognition`, `grpc`, `numpy`, `psycopg2`).
