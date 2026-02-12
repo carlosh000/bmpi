@@ -75,3 +75,12 @@ git push origin <tu-rama>
 
 - En frontend, `attendance-list.component.ts` ya está ajustado para evitar error SSR/prerender (`/api/attendance`) al hacer build.
 - Si te vuelve a salir conflicto en ese archivo, conserva la parte de `isPlatformBrowser(...)` dentro de `ngOnInit()`.
+
+
+## Opción rápida (script)
+
+```bash
+./scripts/sync_and_push_branch.sh origin main
+```
+
+Esto hace: fetch + rebase + build frontend + tests backend + push `--force-with-lease`.
