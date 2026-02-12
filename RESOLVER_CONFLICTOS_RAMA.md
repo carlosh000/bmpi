@@ -80,7 +80,13 @@ git push origin <tu-rama>
 ## Opción rápida (script)
 
 ```bash
-./scripts/sync_and_push_branch.sh origin main
+./scripts/sync_and_push_branch.sh origin main safe
 ```
 
-Esto hace: fetch + rebase + build frontend + tests backend + push `--force-with-lease`.
+Modo `safe`: fetch + rebase (`-X theirs`) + build frontend + tests backend + push `--force-with-lease`.
+
+Si solo quieres subir YA el avance (sin pruebas locales):
+
+```bash
+./scripts/sync_and_push_branch.sh origin main push-only
+```
