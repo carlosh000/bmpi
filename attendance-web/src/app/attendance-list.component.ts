@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, ElementRef, Inject, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
 import {
   AttendanceService,
   AttendanceRecord,
@@ -144,10 +144,15 @@ export class AttendanceListComponent implements OnInit {
   registerMessage = '';
   errorMessage = '';
 
-  constructor(private attendanceService: AttendanceService) {}
+  constructor(
+    private attendanceService: AttendanceService,
+    @Inject(PLATFORM_ID) private platformId: object,
+  ) {}
 
   ngOnInit(): void {
-    this.loadAttendance();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadAttendance();
+    }
   }
 
   loadAttendance(): void {
