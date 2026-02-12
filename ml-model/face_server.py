@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
-"""gRPC server para reconocimiento facial y registro de asistencia."""
+"""gRPC server para reconocimiento facial y registro de asistencia.
+
+También soporta modo CLI para extraer embeddings:
+    python3 face_server.py extract <ruta_imagen>
+"""
 
 from concurrent import futures
 from datetime import datetime, timedelta
+import json
+import os
 import pickle
+import sys
 
 import cv2
 import face_recognition
@@ -14,17 +21,37 @@ import psycopg2
 import pb.face_recognition_pb2 as pb2
 import pb.face_recognition_pb2_grpc as pb2_grpc
 
-DB = psycopg2.connect(
-    host="localhost",
-    database="bmpi",
-    user="postgres",
-    password="1234",
-)
+DB = None
+
+
+def get_db():
+    """Inicializa conexión DB on-demand para evitar fallos en modos no-DB (CLI extract)."""
+    global DB
+    if DB is None or DB.closed != 0:
+        DB = psycopg2.connect(
+            host=os.getenv("DB_HOST", "localhost"),
+            database=os.getenv("DB_NAME", "bmpi"),
+            user=os.getenv("DB_USER", "postgres"),
+            password=os.getenv("DB_PASSWORD", "1234"),
+        )
+    return DB
+
+
+def extract_face_embedding(image_path):
+    try:
+        image = face_recognition.load_image_file(image_path)
+        encodings = face_recognition.face_encodings(image)
+        if len(encodings) == 0:
+            return None
+        return encodings[0]
+    except Exception:
+        return None
 
 
 class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
     def get_db_embeddings(self):
-        cur = DB.cursor()
+        db = get_db()
+        cur = db.cursor()
         cur.execute("SELECT employee_id, embedding FROM employees")
         data = cur.fetchall()
         cur.close()
@@ -43,12 +70,13 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
 
         embedding = pickle.dumps(encodings[0])
 
-        cur = DB.cursor()
+        db = get_db()
+        cur = db.cursor()
         cur.execute(
             "INSERT INTO employees (name, employee_id, embedding) VALUES (%s,%s,%s)",
             (request.name, request.employee_id, embedding),
         )
-        DB.commit()
+        db.commit()
         cur.close()
 
         return pb2.RegisterEmployeeResponse(success=True, message="Employee registered")
@@ -86,9 +114,9 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
         return pb2.RecognizeFaceResponse(recognized=False)
 
     def LogAttendance(self, request, context):
-        cur = DB.cursor()
+        db = get_db()
+        cur = db.cursor()
 
-        # ⛔ ANTIDUPLICADO (5 minutos)
         cur.execute(
             """
             SELECT timestamp FROM attendance
@@ -107,13 +135,14 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
             "INSERT INTO attendance (employee_id, timestamp) VALUES (%s, NOW())",
             (request.employee_id,),
         )
-        DB.commit()
+        db.commit()
         cur.close()
 
         return pb2.AttendanceResponse(success=True, message="Attendance logged")
 
     def ListEmployees(self, request, context):
-        cur = DB.cursor()
+        db = get_db()
+        cur = db.cursor()
         cur.execute("SELECT name, employee_id FROM employees")
         rows = cur.fetchall()
         cur.close()
@@ -131,5 +160,22 @@ def serve():
     server.wait_for_termination()
 
 
+def run_extract_cli():
+    if len(sys.argv) < 3:
+        print(json.dumps({"success": False, "error": "image_path requerido"}))
+        return
+
+    image_path = sys.argv[2]
+    embedding = extract_face_embedding(image_path)
+    if embedding is None:
+        print(json.dumps({"success": False, "error": "No se detectó rostro"}))
+        return
+
+    print(json.dumps({"success": True, "embedding": embedding.tolist()}))
+
+
 if __name__ == "__main__":
-    serve()
+    if len(sys.argv) > 1 and sys.argv[1] == "extract":
+        run_extract_cli()
+    else:
+        serve()
