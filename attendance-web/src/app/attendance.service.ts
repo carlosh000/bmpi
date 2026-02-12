@@ -8,13 +8,28 @@ export interface AttendanceRecord {
   timestamp: string;
 }
 
+export interface EmbeddingResult {
+  fileName: string;
+  embedding: number[];
+  dimensions: number;
+}
+
+export interface EmbeddingExtractResponse {
+  results: EmbeddingResult[];
+  errors: string[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
-  private apiUrl = 'http://localhost:8080/api/attendance';
+  private apiBaseUrl = '/api';
 
   constructor(private http: HttpClient) {}
 
   getAttendance(): Observable<AttendanceRecord[]> {
-    return this.http.get<AttendanceRecord[]>(this.apiUrl);
+    return this.http.get<AttendanceRecord[]>(`${this.apiBaseUrl}/attendance`);
+  }
+
+  extractEmbeddings(files: { name: string; data: string }[]): Observable<EmbeddingExtractResponse> {
+    return this.http.post<EmbeddingExtractResponse>(`${this.apiBaseUrl}/embeddings/extract`, { files });
   }
 }
