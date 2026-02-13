@@ -5,16 +5,22 @@ package face_recognition;
 option go_package = "github.com/example/face-attendance/backend/pb;pb";
 
 service FaceRecognitionService {
+
   rpc RegisterEmployee (RegisterEmployeeRequest) returns (RegisterEmployeeResponse);
+
   rpc RecognizeFace (RecognizeFaceRequest) returns (RecognizeFaceResponse);
+
   rpc LogAttendance (AttendanceRequest) returns (AttendanceResponse);
-  rpc ListEmployees (Empty) returns (EmployeeList);
+
+  rpc ListEmployees (ListEmployeesRequest) returns (EmployeeList);
 }
+
 
 message RegisterEmployeeRequest {
   string name = 1;
   string employee_id = 2;
-  bytes image = 3;
+  string location_id = 3;   // 🔥 NUEVO
+  bytes image = 4;
 }
 
 message RegisterEmployeeResponse {
@@ -24,16 +30,19 @@ message RegisterEmployeeResponse {
 
 message RecognizeFaceRequest {
   bytes image = 1;
+  string location_id = 2;   // 🔥 NUEVO
 }
 
 message RecognizeFaceResponse {
   bool recognized = 1;
   string employee_id = 2;
   float confidence = 3;
+  string message = 4;
 }
 
 message AttendanceRequest {
   string employee_id = 1;
+  string location_id = 2;   // 🔥 NUEVO
 }
 
 message AttendanceResponse {
@@ -41,11 +50,14 @@ message AttendanceResponse {
   string message = 2;
 }
 
-message Empty {}
+message ListEmployeesRequest {
+  string location_id = 1;   // 🔥 NUEVO
+}
 
 message Employee {
   string name = 1;
   string employee_id = 2;
+  string location_id = 3;   // 🔥 NUEVO
 }
 
 message EmployeeList {
