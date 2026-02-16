@@ -99,6 +99,14 @@ La arquitectura permite migrar después a un servidor interno, cambiando configu
 
 🗄️ Todo queda almacenado en PostgreSQL.
 
+## Documentación de seguimiento
+
+Para llevar control del avance, pendientes y mejoras del proyecto:
+
+```bash
+ESTADO_PROYECTO_BMPI.md
+```
+
 ## Limpieza del repositorio
 
 Se retiraron componentes legacy de C#/.NET (proyectos de prueba y artefactos compilados) para mantener el repositorio enfocado en la arquitectura actual:
@@ -121,3 +129,9 @@ Este script comprueba:
 - compilación y pruebas del backend Go,
 - consistencia del contrato protobuf generado en Go,
 - dependencias mínimas de IA en Python (`cv2`, `face_recognition`, `grpc`, `numpy`, `psycopg2`).
+
+Para validar específicamente que no haya drift entre `proto`, `backend/pb` y `backend/vendor/.../pb`:
+
+```bash
+scripts/verificar_proto_sync.sh
+```
