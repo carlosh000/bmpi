@@ -121,3 +121,9 @@ Este script comprueba:
 - compilación y pruebas del backend Go,
 - consistencia del contrato protobuf generado en Go,
 - dependencias mínimas de IA en Python (`cv2`, `face_recognition`, `grpc`, `numpy`, `psycopg2`).
+
+Para validar específicamente que no haya drift entre `proto`, `backend/pb` y `backend/vendor/.../pb`:
+
+```bash
+scripts/verificar_proto_sync.sh
+```
