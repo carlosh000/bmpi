@@ -1,0 +1,28 @@
+# Build artifacts
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.so
+*.dylib
+
+# Node
+node_modules/
+attendance-web/dist/
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+.venv/
+scripts/.env.dev
+scripts/.bmpi-runtime.json
+
+# Runtime logs
+backend/stdout.txt
+backend/stderr.txt
+
+# OS/editor
+.DS_Store
+.vscode/

@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package face_recognition;
+
+option go_package = "github.com/example/face-attendance/backend/pb;pb";
+
+service FaceRecognitionService {
+  rpc RegisterEmployee (RegisterEmployeeRequest) returns (RegisterEmployeeResponse);
+  rpc RecognizeFace (RecognizeFaceRequest) returns (RecognizeFaceResponse);
+  rpc LogAttendance (AttendanceRequest) returns (AttendanceResponse);
+  rpc ListEmployees (Empty) returns (EmployeeList);
+}
+
+message RegisterEmployeeRequest {
+  string name = 1;
+  string employee_id = 2;
+  bytes image = 3;
+}
+
+message RegisterEmployeeResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message RecognizeFaceRequest {
+  bytes image = 1;
+}
+
+message RecognizeFaceResponse {
+  bool recognized = 1;
+  string employee_id = 2;
+  float confidence = 3;
+}
+
+message AttendanceRequest {
+  string employee_id = 1;
+}
+
+message AttendanceResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message Empty {}
+
+message Employee {
+  string name = 1;
+  string employee_id = 2;
+}
+
+message EmployeeList {
+  repeated Employee employees = 1;
+}
