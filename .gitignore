@@ -17,6 +17,7 @@ __pycache__/
 *.pyc
 .venv/
 scripts/.env.dev
+scripts/.env.production
 scripts/.bmpi-runtime.json
 
 # Runtime logs

@@ -1,0 +1,65 @@
+﻿{
+    "benchmark":  {
+                      "legacy":  {
+                                     "runs":  [
+                                                  {
+                                                      "run":  1,
+                                                      "ms":  3589.34,
+                                                      "mode":  "legacy",
+                                                      "results":  4,
+                                                      "errors":  0
+                                                  },
+                                                  {
+                                                      "run":  2,
+                                                      "ms":  3550.94,
+                                                      "mode":  "legacy",
+                                                      "results":  4,
+                                                      "errors":  0
+                                                  }
+                                              ],
+                                     "avg_ms":  3570.14
+                                 },
+                      "batch":  {
+                                    "runs":  [
+                                                 {
+                                                     "run":  1,
+                                                     "ms":  6035.72,
+                                                     "mode":  "batch",
+                                                     "results":  4,
+                                                     "errors":  0
+                                                 },
+                                                 {
+                                                     "run":  2,
+                                                     "ms":  6076.96,
+                                                     "mode":  "batch",
+                                                     "results":  4,
+                                                     "errors":  0
+                                                 }
+                                             ],
+                                    "avg_ms":  6056.34
+                                },
+                      "auto":  {
+                                   "runs":  [
+                                                {
+                                                    "run":  1,
+                                                    "ms":  5776.21,
+                                                    "mode":  "auto-batch",
+                                                    "results":  4,
+                                                    "errors":  0
+                                                },
+                                                {
+                                                    "run":  2,
+                                                    "ms":  6043.08,
+                                                    "mode":  "auto-batch",
+                                                    "results":  4,
+                                                    "errors":  0
+                                                }
+                                            ],
+                                   "avg_ms":  5909.64
+                               }
+                  },
+    "improvements":  {
+                         "legacy_to_batch_percent":  -69.64,
+                         "legacy_to_auto_percent":  -65.53
+                     }
+}

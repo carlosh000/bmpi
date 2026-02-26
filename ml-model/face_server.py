@@ -9,6 +9,7 @@ import pickle
 import sys
 import threading
 import time
+import traceback
 
 import cv2
 import face_recognition
@@ -24,10 +25,305 @@ import pb.face_recognition_pb2_grpc as pb2_grpc
 connection_pool = None
 schema_initialized = False
 
-THRESHOLD = 0.5
+THRESHOLD = float(os.getenv("BMPI_FACE_THRESHOLD", "0.5"))
 FACE_MODEL = os.getenv("BMPI_FACE_MODEL", "hog")
+FACE_MODEL_FALLBACK = os.getenv("BMPI_FACE_MODEL_FALLBACK", "cnn").strip().lower()
+FACE_HAAR_FALLBACK = os.getenv("BMPI_FACE_HAAR_FALLBACK", "true").strip().lower() in ("1", "true", "yes")
+FACE_CONTRAST_FALLBACK = os.getenv("BMPI_FACE_CONTRAST_FALLBACK", "true").strip().lower() in ("1", "true", "yes")
+FACE_ROTATION_FALLBACK = os.getenv("BMPI_FACE_ROTATION_FALLBACK", "true").strip().lower() in ("1", "true", "yes")
+FACE_ROTATION_ANGLES_RAW = os.getenv("BMPI_FACE_ROTATION_ANGLES", "-12,12,-20,20")
+FACE_ENCODING_MODEL = os.getenv("BMPI_FACE_ENCODING_MODEL", "small")
+FACE_ENCODING_JITTERS_REGISTER = max(1, int(os.getenv("BMPI_FACE_ENCODING_JITTERS_REGISTER", "2")))
+FACE_ENCODING_JITTERS_RECOGNIZE = max(1, int(os.getenv("BMPI_FACE_ENCODING_JITTERS_RECOGNIZE", "1")))
+MAX_PROTOTYPES_PER_EMPLOYEE = max(1, int(os.getenv("BMPI_MAX_PROTOTYPES_PER_EMPLOYEE", "6")))
 REFRESH_SECONDS = int(os.getenv("BMPI_EMBEDDINGS_REFRESH_SECONDS", "30"))
 GRPC_WORKERS = int(os.getenv("BMPI_GRPC_WORKERS", "10"))
+FACE_ENCODE_CONCURRENCY = max(1, int(os.getenv("BMPI_FACE_ENCODE_CONCURRENCY", "1")))
+face_encode_semaphore = threading.BoundedSemaphore(FACE_ENCODE_CONCURRENCY)
+GRPC_MAX_MSG_MB = max(1, int(os.getenv("BMPI_GRPC_MAX_MSG_MB", "20")))
+GRPC_MAX_MSG_BYTES = GRPC_MAX_MSG_MB * 1024 * 1024
+FACE_DETECT_UPSAMPLE = max(0, int(os.getenv("BMPI_FACE_DETECT_UPSAMPLE", "1")))
+FACE_DETECT_RETRY_UPSAMPLE = max(FACE_DETECT_UPSAMPLE, int(os.getenv("BMPI_FACE_DETECT_RETRY_UPSAMPLE", "2")))
+HAAR_MIN_FACE = max(24, int(os.getenv("BMPI_HAAR_MIN_FACE", "64")))
+
+haar_frontal = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+haar_profile = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_profileface.xml")
+
+
+def parse_rotation_angles(raw):
+    values = []
+    for token in (raw or "").split(","):
+        candidate = token.strip()
+        if not candidate:
+            continue
+        try:
+            angle = float(candidate)
+        except Exception:
+            continue
+        if abs(angle) < 0.1:
+            continue
+        values.append(angle)
+
+    if not values:
+        values = [-12.0, 12.0, -20.0, 20.0]
+
+    return values
+
+
+FACE_ROTATION_ANGLES = parse_rotation_angles(FACE_ROTATION_ANGLES_RAW)
+
+
+def enhance_contrast_clahe(rgb_image):
+    lab = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2LAB)
+    l_channel, a_channel, b_channel = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    l_enhanced = clahe.apply(l_channel)
+    merged = cv2.merge((l_enhanced, a_channel, b_channel))
+    return cv2.cvtColor(merged, cv2.COLOR_LAB2RGB)
+
+
+def rotate_rgb_image(rgb_image, angle_degrees):
+    h, w = rgb_image.shape[:2]
+    center = (w / 2.0, h / 2.0)
+    matrix = cv2.getRotationMatrix2D(center, angle_degrees, 1.0)
+    return cv2.warpAffine(
+        rgb_image,
+        matrix,
+        (w, h),
+        flags=cv2.INTER_LINEAR,
+        borderMode=cv2.BORDER_REFLECT,
+    )
+
+
+def build_detection_variants(rgb_image):
+    variants = [("base", rgb_image)]
+
+    if FACE_CONTRAST_FALLBACK:
+        try:
+            enhanced = enhance_contrast_clahe(rgb_image)
+            variants.append(("clahe", enhanced))
+        except Exception:
+            pass
+
+    if FACE_ROTATION_FALLBACK:
+        for angle in FACE_ROTATION_ANGLES:
+            try:
+                rotated = rotate_rgb_image(rgb_image, angle)
+                variants.append((f"rot_{angle}", rotated))
+            except Exception:
+                continue
+
+    return variants
+
+
+def haar_rects_to_locations(rects):
+    locations = []
+    for x, y, w, h in rects:
+        top = int(y)
+        right = int(x + w)
+        bottom = int(y + h)
+        left = int(x)
+        locations.append((top, right, bottom, left))
+    return locations
+
+
+def detect_face_locations_haar(rgb_image):
+    if haar_frontal.empty() and haar_profile.empty():
+        return []
+
+    gray = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
+    candidates = []
+
+    if not haar_frontal.empty():
+        frontal = haar_frontal.detectMultiScale(
+            gray,
+            scaleFactor=1.1,
+            minNeighbors=5,
+            minSize=(HAAR_MIN_FACE, HAAR_MIN_FACE),
+        )
+        candidates.extend(haar_rects_to_locations(frontal))
+
+    if not haar_profile.empty():
+        profile_right = haar_profile.detectMultiScale(
+            gray,
+            scaleFactor=1.1,
+            minNeighbors=4,
+            minSize=(HAAR_MIN_FACE, HAAR_MIN_FACE),
+        )
+        candidates.extend(haar_rects_to_locations(profile_right))
+
+        flipped = cv2.flip(gray, 1)
+        profile_left = haar_profile.detectMultiScale(
+            flipped,
+            scaleFactor=1.1,
+            minNeighbors=4,
+            minSize=(HAAR_MIN_FACE, HAAR_MIN_FACE),
+        )
+        width = gray.shape[1]
+        for x, y, w, h in profile_left:
+            mirrored_x = width - (x + w)
+            candidates.append((int(y), int(mirrored_x + w), int(y + h), int(mirrored_x)))
+
+    if not candidates:
+        return []
+
+    unique = []
+    seen = set()
+    for item in candidates:
+        key = tuple(int(v) for v in item)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(key)
+
+    return unique
+
+
+def detect_face_locations(rgb_image, model):
+    locations = face_recognition.face_locations(
+        rgb_image,
+        number_of_times_to_upsample=FACE_DETECT_UPSAMPLE,
+        model=model,
+    )
+
+    if not locations and FACE_DETECT_RETRY_UPSAMPLE > FACE_DETECT_UPSAMPLE:
+        locations = face_recognition.face_locations(
+            rgb_image,
+            number_of_times_to_upsample=FACE_DETECT_RETRY_UPSAMPLE,
+            model=model,
+        )
+
+    if not locations and FACE_HAAR_FALLBACK:
+        locations = detect_face_locations_haar(rgb_image)
+
+    return locations
+
+
+def extract_primary_face_encoding(rgb_image, num_jitters=1):
+    variants = build_detection_variants(rgb_image)
+
+    for _, variant_rgb in variants:
+        locations = detect_face_locations(variant_rgb, FACE_MODEL)
+
+        if not locations and FACE_MODEL_FALLBACK and FACE_MODEL_FALLBACK != FACE_MODEL:
+            locations = detect_face_locations(variant_rgb, FACE_MODEL_FALLBACK)
+
+        if not locations:
+            continue
+
+        best_location = max(locations, key=lambda loc: max(0, loc[2] - loc[0]) * max(0, loc[1] - loc[3]))
+        encodings = face_recognition.face_encodings(
+            variant_rgb,
+            [best_location],
+            num_jitters=max(1, int(num_jitters)),
+            model=FACE_ENCODING_MODEL,
+        )
+        if encodings:
+            return encodings[0]
+
+    return None
+
+
+def extract_candidate_encodings(rgb_image, num_jitters=1, max_candidates=3):
+    candidates = []
+    variants = build_detection_variants(rgb_image)
+
+    for _, variant_rgb in variants:
+        locations = detect_face_locations(variant_rgb, FACE_MODEL)
+        if not locations and FACE_MODEL_FALLBACK and FACE_MODEL_FALLBACK != FACE_MODEL:
+            locations = detect_face_locations(variant_rgb, FACE_MODEL_FALLBACK)
+        if not locations:
+            continue
+
+        ordered_locations = sorted(
+            locations,
+            key=lambda loc: max(0, loc[2] - loc[0]) * max(0, loc[1] - loc[3]),
+            reverse=True,
+        )
+
+        for location in ordered_locations[:2]:
+            encodings = face_recognition.face_encodings(
+                variant_rgb,
+                [location],
+                num_jitters=max(1, int(num_jitters)),
+                model=FACE_ENCODING_MODEL,
+            )
+            if not encodings:
+                continue
+            candidates.append(encodings[0])
+            if len(candidates) >= max_candidates:
+                return candidates
+
+    return candidates
+
+
+def decode_embedding_payload(raw_embedding):
+    loaded = pickle.loads(raw_embedding)
+
+    if isinstance(loaded, dict):
+        raw_prototypes = loaded.get("prototypes") or []
+        prototypes = []
+        for item in raw_prototypes:
+            try:
+                vec = np.array(item, dtype=np.float64)
+                if vec.ndim == 1 and vec.size > 0:
+                    prototypes.append(vec)
+            except Exception:
+                continue
+        if prototypes:
+            return prototypes
+
+        centroid = loaded.get("centroid")
+        if centroid is not None:
+            vec = np.array(centroid, dtype=np.float64)
+            if vec.ndim == 1 and vec.size > 0:
+                return [vec]
+
+    vec = np.array(loaded, dtype=np.float64)
+    if vec.ndim == 1 and vec.size > 0:
+        return [vec]
+    return []
+
+
+def build_embedding_payload(prototypes):
+    valid = []
+    for item in prototypes:
+        vec = np.array(item, dtype=np.float64)
+        if vec.ndim == 1 and vec.size > 0:
+            valid.append(vec)
+
+    if not valid:
+        raise ValueError("No hay prototipos válidos para guardar")
+
+    centroid = np.mean(np.vstack(valid), axis=0)
+    return {
+        "version": 2,
+        "prototypes": [v.tolist() for v in valid],
+        "centroid": centroid.tolist(),
+    }
+
+
+def select_prototypes(prototypes, max_count):
+    if len(prototypes) <= max_count:
+        return prototypes
+
+    selected = [prototypes[-1]]
+    remaining = prototypes[:-1]
+
+    while remaining and len(selected) < max_count:
+        best_index = 0
+        best_score = -1.0
+
+        for idx, candidate in enumerate(remaining):
+            distances = [float(np.linalg.norm(candidate - chosen)) for chosen in selected]
+            score = min(distances) if distances else 0.0
+            if score > best_score:
+                best_score = score
+                best_index = idx
+
+        selected.append(remaining.pop(best_index))
+
+    return selected
 
 
 def is_production():
@@ -104,6 +400,9 @@ def ensure_schema(pool_conn):
                 """
             )
             conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
         finally:
             cur.close()
     finally:
@@ -113,12 +412,37 @@ def ensure_schema(pool_conn):
 def extract_face_embedding_from_path(image_path):
     try:
         image = face_recognition.load_image_file(image_path)
-        encodings = face_recognition.face_encodings(image)
-        if len(encodings) == 0:
+        encoding = extract_primary_face_encoding(image, num_jitters=FACE_ENCODING_JITTERS_REGISTER)
+        if encoding is None:
             return None
-        return encodings[0].tolist()
+        return encoding.tolist()
     except Exception:
         return None
+
+
+def extract_face_embeddings_from_paths(image_paths):
+    results = []
+    for image_path in image_paths:
+        embedding = extract_face_embedding_from_path(image_path)
+        if embedding is None:
+            results.append(
+                {
+                    "path": image_path,
+                    "success": False,
+                    "error": "No se detecto rostro",
+                }
+            )
+            continue
+
+        results.append(
+            {
+                "path": image_path,
+                "success": True,
+                "embedding": embedding,
+            }
+        )
+
+    return results
 
 
 class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
@@ -146,8 +470,10 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
         embeddings = []
 
         for emp_id, embed in data:
-            ids.append(emp_id)
-            embeddings.append(pickle.loads(embed))
+            prototype_vectors = decode_embedding_payload(embed)
+            for vector in prototype_vectors:
+                ids.append(emp_id)
+                embeddings.append(vector)
 
         with self._cache_lock:
             if embeddings:
@@ -173,131 +499,162 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
                 return np.array([]), []
             return np.array(self.known_embeddings, copy=True), list(self.known_ids)
 
-    def _upsert_cache_entry(self, employee_id, embedding):
-        vector = np.array(embedding, dtype=np.float64)
-        with self._cache_lock:
-            if len(self.known_embeddings) == 0:
-                self.known_embeddings = np.array([vector], dtype=np.float64)
-                self.known_ids = [employee_id]
-            else:
-                try:
-                    index = self.known_ids.index(employee_id)
-                except ValueError:
-                    index = -1
+    def _upsert_cache_entry(self, employee_id, embeddings):
+        vectors = []
+        for emb in embeddings:
+            vec = np.array(emb, dtype=np.float64)
+            if vec.ndim == 1 and vec.size > 0:
+                vectors.append(vec)
 
-                if index >= 0:
-                    self.known_embeddings[index] = vector
-                else:
-                    self.known_embeddings = np.vstack([self.known_embeddings, vector])
-                    self.known_ids.append(employee_id)
+        if not vectors:
+            return
+
+        with self._cache_lock:
+            keep_ids = []
+            keep_embeddings = []
+            for idx, known_id in enumerate(self.known_ids):
+                if known_id != employee_id:
+                    keep_ids.append(known_id)
+                    keep_embeddings.append(self.known_embeddings[idx])
+
+            for vector in vectors:
+                keep_ids.append(employee_id)
+                keep_embeddings.append(vector)
+
+            if keep_embeddings:
+                self.known_embeddings = np.array(keep_embeddings, dtype=np.float64)
+                self.known_ids = keep_ids
+            else:
+                self.known_embeddings = np.array([])
+                self.known_ids = []
+
             self._last_refresh_ts = time.time()
 
     def RegisterEmployee(self, request, context):
-        image = np.frombuffer(request.image, np.uint8)
-        frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
-
-        if frame is None:
-            return pb2.RegisterEmployeeResponse(success=False, message="Invalid image")
-
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        encodings = face_recognition.face_encodings(rgb_frame)
-        if not encodings:
-            return pb2.RegisterEmployeeResponse(success=False, message="No face detected")
-
-        new_embedding = encodings[0]
-
-        pool_conn = get_connection_pool()
-        conn = pool_conn.getconn()
-        cache_embedding = new_embedding
         try:
-            cur = conn.cursor()
+            image = np.frombuffer(request.image, np.uint8)
+            frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
+
+            if frame is None:
+                return pb2.RegisterEmployeeResponse(success=False, message="Invalid image")
+
+            with face_encode_semaphore:
+                rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                encoding = extract_primary_face_encoding(rgb_frame, num_jitters=FACE_ENCODING_JITTERS_REGISTER)
+
+            if encoding is None:
+                return pb2.RegisterEmployeeResponse(success=False, message="No face detected")
+
+            new_embedding = np.array(encoding, dtype=np.float64)
+
+            pool_conn = get_connection_pool()
+            conn = pool_conn.getconn()
+            cache_embeddings = [new_embedding]
             try:
-                cur.execute(
-                    "SELECT embedding, samples_count FROM employees WHERE employee_id = %s",
-                    (request.employee_id,),
-                )
-                existing = cur.fetchone()
-
-                if existing:
-                    old_embedding = np.array(pickle.loads(existing[0]))
-                    samples_count = int(existing[1] or 1)
-                    averaged = ((old_embedding * samples_count) + new_embedding) / (samples_count + 1)
-                    cache_embedding = averaged
-
+                cur = conn.cursor()
+                try:
                     cur.execute(
-                        """
-                        UPDATE employees
-                        SET name = %s,
-                            embedding = %s,
-                            photo = %s,
-                            samples_count = %s
-                        WHERE employee_id = %s
-                        """,
-                        (
-                            request.name,
-                            pickle.dumps(averaged),
-                            request.image,
-                            samples_count + 1,
-                            request.employee_id,
-                        ),
+                        "SELECT embedding, samples_count FROM employees WHERE employee_id = %s",
+                        (request.employee_id,),
                     )
-                    message = f"Employee embedding updated ({samples_count + 1} samples)"
-                else:
-                    cur.execute(
-                        "INSERT INTO employees (name, employee_id, embedding, photo, samples_count) VALUES (%s,%s,%s,%s,%s)",
-                        (request.name, request.employee_id, pickle.dumps(new_embedding), request.image, 1),
-                    )
-                    message = "Employee registered"
+                    existing = cur.fetchone()
 
-                conn.commit()
+                    if existing:
+                        old_prototypes = decode_embedding_payload(existing[0])
+                        samples_count = int(existing[1] or 1)
+                        merged = old_prototypes + [new_embedding]
+                        selected = select_prototypes(merged, MAX_PROTOTYPES_PER_EMPLOYEE)
+                        payload = build_embedding_payload(selected)
+                        cache_embeddings = selected
+
+                        cur.execute(
+                            """
+                            UPDATE employees
+                            SET name = %s,
+                                embedding = %s,
+                                photo = %s,
+                                samples_count = %s
+                            WHERE employee_id = %s
+                            """,
+                            (
+                                request.name,
+                                pickle.dumps(payload),
+                                request.image,
+                                samples_count + 1,
+                                request.employee_id,
+                            ),
+                        )
+                        message = f"Employee embedding updated ({samples_count + 1} samples, {len(selected)} prototipos)"
+                    else:
+                        payload = build_embedding_payload([new_embedding])
+                        cur.execute(
+                            "INSERT INTO employees (name, employee_id, embedding, photo, samples_count) VALUES (%s,%s,%s,%s,%s)",
+                            (request.name, request.employee_id, pickle.dumps(payload), request.image, 1),
+                        )
+                        message = "Employee registered"
+
+                    conn.commit()
+                except Exception:
+                    conn.rollback()
+                    raise
+                finally:
+                    cur.close()
             finally:
-                cur.close()
-        finally:
-            pool_conn.putconn(conn)
+                pool_conn.putconn(conn)
 
-        self._upsert_cache_entry(request.employee_id, cache_embedding)
-        return pb2.RegisterEmployeeResponse(success=True, message=message)
+            self._upsert_cache_entry(request.employee_id, cache_embeddings)
+            return pb2.RegisterEmployeeResponse(success=True, message=message)
+        except Exception as exc:
+            print(f"RegisterEmployee error: {exc}")
+            traceback.print_exc()
+            return pb2.RegisterEmployeeResponse(success=False, message="Error interno al registrar empleado")
 
     def RecognizeFace(self, request, context):
-        self._maybe_refresh_embeddings()
-        known_embeddings, known_ids = self._cache_snapshot()
-        if len(known_embeddings) == 0:
+        try:
+            self._maybe_refresh_embeddings()
+            known_embeddings, known_ids = self._cache_snapshot()
+            if len(known_embeddings) == 0:
+                return pb2.RecognizeFaceResponse(recognized=False)
+
+            image = np.frombuffer(request.image, np.uint8)
+            frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
+            if frame is None:
+                return pb2.RecognizeFaceResponse(recognized=False)
+
+            with face_encode_semaphore:
+                rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                encodings = extract_candidate_encodings(
+                    rgb_frame,
+                    num_jitters=FACE_ENCODING_JITTERS_RECOGNIZE,
+                    max_candidates=4,
+                )
+                if len(encodings) == 0:
+                    return pb2.RecognizeFaceResponse(recognized=False)
+
+            best_distance = None
+            best_index = -1
+            for unknown in encodings:
+                distances = face_recognition.face_distance(known_embeddings, unknown)
+                local_index = int(np.argmin(distances))
+                local_distance = float(distances[local_index])
+                if best_distance is None or local_distance < best_distance:
+                    best_distance = local_distance
+                    best_index = local_index
+
+            if best_distance is not None and best_distance < THRESHOLD and best_index >= 0:
+                employee_id = str(known_ids[best_index])
+                confidence = max(0, 1 - (best_distance / THRESHOLD))
+                return pb2.RecognizeFaceResponse(
+                    recognized=True,
+                    employee_id=employee_id,
+                    confidence=float(confidence),
+                )
+
             return pb2.RecognizeFaceResponse(recognized=False)
-
-        image = np.frombuffer(request.image, np.uint8)
-        frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
-        if frame is None:
+        except Exception as exc:
+            print(f"RecognizeFace error: {exc}")
+            traceback.print_exc()
             return pb2.RecognizeFaceResponse(recognized=False)
-
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        locations = face_recognition.face_locations(rgb_frame, model=FACE_MODEL)
-        if not locations:
-            return pb2.RecognizeFaceResponse(recognized=False)
-
-        encodings = face_recognition.face_encodings(rgb_frame, locations)
-        if not encodings:
-            return pb2.RecognizeFaceResponse(recognized=False)
-
-        best_distance = None
-        best_index = -1
-        for unknown in encodings:
-            distances = face_recognition.face_distance(known_embeddings, unknown)
-            local_index = int(np.argmin(distances))
-            local_distance = float(distances[local_index])
-            if best_distance is None or local_distance < best_distance:
-                best_distance = local_distance
-                best_index = local_index
-
-        if best_distance is not None and best_distance < THRESHOLD and best_index >= 0:
-            employee_id = str(known_ids[best_index])
-            confidence = max(0, 1 - (best_distance / THRESHOLD))
-            return pb2.RecognizeFaceResponse(
-                recognized=True,
-                employee_id=employee_id,
-                confidence=float(confidence),
-            )
-
-        return pb2.RecognizeFaceResponse(recognized=False)
 
     def LogAttendance(self, request, context):
         pool_conn = get_connection_pool()
@@ -347,7 +704,13 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=GRPC_WORKERS))
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=GRPC_WORKERS),
+        options=[
+            ("grpc.max_receive_message_length", GRPC_MAX_MSG_BYTES),
+            ("grpc.max_send_message_length", GRPC_MAX_MSG_BYTES),
+        ],
+    )
     pb2_grpc.add_FaceRecognitionServiceServicer_to_server(FaceService(), server)
 
     if bool_from_env("BMPI_GRPC_TLS"):
@@ -385,6 +748,16 @@ if __name__ == "__main__":
             sys.exit(0)
 
         print(json.dumps({"success": True, "embedding": embedding}))
+        sys.exit(0)
+
+    if len(sys.argv) > 1 and sys.argv[1] == "extract-batch":
+        image_paths = sys.argv[2:]
+        if not image_paths:
+            print(json.dumps({"success": False, "error": "image_paths requeridos"}))
+            sys.exit(0)
+
+        batch_results = extract_face_embeddings_from_paths(image_paths)
+        print(json.dumps({"success": True, "results": batch_results}))
         sys.exit(0)
 
     serve()

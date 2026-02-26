@@ -1,0 +1,10 @@
+4photos run#1: 4559.14 ms (results=4, errors=0)
+4photos run#2: 3523.41 ms (results=4, errors=0)
+4photos run#3: 3675.1 ms (results=4, errors=0)
+SUMMARY 4photos: avg=3919.22 ms min=3523.41 ms max=4559.14 ms totalResults=12 totalErrors=0
+
+5photos run#1: 6516.21 ms (results=5, errors=0)
+5photos run#2: 7068.6 ms (results=5, errors=0)
+5photos run#3: 7208.11 ms (results=5, errors=0)
+SUMMARY 5photos: avg=6930.97 ms min=6516.21 ms max=7208.11 ms totalResults=15 totalErrors=0
+

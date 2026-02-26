@@ -1,0 +1,21 @@
+﻿{
+    "ok":  true,
+    "timestamp":  "20260225_112453",
+    "dataset":  "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260220",
+    "output":  "C:\\Users\\practicante\\Desktop\\bmpi-main\\reports\\ia",
+    "steps":  [
+                  {
+                      "name":  "verificar_dataset",
+                      "status":  "skipped",
+                      "reason":  "sin_capture_plan"
+                  },
+                  {
+                      "name":  "verificar_calidad_fotos",
+                      "status":  "ok"
+                  },
+                  {
+                      "name":  "evaluar_ia_empresa",
+                      "status":  "ok"
+                  }
+              ]
+}

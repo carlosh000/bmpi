@@ -293,6 +293,13 @@ try {
             Write-Info "Cargando variables de desarrollo desde $DevEnvFile"
             $devEnvMap = Import-DotEnv -Path $DevEnvFile
             Set-EnvironmentVariables -Vars $devEnvMap
+
+            if (-not $devEnvMap.ContainsKey("BMPI_OPERATOR_API_KEY")) {
+                [Environment]::SetEnvironmentVariable("BMPI_OPERATOR_API_KEY", $null, "Process")
+            }
+            if (-not $devEnvMap.ContainsKey("BMPI_ADMIN_API_KEY")) {
+                [Environment]::SetEnvironmentVariable("BMPI_ADMIN_API_KEY", $null, "Process")
+            }
         }
         else {
             Write-Warn "No existe $DevEnvFile (opcional para desarrollo)."
@@ -507,7 +514,12 @@ try {
     }
 
     Write-Host ""
-    Write-Pass "Stack $Mode levantada"
+    if ($SkipIA -and $SkipBackend -and $SkipFrontend) {
+        Write-Pass "Validación de entorno $Mode completada (sin procesos iniciados)"
+    }
+    else {
+        Write-Pass "Stack $Mode levantada"
+    }
     $activeFrontendPort = $ProdPort
     if ($Mode -eq "dev") {
         $activeFrontendPort = $DevPort

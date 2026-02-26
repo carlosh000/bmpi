@@ -1,0 +1,225 @@
+{
+  "generated_at": "2026-02-25T11:14:40",
+  "dataset": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260220",
+  "model": "hog",
+  "known": {
+    "employees": 1,
+    "parse": {
+      "images_total": 5,
+      "images_with_face": 5,
+      "images_without_face": 0
+    }
+  },
+  "counts": {
+    "genuine_images": 5,
+    "impostor_images": 1
+  },
+  "results": [
+    {
+      "threshold": 0.45,
+      "frr": 0.0,
+      "far": 1.0,
+      "detection_rate": 1.0,
+      "latency_avg_ms": 958.67,
+      "latency_p95_ms": 1041.13,
+      "genuine": {
+        "total": 5,
+        "detected": 5,
+        "accepted": 5,
+        "correct": 5,
+        "rejected": 0,
+        "wrong_identity": 0,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 5,
+          "avg_ms": 958.01,
+          "p95_ms": 1041.13,
+          "max_ms": 1041.13
+        }
+      },
+      "impostor": {
+        "total": 1,
+        "detected": 1,
+        "accepted": 1,
+        "correct": 0,
+        "rejected": 0,
+        "wrong_identity": 1,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 1,
+          "avg_ms": 959.33,
+          "p95_ms": 959.33,
+          "max_ms": 959.33
+        }
+      }
+    },
+    {
+      "threshold": 0.5,
+      "frr": 0.0,
+      "far": 1.0,
+      "detection_rate": 1.0,
+      "latency_avg_ms": 996.42,
+      "latency_p95_ms": 1064.72,
+      "genuine": {
+        "total": 5,
+        "detected": 5,
+        "accepted": 5,
+        "correct": 5,
+        "rejected": 0,
+        "wrong_identity": 0,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 5,
+          "avg_ms": 928.13,
+          "p95_ms": 953.1,
+          "max_ms": 953.1
+        }
+      },
+      "impostor": {
+        "total": 1,
+        "detected": 1,
+        "accepted": 1,
+        "correct": 0,
+        "rejected": 0,
+        "wrong_identity": 1,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 1,
+          "avg_ms": 1064.72,
+          "p95_ms": 1064.72,
+          "max_ms": 1064.72
+        }
+      }
+    },
+    {
+      "threshold": 0.55,
+      "frr": 0.0,
+      "far": 1.0,
+      "detection_rate": 1.0,
+      "latency_avg_ms": 937.93,
+      "latency_p95_ms": 946.83,
+      "genuine": {
+        "total": 5,
+        "detected": 5,
+        "accepted": 5,
+        "correct": 5,
+        "rejected": 0,
+        "wrong_identity": 0,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 5,
+          "avg_ms": 941.07,
+          "p95_ms": 946.83,
+          "max_ms": 946.83
+        }
+      },
+      "impostor": {
+        "total": 1,
+        "detected": 1,
+        "accepted": 1,
+        "correct": 0,
+        "rejected": 0,
+        "wrong_identity": 1,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 1,
+          "avg_ms": 934.79,
+          "p95_ms": 934.79,
+          "max_ms": 934.79
+        }
+      }
+    },
+    {
+      "threshold": 0.6,
+      "frr": 0.0,
+      "far": 1.0,
+      "detection_rate": 1.0,
+      "latency_avg_ms": 990.98,
+      "latency_p95_ms": 1016.78,
+      "genuine": {
+        "total": 5,
+        "detected": 5,
+        "accepted": 5,
+        "correct": 5,
+        "rejected": 0,
+        "wrong_identity": 0,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 5,
+          "avg_ms": 968.8,
+          "p95_ms": 1016.78,
+          "max_ms": 1016.78
+        }
+      },
+      "impostor": {
+        "total": 1,
+        "detected": 1,
+        "accepted": 1,
+        "correct": 0,
+        "rejected": 0,
+        "wrong_identity": 1,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 1,
+          "avg_ms": 1013.16,
+          "p95_ms": 1013.16,
+          "max_ms": 1013.16
+        }
+      }
+    }
+  ],
+  "recommended": {
+    "threshold": 0.55,
+    "frr": 0.0,
+    "far": 1.0,
+    "detection_rate": 1.0,
+    "latency_avg_ms": 937.93,
+    "latency_p95_ms": 946.83,
+    "genuine": {
+      "total": 5,
+      "detected": 5,
+      "accepted": 5,
+      "correct": 5,
+      "rejected": 0,
+      "wrong_identity": 0,
+      "detection_rate": 1.0,
+      "latency": {
+        "count": 5,
+        "avg_ms": 941.07,
+        "p95_ms": 946.83,
+        "max_ms": 946.83
+      }
+    },
+    "impostor": {
+      "total": 1,
+      "detected": 1,
+      "accepted": 1,
+      "correct": 0,
+      "rejected": 0,
+      "wrong_identity": 1,
+      "detection_rate": 1.0,
+      "latency": {
+        "count": 1,
+        "avg_ms": 934.79,
+        "p95_ms": 934.79,
+        "max_ms": 934.79
+      }
+    }
+  },
+  "traffic_light": "ROJO",
+  "traffic_note": "No apto para salida empresarial; requiere mejoras antes de liberar.",
+  "policy": {
+    "green": {
+      "far_max": 0.005,
+      "frr_max": 0.03,
+      "p95_ms_max": 1200.0,
+      "detection_min": 0.98
+    },
+    "yellow": {
+      "far_max": 0.02,
+      "frr_max": 0.08,
+      "p95_ms_max": 2200.0,
+      "detection_min": 0.92
+    }
+  }
+}

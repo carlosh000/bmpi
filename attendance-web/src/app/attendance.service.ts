@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface AttendanceRecord {
+  row_id?: number;
   id: number;
   name: string;
   timestamp: string;
@@ -12,6 +13,12 @@ export interface CreateAttendanceRequest {
   employee_id: string;
   name?: string;
   timestamp?: string;
+}
+
+export interface UpdateAttendanceRequest {
+  employee_id: string;
+  name: string;
+  timestamp: string;
 }
 
 export interface EmbeddingResult {
@@ -39,6 +46,7 @@ export interface RegisterPhotosRequest {
 export interface RegisterPhotosResponse {
   saved: { employeeId: string; employeeName: string; photosProcessed: number; failedPhotos: number }[];
   errors: string[];
+  qualityWarnings?: string[];
 }
 
 export interface EmployeeStorageRecord {
@@ -62,6 +70,14 @@ export class AttendanceService {
 
   createAttendance(payload: CreateAttendanceRequest): Observable<AttendanceRecord> {
     return this.http.post<AttendanceRecord>(`${this.apiBaseUrl}/attendance`, payload);
+  }
+
+  updateAttendance(rowId: number, payload: UpdateAttendanceRequest): Observable<AttendanceRecord> {
+    return this.http.put<AttendanceRecord>(`${this.apiBaseUrl}/attendance/${rowId}`, payload);
+  }
+
+  deleteAttendance(rowId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiBaseUrl}/attendance/${rowId}`);
   }
 
   getEmployees(): Observable<EmployeeRecord[]> {

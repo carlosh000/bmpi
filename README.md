@@ -130,6 +130,63 @@ Este script comprueba:
 - consistencia del contrato protobuf generado en Go,
 - dependencias mínimas de IA en Python (`cv2`, `face_recognition`, `grpc`, `numpy`, `psycopg2`).
 
+## Evaluación empresarial de IA (semáforo)
+
+Para decidir salida a compañía con métricas objetivas (FAR/FRR/latencia/detección):
+
+```powershell
+python scripts/evaluar_ia_empresa.py --dataset C:\ruta\dataset --output reports\ia
+```
+
+Guía completa y checklist go-live:
+
+- `scripts/GUIA_EVALUACION_IA_EMPRESA.md`
+- `scripts/SQL_EMBEDDINGS_POSTGRES.md` (queries rápidas para validar embeddings en PostgreSQL)
+
+Verificación de avance de dataset (sin cámara, sin reconocimiento facial):
+
+```powershell
+python scripts/verificar_dataset_empresa.py --dataset C:\ruta\dataset --output reports\ia
+```
+
+Verificación de calidad de fotos (detección de blur, luz, rostro pequeño y múltiples rostros):
+
+```powershell
+python scripts/verificar_calidad_fotos.py --dataset C:\ruta\dataset --output reports\ia
+```
+
+Salida adicional automática:
+
+- `reports/ia/recaptura_fotos_YYYYMMDD_HHMMSS.csv` con lista priorizada de imágenes a recapturar por identidad.
+
+Integración automática en flujo frontend:
+
+- `POST /api/employees/register-photos` ahora evalúa calidad por foto en backend y devuelve `qualityWarnings` en la respuesta (sin bloquear el guardado).
+- La UI muestra estas advertencias para recapturar solo las fotos con problemas.
+
+Diagnóstico unificado (avance + calidad + evaluación) en un solo comando:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\diagnostico_dataset_empresa.ps1 -Dataset "datasets/empresa_eval_YYYYMMDD" -UpdatePlanStatus -AllowInsufficientDataset
+```
+
+Modo rápido (sin cálculo FAR/FRR):
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\diagnostico_dataset_empresa.ps1 -Dataset "datasets/empresa_eval_YYYYMMDD" -UpdatePlanStatus -SkipEvaluation
+```
+
+Este comando genera además un resumen:
+
+- `reports/ia/diagnostico_dataset_YYYYMMDD_HHMMSS.json`
+- `reports/ia/diagnostico_dataset_YYYYMMDD_HHMMSS.md`
+
+Si además deseas actualizar `capture_plan.csv` con estado sugerido (`completo`/`pendiente`):
+
+```powershell
+python scripts/verificar_dataset_empresa.py --dataset C:\ruta\dataset --output reports\ia --update-plan-status
+```
+
 Para validar específicamente que no haya drift entre `proto`, `backend/pb` y `backend/vendor/.../pb`:
 
 ```bash
@@ -152,12 +209,36 @@ scripts/verificar_proto_sync.sh
 - `BMPI_FACE_GRPC_ADDR`: direcciÃ³n del servicio IA (default `localhost:50051`).
 - `BMPI_FACE_GRPC_TLS`: `true/false` para dial gRPC con TLS.
 - `BMPI_FACE_GRPC_CA_CERT`: ruta a CA PEM (si TLS habilitado).
+- `BMPI_EXTRACT_MODE`: `auto` (default), `batch` o `legacy` para extracción de embeddings.
+- `BMPI_EXTRACT_WORKERS`: número de workers para modo `legacy` (default: núcleos CPU).
+- `BMPI_REGISTER_PHOTO_WORKERS`: número de workers para `POST /api/employees/register-photos` (default: núcleos CPU).
+- `BMPI_GRPC_MAX_MSG_MB`: tamaño máximo de mensaje gRPC en MB para backend↔IA (recomendado: `20`).
+- `BMPI_REGISTER_PHOTO_TIMEOUT_MS`: timeout por foto en ms al registrar en IA (recomendado: `12000`).
+- `BMPI_REGISTER_PHOTO_RETRIES`: reintentos por foto ante errores transitorios (`Unavailable`/`DeadlineExceeded`), recomendado: `1`.
+- `BMPI_REGISTER_PHOTO_RETRY_BACKOFF_MS`: espera entre reintentos por foto en ms, recomendado: `300`.
+- `BMPI_QUALITY_MIN_DIMENSION`: tamaño mínimo (ancho/alto) para advertencia de resolución, default `220`.
+- `BMPI_QUALITY_BRIGHTNESS_MIN`: brillo mínimo para advertencia de iluminación baja, default `55`.
+- `BMPI_QUALITY_BRIGHTNESS_MAX`: brillo máximo para advertencia de iluminación alta, default `210`.
+- `BMPI_QUALITY_DETAIL_MIN`: umbral de detalle mínimo para advertencia de posible blur, default `2.5`.
+- `BMPI_EMBEDDING_SCRIPT`: ruta explícita de `face_server.py` (opcional si autodetección funciona).
+
+### Recomendación de producción (benchmark final)
+
+- Para el entorno BMPI actual, usar `BMPI_EXTRACT_MODE=legacy`.
+- En pruebas finales locales con payloads de 4 y 5 fotos, `legacy` resultó más rápido que `batch` y `auto`.
+- Archivos de evidencia de benchmark:
+   - `tmp-test-photos/benchmark_modes_result.json`
+   - `tmp-test-photos/benchmark_modes_result_5photos.json`
 
 ### Servicio IA (Python)
 
 - `BMPI_GRPC_TLS`: `true/false` para exponer gRPC con TLS.
 - `BMPI_GRPC_CERT_FILE`, `BMPI_GRPC_KEY_FILE`: rutas de certificado y llave PEM.
 - `BMPI_FACE_MODEL`, `BMPI_EMBEDDINGS_REFRESH_SECONDS`, `BMPI_GRPC_WORKERS`.
+- `BMPI_FACE_THRESHOLD`: umbral de reconocimiento (menor = más estricto, mayor = más tolerante). Recomendado inicial: `0.55`.
+- `BMPI_FACE_DETECT_UPSAMPLE`: detalle base de detección de rostro (default `1`).
+- `BMPI_FACE_DETECT_RETRY_UPSAMPLE`: reintento automático con mayor detalle cuando una foto no detecta rostro (recomendado `2`).
+- `BMPI_FACE_ENCODE_CONCURRENCY`: concurrencia interna de codificación facial (`face_recognition`), recomendado `1` para máxima estabilidad.
 
 ## Script maestro (dev + producción)
 

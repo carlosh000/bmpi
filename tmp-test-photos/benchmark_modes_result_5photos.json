@@ -1,0 +1,73 @@
+﻿{
+    "timestamp":  "2026-02-24T09:43:49.8099326-06:00",
+    "payload":  "request200-v2.json",
+    "benchmark":  {
+                      "legacy":  {
+                                     "runs":  [
+                                                  {
+                                                      "run":  1,
+                                                      "ms":  6806.07,
+                                                      "mode":  "legacy",
+                                                      "results":  5,
+                                                      "errors":  0
+                                                  },
+                                                  {
+                                                      "run":  2,
+                                                      "ms":  6542.21,
+                                                      "mode":  "legacy",
+                                                      "results":  5,
+                                                      "errors":  0
+                                                  }
+                                              ],
+                                     "avg_ms":  6674.14,
+                                     "min_ms":  6542.21,
+                                     "max_ms":  6806.07
+                                 },
+                      "batch":  {
+                                    "runs":  [
+                                                 {
+                                                     "run":  1,
+                                                     "ms":  6980.46,
+                                                     "mode":  "batch",
+                                                     "results":  5,
+                                                     "errors":  0
+                                                 },
+                                                 {
+                                                     "run":  2,
+                                                     "ms":  6996.74,
+                                                     "mode":  "batch",
+                                                     "results":  5,
+                                                     "errors":  0
+                                                 }
+                                             ],
+                                    "avg_ms":  6988.6,
+                                    "min_ms":  6980.46,
+                                    "max_ms":  6996.74
+                                },
+                      "auto":  {
+                                   "runs":  [
+                                                {
+                                                    "run":  1,
+                                                    "ms":  7121.91,
+                                                    "mode":  "auto-batch",
+                                                    "results":  5,
+                                                    "errors":  0
+                                                },
+                                                {
+                                                    "run":  2,
+                                                    "ms":  7366.8,
+                                                    "mode":  "auto-batch",
+                                                    "results":  5,
+                                                    "errors":  0
+                                                }
+                                            ],
+                                   "avg_ms":  7244.36,
+                                   "min_ms":  7121.91,
+                                   "max_ms":  7366.8
+                               }
+                  },
+    "improvements":  {
+                         "legacy_to_batch_percent":  -4.71,
+                         "legacy_to_auto_percent":  -8.54
+                     }
+}

@@ -1,0 +1,12 @@
+priority,group,identity,path,top_issue,issues
+5,genuine,200,genuine\200\emp_200_1.jpg,rostro_area_baja,rostro_area_baja
+5,genuine,200,genuine\200\emp_200_2.jpg,rostro_area_baja,rostro_area_baja
+5,genuine,200,genuine\200\emp_200_3.jpg,rostro_area_baja,rostro_area_baja
+5,genuine,200,genuine\200\emp_200_4.jpg,rostro_area_baja,rostro_area_baja
+5,genuine,200,genuine\200\emp_200_5.jpg,rostro_area_baja,rostro_area_baja
+5,impostor,otro,impostor\otro\emp200_1.jpg,rostro_area_baja,rostro_area_baja
+5,known,200,known\200\emp200_1.jpg,rostro_area_baja,rostro_area_baja
+5,known,200,known\200\emp200_2.jpg,rostro_area_baja,rostro_area_baja
+5,known,200,known\200\emp200_3.jpg,rostro_area_baja,rostro_area_baja
+5,known,200,known\200\emp200_4.jpg,rostro_area_baja,rostro_area_baja
+5,known,200,known\200\emp200_5.jpg,rostro_area_baja,rostro_area_baja

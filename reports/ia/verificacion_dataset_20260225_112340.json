@@ -1,0 +1,758 @@
+{
+  "generated_at": "2026-02-25T11:23:40",
+  "dataset": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260224",
+  "summary": {
+    "rows_total": 90,
+    "rows_complete": 0,
+    "rows_pending": 90,
+    "images_expected_total": 750,
+    "images_found_total": 0,
+    "groups": {
+      "known": {
+        "rows_total": 30,
+        "rows_complete": 0,
+        "rows_pending": 30,
+        "images_expected_total": 150,
+        "images_found_total": 0
+      },
+      "genuine": {
+        "rows_total": 30,
+        "rows_complete": 0,
+        "rows_pending": 30,
+        "images_expected_total": 300,
+        "images_found_total": 0
+      },
+      "impostor": {
+        "rows_total": 30,
+        "rows_complete": 0,
+        "rows_pending": 30,
+        "images_expected_total": 300,
+        "images_found_total": 0
+      }
+    },
+    "completion_rate": 0.0
+  },
+  "updated_rows": 0,
+  "details": [
+    {
+      "grupo": "known",
+      "identidad": "1001",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1001",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1002",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1002",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1003",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1003",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1004",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1004",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1005",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1005",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1006",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1006",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1007",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1007",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1008",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1008",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1009",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1009",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1010",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1010",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1011",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1011",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1012",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1012",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1013",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1013",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1014",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1014",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1015",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1015",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1016",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1016",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1017",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1017",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1018",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1018",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1019",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1019",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1020",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1020",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1021",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1021",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1022",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1022",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1023",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1023",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1024",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1024",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1025",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1025",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1026",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1026",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1027",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1027",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1028",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1028",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1029",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1029",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "1030",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 0,
+      "faltantes": 5,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1030",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_001",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_002",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_003",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_004",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_005",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_006",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_007",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_008",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_009",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_010",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_011",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_012",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_013",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_014",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_015",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_016",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_017",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_018",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_019",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_020",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_021",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_022",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_023",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_024",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_025",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_026",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_027",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_028",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_029",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_030",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    }
+  ]
+}
