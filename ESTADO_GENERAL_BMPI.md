@@ -587,3 +587,33 @@ Durante la jornada del 5-mar-2026 se cerraron mejoras de produccion para operaci
 - Smoke runtime:
   - `GET /api/attendance` -> `200`.
   - `POST /api/attendance/recognize-burst` -> reconocido y asistencia registrada.
+
+## 19) Estado actual consolidado (2026-03-05 noche)
+
+### 19.1 Estado del proyecto
+
+- Estado operativo general: **apto para despliegue controlado**.
+- Stack productivo (`prod`) validado:
+  - frontend SSR `:4000`,
+  - backend `:8080`,
+  - IA gRPC `:50051`.
+- Seguridad API validada:
+  - sin API key -> `401`,
+  - con API key operador -> `200`.
+
+### 19.2 Cifrado y seguridad en transito
+
+- Backend <-> IA: **TLS activo**.
+- Renovacion de certificados gRPC: **automatica** al iniciar `prod` si detecta falta, vencimiento cercano o cambio SAN/host.
+- Frontend SSR: inyeccion automatica de API key para consumo de `/api/*`.
+- PostgreSQL: se mantiene `DB_SSLMODE=disable` en este host local por limitacion del servidor DB actual (sin SSL habilitado).
+
+### 19.3 Estado de repositorio
+
+- Repositorio GitHub sincronizado con estado local al cierre:
+  - rama: `main`,
+  - commits de cierre aplicados y empujados a `origin/main`.
+
+### 19.4 Pendiente unico para cierre empresarial 100%
+
+- Ejecutar prueba en campo con camara real (bloque corto + 1-2 dias), congelar parametros finales por sede/camara y firmar acta go-live.
