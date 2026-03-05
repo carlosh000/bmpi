@@ -465,3 +465,125 @@ Durante la jornada se ejecutó una ronda de endurecimiento técnico para reducir
 
 - Implementación técnica completada y sin errores estáticos en archivos modificados.
 - Queda pendiente validación final en campo con las 3 fotos problemáticas reportadas para cerrar calibración fina de umbral/captura por cámara real.
+
+## 17) Avance general del dia (2026-03-03) - cierre tecnico de reconocimiento lateral y estabilidad
+
+Durante la jornada del 3-mar-2026 se consolido una ronda de hardening enfocada en reconocimiento de rostros en angulo (perfil parcial), estabilidad del flujo desde interfaz y evidencia operativa para decision de despliegue.
+
+### 17.1 Mejoras aplicadas en codigo y configuracion
+
+- Se mejoro `ml-model/face_server.py` para reconocimiento mas robusto:
+  - mayor cobertura de candidatos durante reconocimiento,
+  - seleccion de candidatos diversos (evita quedarse con variantes redundantes),
+  - soporte de preprocesado automatico para orientacion EXIF y normalizacion en runtime.
+- Se agregaron y activaron ajustes de entorno para robustez lateral:
+  - `BMPI_FACE_MODEL_FALLBACK`,
+  - `BMPI_FACE_HAAR_FALLBACK`,
+  - `BMPI_FACE_CONTRAST_FALLBACK`,
+  - `BMPI_FACE_ROTATION_FALLBACK`,
+  - `BMPI_RECOGNIZE_MAX_CANDIDATES`,
+  - `BMPI_RECOGNIZE_LOCATIONS_PER_VARIANT`.
+- Se actualizo `scripts/evaluar_ia_empresa.py` para alinear evaluacion offline con un pipeline mas cercano al comportamiento real de IA en servicio.
+
+### 17.2 Evidencia ejecutada (runtime real por API)
+
+- Se reinicio stack en desarrollo con configuracion nueva (`detener_bmpi.ps1` / `iniciar_bmpi.ps1`).
+- Salud de servicios validada:
+  - frontend `:4200` activo,
+  - backend `:8080` activo y respondiendo,
+  - IA gRPC `:50051` activo.
+- Prueba de extraccion desde interfaz (`POST /api/embeddings/extract`) sobre dataset empresarial local:
+  - dataset: `datasets/empresa_eval_20260302_lote1`,
+  - total evaluadas: `96`,
+  - embeddings extraidos: `96`,
+  - fallas: `0`,
+  - tasa de exito: `100.0%`.
+
+### 17.3 Manejo de fotos problematicas y cierre de recaptura minima
+
+- Se valido la lista de 5 fotos inicialmente marcadas como problematicas.
+- Resultado final tras ajustes y correccion dirigida:
+  - `5/5` fotos extraen embedding correctamente por API.
+- Se conservaron respaldos de originales en los casos corregidos automaticamente:
+  - `known/6/20260223_114421.original.jpg`,
+  - `genuine/12/20260223_115151.original.jpg`.
+
+### 17.4 Estado actual para operacion
+
+- Estado de ejecucion tecnica: **estable**.
+- Flujo de extraccion desde interfaz: **operativo y validado** con evidencia sobre el lote actual.
+- Recomendacion de uso:
+  - apto para piloto operativo inmediato,
+  - mantener ventana corta de observacion en campo para ajustar umbral final por sede/camara.
+
+### 17.5 Que ya no es pendiente y que si se mantiene pendiente
+
+No pendiente (cerrado):
+
+- endurecimiento de reconocimiento lateral a nivel codigo,
+- validacion de extraccion por interfaz en lote actual (`100%`),
+- estabilizacion de arranque operativo tras cambios.
+
+Pendiente (siguiente control):
+
+- confirmar FRR/FAR final en prueba de campo (1-2 dias) con trafico real de acceso,
+- congelar umbral final de produccion por sede/camara,
+- ejecutar smoke final de go-live y documentar acta de cierre.
+
+### 17.6 Estado tecnico verificado al cierre (2026-03-03 tarde)
+
+- Servicios reiniciados y operativos:
+  - frontend `:4200`,
+  - backend `:8080`,
+  - IA gRPC `:50051`,
+  - gRPC backend `:50052`.
+- Smoke runtime:
+  - `GET /api/attendance` -> `200`.
+  - `POST /api/embeddings/extract` en muestra conflictiva -> `5/5` OK.
+  - `POST /api/employees/register-photos` (5 fotos) -> `photosProcessed=5`, `failedPhotos=0`.
+- Evaluacion IA mas reciente:
+  - `reports/ia/evaluacion_ia_20260303_141214.md`
+  - `threshold=0.50`, `FRR=0.392857`, `FAR=0.153846`, `detection_rate=1.0`, `latency_p95_ms=1733.54`.
+
+Conclusión de cierre tecnico: el sistema esta estable y funcional para piloto, pero por metrica biometrica vigente (FRR/FAR) aun no cumple criterio de liberacion empresarial final sin ronda adicional de datos/calibracion de campo.
+
+## 18) Avance general del dia (2026-03-05) - cierre de operacion para entrada caminando
+
+Durante la jornada del 5-mar-2026 se cerraron mejoras de produccion para operacion en punto de acceso, enfocadas en reconocimiento en movimiento, coherencia de seguridad y checklist formal de salida.
+
+### 18.1 Frontend (operacion diaria)
+
+- Se integro vista `Reconocimiento entrada` con:
+  - camara en navegador,
+  - rafaga configurable,
+  - reconocimiento automatico por lotes de frames,
+  - registro de asistencia al confirmar votos/confianza.
+- Se agrego panel de configuracion de API key en UI para entorno productivo (persistencia en `localStorage`).
+
+### 18.2 Backend (calidad y robustez)
+
+- Se mantiene endpoint de produccion `POST /api/attendance/recognize-burst` como flujo principal para paso caminando.
+- Se agrego bloqueo configurable de fotos de mala calidad en `register-photos`:
+  - `BMPI_QUALITY_BLOCKING_ENABLED`,
+  - `BMPI_QUALITY_BLOCKING_ISSUES`.
+
+### 18.3 Configuracion y documentacion
+
+- Variables nuevas agregadas a `scripts/.env.dev`, `scripts/.env.production` y sus `.example`.
+- README actualizado con:
+  - flujo de reconocimiento por rafaga,
+  - configuracion de API key en frontend,
+  - bloqueo de calidad.
+- Checklist formal de salida generado:
+  - `reports/ia/GO_LIVE_CHECKLIST_FINAL_20260305.md`.
+
+### 18.4 Verificacion tecnica ejecutada hoy
+
+- Frontend:
+  - `ng test --watch=false` en verde.
+  - `ng build` en verde.
+- Backend:
+  - `go test ./...` en verde.
+- Smoke runtime:
+  - `GET /api/attendance` -> `200`.
+  - `POST /api/attendance/recognize-burst` -> reconocido y asistencia registrada.

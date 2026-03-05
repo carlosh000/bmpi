@@ -1,0 +1,3149 @@
+{
+  "created_at": "2026-03-02T13:24:15",
+  "dataset": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1",
+  "model": "hog",
+  "upsample": 1,
+  "thresholds": {
+    "blur_min": 80.0,
+    "brightness_min": 60.0,
+    "brightness_max": 200.0,
+    "face_height_ratio_min": 0.2,
+    "face_area_ratio_min": 0.06,
+    "center_distance_ratio_max": 0.35
+  },
+  "summary": {
+    "total_images": 96,
+    "ok_images": 8,
+    "fail_images": 88,
+    "ok_rate": 0.0833,
+    "issues": {
+      "rostro_area_baja": 66,
+      "rostro_pequeno": 28,
+      "desenfoque_alto": 16,
+      "sin_rostro_detectado": 13,
+      "multiples_rostros": 12
+    },
+    "by_group": {
+      "genuine": {
+        "ok": 4,
+        "fail": 27,
+        "total": 31
+      },
+      "known": {
+        "ok": 4,
+        "fail": 61,
+        "total": 65
+      }
+    },
+    "worst_images_preview": [
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\1\\20260223_113315.jpg",
+        "group": "genuine",
+        "identity": "1",
+        "issues": [
+          "desenfoque_alto",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 77.714,
+          "brightness_mean": 151.464,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 958,
+          "face_height_px": 958,
+          "face_area_ratio": 0.0572,
+          "face_height_ratio": 0.2072,
+          "center_distance_ratio": 0.1028
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\1\\20260223_113338.jpg",
+        "group": "genuine",
+        "identity": "1",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 68.497,
+          "brightness_mean": 167.109,
+          "faces_detected": 0,
+          "image_width": 3468,
+          "image_height": 4624
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\1\\20260223_113345.jpg",
+        "group": "genuine",
+        "identity": "1",
+        "issues": [
+          "desenfoque_alto",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 46.546,
+          "brightness_mean": 161.048,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 958,
+          "face_height_px": 958,
+          "face_area_ratio": 0.0572,
+          "face_height_ratio": 0.2072,
+          "center_distance_ratio": 0.1876
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\11\\20260223_115059.jpg",
+        "group": "genuine",
+        "identity": "11",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 125.506,
+          "brightness_mean": 127.773,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 666,
+          "face_height_px": 665,
+          "face_area_ratio": 0.0276,
+          "face_height_ratio": 0.1438,
+          "center_distance_ratio": 0.1007
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\11\\20260223_115103.jpg",
+        "group": "genuine",
+        "identity": "11",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 232.702,
+          "brightness_mean": 127.838,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 666,
+          "face_height_px": 665,
+          "face_area_ratio": 0.0276,
+          "face_height_ratio": 0.1438,
+          "center_distance_ratio": 0.0971
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\12\\20260223_115151.jpg",
+        "group": "genuine",
+        "identity": "12",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 132.108,
+          "brightness_mean": 161.194,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 958,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0573,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.0858
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\12\\20260223_115156.jpg",
+        "group": "genuine",
+        "identity": "12",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 206.815,
+          "brightness_mean": 163.048,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 958,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0573,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.0698
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\12\\20260223_115159.jpg",
+        "group": "genuine",
+        "identity": "12",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 116.648,
+          "brightness_mean": 138.056,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0574,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.0672
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\12\\20260223_115202.jpg",
+        "group": "genuine",
+        "identity": "12",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 196.052,
+          "brightness_mean": 162.167,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 798,
+          "face_height_px": 798,
+          "face_area_ratio": 0.0397,
+          "face_height_ratio": 0.1726,
+          "center_distance_ratio": 0.0435
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\13\\20260223_115309.jpg",
+        "group": "genuine",
+        "identity": "13",
+        "issues": [
+          "desenfoque_alto",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 71.314,
+          "brightness_mean": 120.744,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 958,
+          "face_height_px": 958,
+          "face_area_ratio": 0.0572,
+          "face_height_ratio": 0.2072,
+          "center_distance_ratio": 0.1016
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\2\\20260223_113735.jpg",
+        "group": "genuine",
+        "identity": "2",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 103.749,
+          "brightness_mean": 130.337,
+          "faces_detected": 0,
+          "image_width": 3468,
+          "image_height": 4624
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\2\\20260223_113739.jpg",
+        "group": "genuine",
+        "identity": "2",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 169.922,
+          "brightness_mean": 121.46,
+          "faces_detected": 0,
+          "image_width": 3468,
+          "image_height": 4624
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\3\\20260223_114005.jpg",
+        "group": "genuine",
+        "identity": "3",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 196.043,
+          "brightness_mean": 121.09,
+          "faces_detected": 0,
+          "image_width": 3468,
+          "image_height": 4624
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\4\\20260223_114113.jpg",
+        "group": "genuine",
+        "identity": "4",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 178.281,
+          "brightness_mean": 155.291,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 666,
+          "face_height_px": 665,
+          "face_area_ratio": 0.0276,
+          "face_height_ratio": 0.1438,
+          "center_distance_ratio": 0.0476
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\5\\20260223_114208.jpg",
+        "group": "genuine",
+        "identity": "5",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 350.41,
+          "brightness_mean": 153.339,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0574,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.0672
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\5\\20260223_114210.jpg",
+        "group": "genuine",
+        "identity": "5",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 233.96,
+          "brightness_mean": 143.564,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 666,
+          "face_height_px": 665,
+          "face_area_ratio": 0.0276,
+          "face_height_ratio": 0.1438,
+          "center_distance_ratio": 0.0746
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\6\\20260223_114438.jpg",
+        "group": "genuine",
+        "identity": "6",
+        "issues": [
+          "desenfoque_alto"
+        ],
+        "metrics": {
+          "blur_score": 58.092,
+          "brightness_mean": 112.202,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 1380,
+          "face_height_px": 1380,
+          "face_area_ratio": 0.1188,
+          "face_height_ratio": 0.2984,
+          "center_distance_ratio": 0.0407
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\6\\20260223_114441.jpg",
+        "group": "genuine",
+        "identity": "6",
+        "issues": [
+          "desenfoque_alto"
+        ],
+        "metrics": {
+          "blur_score": 70.77,
+          "brightness_mean": 120.992,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 1381,
+          "face_height_px": 1380,
+          "face_area_ratio": 0.1188,
+          "face_height_ratio": 0.2984,
+          "center_distance_ratio": 0.0452
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\6\\20260223_114443.jpg",
+        "group": "genuine",
+        "identity": "6",
+        "issues": [
+          "desenfoque_alto"
+        ],
+        "metrics": {
+          "blur_score": 66.83,
+          "brightness_mean": 101.986,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 1150,
+          "face_height_px": 1150,
+          "face_area_ratio": 0.0825,
+          "face_height_ratio": 0.2487,
+          "center_distance_ratio": 0.1001
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\7\\20260223_114635.jpg",
+        "group": "genuine",
+        "identity": "7",
+        "issues": [
+          "multiples_rostros",
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 110.863,
+          "brightness_mean": 123.572,
+          "faces_detected": 2,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 799,
+          "face_height_px": 798,
+          "face_area_ratio": 0.0398,
+          "face_height_ratio": 0.1726,
+          "center_distance_ratio": 0.1841
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\7\\20260223_114639.jpg",
+        "group": "genuine",
+        "identity": "7",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 122.303,
+          "brightness_mean": 129.295,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 958,
+          "face_area_ratio": 0.0573,
+          "face_height_ratio": 0.2072,
+          "center_distance_ratio": 0.163
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\7\\20260223_114642.jpg",
+        "group": "genuine",
+        "identity": "7",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 114.901,
+          "brightness_mean": 121.728,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 799,
+          "face_height_px": 798,
+          "face_area_ratio": 0.0398,
+          "face_height_ratio": 0.1726,
+          "center_distance_ratio": 0.0933
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\7\\20260223_114645.jpg",
+        "group": "genuine",
+        "identity": "7",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 82.834,
+          "brightness_mean": 126.011,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 958,
+          "face_height_px": 958,
+          "face_area_ratio": 0.0572,
+          "face_height_ratio": 0.2072,
+          "center_distance_ratio": 0.0095
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\8\\20260223_114711.jpg",
+        "group": "genuine",
+        "identity": "8",
+        "issues": [
+          "desenfoque_alto",
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 60.754,
+          "brightness_mean": 151.05,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 798,
+          "face_height_px": 799,
+          "face_area_ratio": 0.0398,
+          "face_height_ratio": 0.1728,
+          "center_distance_ratio": 0.1209
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\8\\20260223_114715.jpg",
+        "group": "genuine",
+        "identity": "8",
+        "issues": [
+          "multiples_rostros",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 178.98,
+          "brightness_mean": 132.88,
+          "faces_detected": 2,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 958,
+          "face_height_px": 958,
+          "face_area_ratio": 0.0572,
+          "face_height_ratio": 0.2072,
+          "center_distance_ratio": 0.1881
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\8\\20260223_114717.jpg",
+        "group": "genuine",
+        "identity": "8",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 125.72,
+          "brightness_mean": 149.922,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 958,
+          "face_area_ratio": 0.0573,
+          "face_height_ratio": 0.2072,
+          "center_distance_ratio": 0.0319
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\8\\20260223_114720.jpg",
+        "group": "genuine",
+        "identity": "8",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 197.076,
+          "brightness_mean": 165.516,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 798,
+          "face_height_px": 799,
+          "face_area_ratio": 0.0398,
+          "face_height_ratio": 0.1728,
+          "center_distance_ratio": 0.0699
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\1\\20260223_113147.jpg",
+        "group": "known",
+        "identity": "1",
+        "issues": [
+          "desenfoque_alto"
+        ],
+        "metrics": {
+          "blur_score": 66.738,
+          "brightness_mean": 155.993,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 1381,
+          "face_height_px": 1380,
+          "face_area_ratio": 0.1188,
+          "face_height_ratio": 0.2984,
+          "center_distance_ratio": 0.0603
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\1\\20260223_113151.jpg",
+        "group": "known",
+        "identity": "1",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 53.483,
+          "brightness_mean": 145.334,
+          "faces_detected": 0,
+          "image_width": 3468,
+          "image_height": 4624
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\1\\20260223_113156.jpg",
+        "group": "known",
+        "identity": "1",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 64.928,
+          "brightness_mean": 151.411,
+          "faces_detected": 0,
+          "image_width": 3468,
+          "image_height": 4624
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\1\\20260223_113310.jpg",
+        "group": "known",
+        "identity": "1",
+        "issues": [
+          "desenfoque_alto",
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 55.505,
+          "brightness_mean": 160.711,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 798,
+          "face_height_px": 798,
+          "face_area_ratio": 0.0397,
+          "face_height_ratio": 0.1726,
+          "center_distance_ratio": 0.0435
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\10\\20260223_114942.jpg",
+        "group": "known",
+        "identity": "10",
+        "issues": [
+          "multiples_rostros",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 213.49,
+          "brightness_mean": 131.06,
+          "faces_detected": 2,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 958,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0573,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.0786
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\10\\20260223_114948.jpg",
+        "group": "known",
+        "identity": "10",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 176.028,
+          "brightness_mean": 139.668,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 958,
+          "face_area_ratio": 0.0573,
+          "face_height_ratio": 0.2072,
+          "center_distance_ratio": 0.0319
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\10\\20260223_114952.jpg",
+        "group": "known",
+        "identity": "10",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 83.755,
+          "brightness_mean": 157.217,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0574,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.11
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\10\\20260223_114956.jpg",
+        "group": "known",
+        "identity": "10",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 705.051,
+          "brightness_mean": 122.091,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0574,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.0845
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\10\\20260223_114958.jpg",
+        "group": "known",
+        "identity": "10",
+        "issues": [
+          "multiples_rostros",
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 410.955,
+          "brightness_mean": 144.837,
+          "faces_detected": 2,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 798,
+          "face_height_px": 799,
+          "face_area_ratio": 0.0398,
+          "face_height_ratio": 0.1728,
+          "center_distance_ratio": 0.0323
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\11\\20260223_115026.jpg",
+        "group": "known",
+        "identity": "11",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 144.422,
+          "brightness_mean": 122.769,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 798,
+          "face_height_px": 799,
+          "face_area_ratio": 0.0398,
+          "face_height_ratio": 0.1728,
+          "center_distance_ratio": 0.1523
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\11\\20260223_115030.jpg",
+        "group": "known",
+        "identity": "11",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 83.689,
+          "brightness_mean": 104.399,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 799,
+          "face_height_px": 798,
+          "face_area_ratio": 0.0398,
+          "face_height_ratio": 0.1726,
+          "center_distance_ratio": 0.0898
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\11\\20260223_115034.jpg",
+        "group": "known",
+        "identity": "11",
+        "issues": [
+          "desenfoque_alto",
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 78.15,
+          "brightness_mean": 120.063,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 798,
+          "face_height_px": 799,
+          "face_area_ratio": 0.0398,
+          "face_height_ratio": 0.1728,
+          "center_distance_ratio": 0.0323
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\11\\20260223_115037.jpg",
+        "group": "known",
+        "identity": "11",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 108.887,
+          "brightness_mean": 126.978,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 798,
+          "face_height_px": 798,
+          "face_area_ratio": 0.0397,
+          "face_height_ratio": 0.1726,
+          "center_distance_ratio": 0.1107
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\11\\20260223_115054.jpg",
+        "group": "known",
+        "identity": "11",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 218.783,
+          "brightness_mean": 129.532,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 555,
+          "face_height_px": 555,
+          "face_area_ratio": 0.0192,
+          "face_height_ratio": 0.12,
+          "center_distance_ratio": 0.1961
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\12\\20260223_115124.jpg",
+        "group": "known",
+        "identity": "12",
+        "issues": [
+          "multiples_rostros",
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 460.024,
+          "brightness_mean": 131.444,
+          "faces_detected": 3,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 666,
+          "face_height_px": 665,
+          "face_area_ratio": 0.0276,
+          "face_height_ratio": 0.1438,
+          "center_distance_ratio": 0.0681
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\12\\20260223_115131.jpg",
+        "group": "known",
+        "identity": "12",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 250.271,
+          "brightness_mean": 150.531,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0574,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.1544
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\12\\20260223_115134.jpg",
+        "group": "known",
+        "identity": "12",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 189.17,
+          "brightness_mean": 156.959,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0574,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.0928
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\12\\20260223_115137.jpg",
+        "group": "known",
+        "identity": "12",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 435.965,
+          "brightness_mean": 133.003,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0574,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.0333
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\12\\20260223_115148.jpg",
+        "group": "known",
+        "identity": "12",
+        "issues": [
+          "multiples_rostros",
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 260.972,
+          "brightness_mean": 155.41,
+          "faces_detected": 2,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 798,
+          "face_height_px": 799,
+          "face_area_ratio": 0.0398,
+          "face_height_ratio": 0.1728,
+          "center_distance_ratio": 0.0159
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\13\\20260223_115248.jpg",
+        "group": "known",
+        "identity": "13",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 93.845,
+          "brightness_mean": 124.619,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 958,
+          "face_height_px": 958,
+          "face_area_ratio": 0.0572,
+          "face_height_ratio": 0.2072,
+          "center_distance_ratio": 0.1477
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\13\\20260223_115252.jpg",
+        "group": "known",
+        "identity": "13",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 102.171,
+          "brightness_mean": 118.013,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0574,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.1283
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\13\\20260223_115256.jpg",
+        "group": "known",
+        "identity": "13",
+        "issues": [
+          "desenfoque_alto",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 47.566,
+          "brightness_mean": 130.073,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0574,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.0845
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\13\\20260223_115304.jpg",
+        "group": "known",
+        "identity": "13",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 101.059,
+          "brightness_mean": 131.159,
+          "faces_detected": 1,
+          "image_width": 3468,
+          "image_height": 4624,
+          "face_width_px": 959,
+          "face_height_px": 959,
+          "face_area_ratio": 0.0574,
+          "face_height_ratio": 0.2074,
+          "center_distance_ratio": 0.1283
+        }
+      }
+    ]
+  },
+  "retake_summary_by_identity": [
+    {
+      "group": "known",
+      "identity": "10",
+      "photos_to_retake": 5
+    },
+    {
+      "group": "known",
+      "identity": "11",
+      "photos_to_retake": 5
+    },
+    {
+      "group": "known",
+      "identity": "12",
+      "photos_to_retake": 5
+    },
+    {
+      "group": "known",
+      "identity": "2",
+      "photos_to_retake": 5
+    },
+    {
+      "group": "known",
+      "identity": "3",
+      "photos_to_retake": 5
+    },
+    {
+      "group": "known",
+      "identity": "5",
+      "photos_to_retake": 5
+    },
+    {
+      "group": "known",
+      "identity": "6",
+      "photos_to_retake": 5
+    },
+    {
+      "group": "known",
+      "identity": "7",
+      "photos_to_retake": 5
+    },
+    {
+      "group": "known",
+      "identity": "8",
+      "photos_to_retake": 5
+    },
+    {
+      "group": "genuine",
+      "identity": "12",
+      "photos_to_retake": 4
+    },
+    {
+      "group": "genuine",
+      "identity": "7",
+      "photos_to_retake": 4
+    },
+    {
+      "group": "genuine",
+      "identity": "8",
+      "photos_to_retake": 4
+    },
+    {
+      "group": "known",
+      "identity": "1",
+      "photos_to_retake": 4
+    },
+    {
+      "group": "known",
+      "identity": "13",
+      "photos_to_retake": 4
+    },
+    {
+      "group": "known",
+      "identity": "14",
+      "photos_to_retake": 4
+    },
+    {
+      "group": "known",
+      "identity": "4",
+      "photos_to_retake": 4
+    },
+    {
+      "group": "genuine",
+      "identity": "1",
+      "photos_to_retake": 3
+    },
+    {
+      "group": "genuine",
+      "identity": "6",
+      "photos_to_retake": 3
+    },
+    {
+      "group": "genuine",
+      "identity": "11",
+      "photos_to_retake": 2
+    },
+    {
+      "group": "genuine",
+      "identity": "2",
+      "photos_to_retake": 2
+    },
+    {
+      "group": "genuine",
+      "identity": "5",
+      "photos_to_retake": 2
+    },
+    {
+      "group": "genuine",
+      "identity": "13",
+      "photos_to_retake": 1
+    },
+    {
+      "group": "genuine",
+      "identity": "3",
+      "photos_to_retake": 1
+    },
+    {
+      "group": "genuine",
+      "identity": "4",
+      "photos_to_retake": 1
+    }
+  ],
+  "results": [
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\1\\20260223_113315.jpg",
+      "group": "genuine",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 77.714,
+        "brightness_mean": 151.464,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0572,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.1028
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\1\\20260223_113338.jpg",
+      "group": "genuine",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 68.497,
+        "brightness_mean": 167.109,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\1\\20260223_113345.jpg",
+      "group": "genuine",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 46.546,
+        "brightness_mean": 161.048,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0572,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.1876
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\11\\20260223_115059.jpg",
+      "group": "genuine",
+      "identity": "11",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 125.506,
+        "brightness_mean": 127.773,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 666,
+        "face_height_px": 665,
+        "face_area_ratio": 0.0276,
+        "face_height_ratio": 0.1438,
+        "center_distance_ratio": 0.1007
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\11\\20260223_115103.jpg",
+      "group": "genuine",
+      "identity": "11",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 232.702,
+        "brightness_mean": 127.838,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 666,
+        "face_height_px": 665,
+        "face_area_ratio": 0.0276,
+        "face_height_ratio": 0.1438,
+        "center_distance_ratio": 0.0971
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\12\\20260223_115151.jpg",
+      "group": "genuine",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 132.108,
+        "brightness_mean": 161.194,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0858
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\12\\20260223_115156.jpg",
+      "group": "genuine",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 206.815,
+        "brightness_mean": 163.048,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0698
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\12\\20260223_115159.jpg",
+      "group": "genuine",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 116.648,
+        "brightness_mean": 138.056,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0672
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\12\\20260223_115202.jpg",
+      "group": "genuine",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 196.052,
+        "brightness_mean": 162.167,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 798,
+        "face_area_ratio": 0.0397,
+        "face_height_ratio": 0.1726,
+        "center_distance_ratio": 0.0435
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\13\\20260223_115307.jpg",
+      "group": "genuine",
+      "identity": "13",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 102.124,
+        "brightness_mean": 122.488,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1150,
+        "face_height_px": 1150,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2487,
+        "center_distance_ratio": 0.1566
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\13\\20260223_115309.jpg",
+      "group": "genuine",
+      "identity": "13",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 71.314,
+        "brightness_mean": 120.744,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0572,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.1016
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\14\\20260223_114321.jpg",
+      "group": "genuine",
+      "identity": "14",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 112.92,
+        "brightness_mean": 151.594,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1380,
+        "face_height_px": 1380,
+        "face_area_ratio": 0.1188,
+        "face_height_ratio": 0.2984,
+        "center_distance_ratio": 0.0445
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\2\\20260223_113735.jpg",
+      "group": "genuine",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 103.749,
+        "brightness_mean": 130.337,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\2\\20260223_113739.jpg",
+      "group": "genuine",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 169.922,
+        "brightness_mean": 121.46,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\3\\20260223_113944.jpg",
+      "group": "genuine",
+      "identity": "3",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 190.212,
+        "brightness_mean": 146.027,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1150,
+        "face_height_px": 1150,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2487,
+        "center_distance_ratio": 0.1092
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\3\\20260223_114005.jpg",
+      "group": "genuine",
+      "identity": "3",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 196.043,
+        "brightness_mean": 121.09,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\4\\20260223_114058.jpg",
+      "group": "genuine",
+      "identity": "4",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 85.61,
+        "brightness_mean": 159.73,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1151,
+        "face_height_px": 1151,
+        "face_area_ratio": 0.0826,
+        "face_height_ratio": 0.2489,
+        "center_distance_ratio": 0.0575
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\4\\20260223_114113.jpg",
+      "group": "genuine",
+      "identity": "4",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 178.281,
+        "brightness_mean": 155.291,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 666,
+        "face_height_px": 665,
+        "face_area_ratio": 0.0276,
+        "face_height_ratio": 0.1438,
+        "center_distance_ratio": 0.0476
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\5\\20260223_114208.jpg",
+      "group": "genuine",
+      "identity": "5",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 350.41,
+        "brightness_mean": 153.339,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0672
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\5\\20260223_114210.jpg",
+      "group": "genuine",
+      "identity": "5",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 233.96,
+        "brightness_mean": 143.564,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 666,
+        "face_height_px": 665,
+        "face_area_ratio": 0.0276,
+        "face_height_ratio": 0.1438,
+        "center_distance_ratio": 0.0746
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\6\\20260223_114438.jpg",
+      "group": "genuine",
+      "identity": "6",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto"
+      ],
+      "metrics": {
+        "blur_score": 58.092,
+        "brightness_mean": 112.202,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1380,
+        "face_height_px": 1380,
+        "face_area_ratio": 0.1188,
+        "face_height_ratio": 0.2984,
+        "center_distance_ratio": 0.0407
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\6\\20260223_114441.jpg",
+      "group": "genuine",
+      "identity": "6",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto"
+      ],
+      "metrics": {
+        "blur_score": 70.77,
+        "brightness_mean": 120.992,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1381,
+        "face_height_px": 1380,
+        "face_area_ratio": 0.1188,
+        "face_height_ratio": 0.2984,
+        "center_distance_ratio": 0.0452
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\6\\20260223_114443.jpg",
+      "group": "genuine",
+      "identity": "6",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto"
+      ],
+      "metrics": {
+        "blur_score": 66.83,
+        "brightness_mean": 101.986,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1150,
+        "face_height_px": 1150,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2487,
+        "center_distance_ratio": 0.1001
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\7\\20260223_114635.jpg",
+      "group": "genuine",
+      "identity": "7",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 110.863,
+        "brightness_mean": 123.572,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 799,
+        "face_height_px": 798,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1726,
+        "center_distance_ratio": 0.1841
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\7\\20260223_114639.jpg",
+      "group": "genuine",
+      "identity": "7",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 122.303,
+        "brightness_mean": 129.295,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.163
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\7\\20260223_114642.jpg",
+      "group": "genuine",
+      "identity": "7",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 114.901,
+        "brightness_mean": 121.728,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 799,
+        "face_height_px": 798,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1726,
+        "center_distance_ratio": 0.0933
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\7\\20260223_114645.jpg",
+      "group": "genuine",
+      "identity": "7",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 82.834,
+        "brightness_mean": 126.011,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0572,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.0095
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\8\\20260223_114711.jpg",
+      "group": "genuine",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto",
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 60.754,
+        "brightness_mean": 151.05,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.1209
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\8\\20260223_114715.jpg",
+      "group": "genuine",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 178.98,
+        "brightness_mean": 132.88,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0572,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.1881
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\8\\20260223_114717.jpg",
+      "group": "genuine",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 125.72,
+        "brightness_mean": 149.922,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.0319
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\genuine\\8\\20260223_114720.jpg",
+      "group": "genuine",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 197.076,
+        "brightness_mean": 165.516,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.0699
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\1\\20260223_113147.jpg",
+      "group": "known",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto"
+      ],
+      "metrics": {
+        "blur_score": 66.738,
+        "brightness_mean": 155.993,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1381,
+        "face_height_px": 1380,
+        "face_area_ratio": 0.1188,
+        "face_height_ratio": 0.2984,
+        "center_distance_ratio": 0.0603
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\1\\20260223_113151.jpg",
+      "group": "known",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 53.483,
+        "brightness_mean": 145.334,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\1\\20260223_113156.jpg",
+      "group": "known",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 64.928,
+        "brightness_mean": 151.411,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\1\\20260223_113206.jpg",
+      "group": "known",
+      "identity": "1",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 83.208,
+        "brightness_mean": 139.341,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1151,
+        "face_height_px": 1150,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2487,
+        "center_distance_ratio": 0.0769
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\1\\20260223_113310.jpg",
+      "group": "known",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto",
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 55.505,
+        "brightness_mean": 160.711,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 798,
+        "face_area_ratio": 0.0397,
+        "face_height_ratio": 0.1726,
+        "center_distance_ratio": 0.0435
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\10\\20260223_114942.jpg",
+      "group": "known",
+      "identity": "10",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 213.49,
+        "brightness_mean": 131.06,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0786
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\10\\20260223_114948.jpg",
+      "group": "known",
+      "identity": "10",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 176.028,
+        "brightness_mean": 139.668,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.0319
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\10\\20260223_114952.jpg",
+      "group": "known",
+      "identity": "10",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 83.755,
+        "brightness_mean": 157.217,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.11
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\10\\20260223_114956.jpg",
+      "group": "known",
+      "identity": "10",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 705.051,
+        "brightness_mean": 122.091,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0845
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\10\\20260223_114958.jpg",
+      "group": "known",
+      "identity": "10",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 410.955,
+        "brightness_mean": 144.837,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.0323
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\11\\20260223_115026.jpg",
+      "group": "known",
+      "identity": "11",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 144.422,
+        "brightness_mean": 122.769,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.1523
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\11\\20260223_115030.jpg",
+      "group": "known",
+      "identity": "11",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 83.689,
+        "brightness_mean": 104.399,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 799,
+        "face_height_px": 798,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1726,
+        "center_distance_ratio": 0.0898
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\11\\20260223_115034.jpg",
+      "group": "known",
+      "identity": "11",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto",
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 78.15,
+        "brightness_mean": 120.063,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.0323
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\11\\20260223_115037.jpg",
+      "group": "known",
+      "identity": "11",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 108.887,
+        "brightness_mean": 126.978,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 798,
+        "face_area_ratio": 0.0397,
+        "face_height_ratio": 0.1726,
+        "center_distance_ratio": 0.1107
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\11\\20260223_115054.jpg",
+      "group": "known",
+      "identity": "11",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 218.783,
+        "brightness_mean": 129.532,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 555,
+        "face_height_px": 555,
+        "face_area_ratio": 0.0192,
+        "face_height_ratio": 0.12,
+        "center_distance_ratio": 0.1961
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\12\\20260223_115124.jpg",
+      "group": "known",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 460.024,
+        "brightness_mean": 131.444,
+        "faces_detected": 3,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 666,
+        "face_height_px": 665,
+        "face_area_ratio": 0.0276,
+        "face_height_ratio": 0.1438,
+        "center_distance_ratio": 0.0681
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\12\\20260223_115131.jpg",
+      "group": "known",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 250.271,
+        "brightness_mean": 150.531,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.1544
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\12\\20260223_115134.jpg",
+      "group": "known",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 189.17,
+        "brightness_mean": 156.959,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0928
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\12\\20260223_115137.jpg",
+      "group": "known",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 435.965,
+        "brightness_mean": 133.003,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0333
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\12\\20260223_115148.jpg",
+      "group": "known",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 260.972,
+        "brightness_mean": 155.41,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.0159
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\13\\20260223_115248.jpg",
+      "group": "known",
+      "identity": "13",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 93.845,
+        "brightness_mean": 124.619,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0572,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.1477
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\13\\20260223_115252.jpg",
+      "group": "known",
+      "identity": "13",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 102.171,
+        "brightness_mean": 118.013,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.1283
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\13\\20260223_115256.jpg",
+      "group": "known",
+      "identity": "13",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 47.566,
+        "brightness_mean": 130.073,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0845
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\13\\20260223_115259.jpg",
+      "group": "known",
+      "identity": "13",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 81.098,
+        "brightness_mean": 112.216,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1380,
+        "face_height_px": 1380,
+        "face_area_ratio": 0.1188,
+        "face_height_ratio": 0.2984,
+        "center_distance_ratio": 0.0508
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\13\\20260223_115304.jpg",
+      "group": "known",
+      "identity": "13",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 101.059,
+        "brightness_mean": 131.159,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.1283
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\14\\20260223_114257.jpg",
+      "group": "known",
+      "identity": "14",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 408.444,
+        "brightness_mean": 131.549,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0928
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\14\\20260223_114300.jpg",
+      "group": "known",
+      "identity": "14",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 778.121,
+        "brightness_mean": 146.807,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0135
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\14\\20260223_114304.jpg",
+      "group": "known",
+      "identity": "14",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 206.756,
+        "brightness_mean": 146.555,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 799,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.0577
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\14\\20260223_114315.jpg",
+      "group": "known",
+      "identity": "14",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 487.723,
+        "brightness_mean": 144.77,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 666,
+        "face_height_px": 666,
+        "face_area_ratio": 0.0277,
+        "face_height_ratio": 0.144,
+        "center_distance_ratio": 0.0486
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\14\\20260223_114319.jpg",
+      "group": "known",
+      "identity": "14",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 173.738,
+        "brightness_mean": 142.122,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1150,
+        "face_height_px": 1150,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2487,
+        "center_distance_ratio": 0.1575
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\2\\20260223_113657.jpg",
+      "group": "known",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 86.422,
+        "brightness_mean": 127.543,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0572,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.0826
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\2\\20260223_113703.jpg",
+      "group": "known",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 104.085,
+        "brightness_mean": 117.231,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\2\\20260223_113720.jpg",
+      "group": "known",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 87.782,
+        "brightness_mean": 141.853,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\2\\20260223_113724.jpg",
+      "group": "known",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 95.321,
+        "brightness_mean": 141.082,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\2\\20260223_113729.jpg",
+      "group": "known",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 91.098,
+        "brightness_mean": 125.837,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.0352
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\3\\20260223_113914.jpg",
+      "group": "known",
+      "identity": "3",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 180.358,
+        "brightness_mean": 140.714,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 798,
+        "face_area_ratio": 0.0397,
+        "face_height_ratio": 0.1726,
+        "center_distance_ratio": 0.0967
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\3\\20260223_113923.jpg",
+      "group": "known",
+      "identity": "3",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 186.175,
+        "brightness_mean": 139.787,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\3\\20260223_113926.jpg",
+      "group": "known",
+      "identity": "3",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 181.488,
+        "brightness_mean": 140.133,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 799,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.1473
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\3\\20260223_113931.jpg",
+      "group": "known",
+      "identity": "3",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 371.537,
+        "brightness_mean": 149.855,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\3\\20260223_113940.jpg",
+      "group": "known",
+      "identity": "3",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 199.989,
+        "brightness_mean": 142.02,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\4\\20260223_114037.jpg",
+      "group": "known",
+      "identity": "4",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 229.692,
+        "brightness_mean": 148.901,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1151,
+        "face_height_px": 1150,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2487,
+        "center_distance_ratio": 0.0517
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\4\\20260223_114043.jpg",
+      "group": "known",
+      "identity": "4",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 164.683,
+        "brightness_mean": 145.529,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0928
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\4\\20260223_114046.jpg",
+      "group": "known",
+      "identity": "4",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 185.976,
+        "brightness_mean": 142.055,
+        "faces_detected": 0,
+        "image_width": 3468,
+        "image_height": 4624
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\4\\20260223_114050.jpg",
+      "group": "known",
+      "identity": "4",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 188.33,
+        "brightness_mean": 149.544,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.1636
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\4\\20260223_114055.jpg",
+      "group": "known",
+      "identity": "4",
+      "ok": false,
+      "issues": [
+        "multiples_rostros"
+      ],
+      "metrics": {
+        "blur_score": 178.69,
+        "brightness_mean": 156.701,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1150,
+        "face_height_px": 1150,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2487,
+        "center_distance_ratio": 0.1634
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\5\\20260223_114128.jpg",
+      "group": "known",
+      "identity": "5",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 264.106,
+        "brightness_mean": 146.231,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0843
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\5\\20260223_114136.jpg",
+      "group": "known",
+      "identity": "5",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 376.856,
+        "brightness_mean": 151.081,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0449
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\5\\20260223_114139.jpg",
+      "group": "known",
+      "identity": "5",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 297.055,
+        "brightness_mean": 147.705,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.0476
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\5\\20260223_114202.jpg",
+      "group": "known",
+      "identity": "5",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 320.669,
+        "brightness_mean": 140.587,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 958,
+        "face_area_ratio": 0.0572,
+        "face_height_ratio": 0.2072,
+        "center_distance_ratio": 0.0095
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\5\\20260223_114204.jpg",
+      "group": "known",
+      "identity": "5",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 270.901,
+        "brightness_mean": 123.008,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0672
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\6\\20260223_114416.jpg",
+      "group": "known",
+      "identity": "6",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 78.607,
+        "brightness_mean": 105.662,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.1283
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\6\\20260223_114421.jpg",
+      "group": "known",
+      "identity": "6",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto"
+      ],
+      "metrics": {
+        "blur_score": 77.925,
+        "brightness_mean": 106.447,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1150,
+        "face_height_px": 1150,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2487,
+        "center_distance_ratio": 0.0241
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\6\\20260223_114425.jpg",
+      "group": "known",
+      "identity": "6",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto"
+      ],
+      "metrics": {
+        "blur_score": 55.4,
+        "brightness_mean": 112.467,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1150,
+        "face_height_px": 1150,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2487,
+        "center_distance_ratio": 0.0563
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\6\\20260223_114428.jpg",
+      "group": "known",
+      "identity": "6",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto"
+      ],
+      "metrics": {
+        "blur_score": 56.941,
+        "brightness_mean": 98.125,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1150,
+        "face_height_px": 1150,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2487,
+        "center_distance_ratio": 0.0779
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\6\\20260223_114435.jpg",
+      "group": "known",
+      "identity": "6",
+      "ok": false,
+      "issues": [
+        "desenfoque_alto"
+      ],
+      "metrics": {
+        "blur_score": 48.964,
+        "brightness_mean": 110.328,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 1150,
+        "face_height_px": 1151,
+        "face_area_ratio": 0.0825,
+        "face_height_ratio": 0.2489,
+        "center_distance_ratio": 0.0349
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\7\\20260223_114608.jpg",
+      "group": "known",
+      "identity": "7",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 106.486,
+        "brightness_mean": 121.716,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.1247
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\7\\20260223_114615.jpg",
+      "group": "known",
+      "identity": "7",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 87.7,
+        "brightness_mean": 128.536,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.0352
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\7\\20260223_114618.jpg",
+      "group": "known",
+      "identity": "7",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 132.161,
+        "brightness_mean": 117.711,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 799,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.0577
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\7\\20260223_114622.jpg",
+      "group": "known",
+      "identity": "7",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 123.546,
+        "brightness_mean": 115.713,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.1735
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\7\\20260223_114632.jpg",
+      "group": "known",
+      "identity": "7",
+      "ok": false,
+      "issues": [
+        "multiples_rostros",
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 105.023,
+        "brightness_mean": 130.471,
+        "faces_detected": 2,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 799,
+        "face_height_px": 798,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1726,
+        "center_distance_ratio": 0.0933
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\8\\20260223_114653.jpg",
+      "group": "known",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 204.533,
+        "brightness_mean": 149.415,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.0618
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\8\\20260223_114656.jpg",
+      "group": "known",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 80.529,
+        "brightness_mean": 141.788,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 958,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0573,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.1268
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\8\\20260223_114700.jpg",
+      "group": "known",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 153.591,
+        "brightness_mean": 132.108,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0934
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\8\\20260223_114703.jpg",
+      "group": "known",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 265.232,
+        "brightness_mean": 134.6,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 959,
+        "face_height_px": 959,
+        "face_area_ratio": 0.0574,
+        "face_height_ratio": 0.2074,
+        "center_distance_ratio": 0.0446
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1\\known\\8\\20260223_114709.jpg",
+      "group": "known",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 171.761,
+        "brightness_mean": 155.73,
+        "faces_detected": 1,
+        "image_width": 3468,
+        "image_height": 4624,
+        "face_width_px": 798,
+        "face_height_px": 799,
+        "face_area_ratio": 0.0398,
+        "face_height_ratio": 0.1728,
+        "center_distance_ratio": 0.0533
+      }
+    }
+  ],
+  "retake_csv": "reports\\ia\\recaptura_fotos_20260302_132415.csv"
+}

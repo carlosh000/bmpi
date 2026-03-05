@@ -1,0 +1,2163 @@
+{
+  "created_at": "2026-03-03T09:33:13",
+  "dataset": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5",
+  "model": "hog",
+  "upsample": 1,
+  "thresholds": {
+    "blur_min": 80.0,
+    "brightness_min": 60.0,
+    "brightness_max": 200.0,
+    "face_height_ratio_min": 0.2,
+    "face_area_ratio_min": 0.06,
+    "center_distance_ratio_max": 0.35
+  },
+  "summary": {
+    "total_images": 91,
+    "ok_images": 67,
+    "fail_images": 24,
+    "ok_rate": 0.7363,
+    "issues": {
+      "sin_rostro_detectado": 22,
+      "rostro_area_baja": 2,
+      "rostro_pequeno": 1
+    },
+    "by_group": {
+      "genuine": {
+        "ok": 16,
+        "fail": 10,
+        "total": 26
+      },
+      "impostor": {
+        "ok": 12,
+        "fail": 1,
+        "total": 13
+      },
+      "known": {
+        "ok": 39,
+        "fail": 13,
+        "total": 52
+      }
+    },
+    "worst_images_preview": [
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\1\\20260223_113338.jpg",
+        "group": "genuine",
+        "identity": "1",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 73.708,
+          "brightness_mean": 100.629,
+          "faces_detected": 0,
+          "image_width": 545,
+          "image_height": 545
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\1\\20260223_113345.jpg",
+        "group": "genuine",
+        "identity": "1",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 52.329,
+          "brightness_mean": 165.404,
+          "faces_detected": 0,
+          "image_width": 512,
+          "image_height": 512
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\12\\20260223_115156.jpg",
+        "group": "genuine",
+        "identity": "12",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 26.775,
+          "brightness_mean": 192.342,
+          "faces_detected": 0,
+          "image_width": 258,
+          "image_height": 201
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\2\\20260223_113735.jpg",
+        "group": "genuine",
+        "identity": "2",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 18.421,
+          "brightness_mean": 164.077,
+          "faces_detected": 0,
+          "image_width": 171,
+          "image_height": 171
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\2\\20260223_113739.jpg",
+        "group": "genuine",
+        "identity": "2",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 168.26,
+          "brightness_mean": 94.33,
+          "faces_detected": 0,
+          "image_width": 145,
+          "image_height": 145
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\3\\20260223_114005.jpg",
+        "group": "genuine",
+        "identity": "3",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 289.157,
+          "brightness_mean": 121.108,
+          "faces_detected": 0,
+          "image_width": 507,
+          "image_height": 507
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\6\\20260223_114438.jpg",
+        "group": "genuine",
+        "identity": "6",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 50.909,
+          "brightness_mean": 150.281,
+          "faces_detected": 0,
+          "image_width": 149,
+          "image_height": 149
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\6\\20260223_114441.jpg",
+        "group": "genuine",
+        "identity": "6",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 74.855,
+          "brightness_mean": 80.941,
+          "faces_detected": 0,
+          "image_width": 192,
+          "image_height": 192
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\8\\20260223_114711.jpg",
+        "group": "genuine",
+        "identity": "8",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 140.194,
+          "brightness_mean": 82.679,
+          "faces_detected": 0,
+          "image_width": 638,
+          "image_height": 638
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\8\\20260223_114715.jpg",
+        "group": "genuine",
+        "identity": "8",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 122.681,
+          "brightness_mean": 61.16,
+          "faces_detected": 0,
+          "image_width": 389,
+          "image_height": 389
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_001\\20260223_115256.jpg",
+        "group": "impostor",
+        "identity": "persona_001",
+        "issues": [
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 287.226,
+          "brightness_mean": 130.087,
+          "faces_detected": 1,
+          "image_width": 960,
+          "image_height": 1280,
+          "face_width_px": 267,
+          "face_height_px": 267,
+          "face_area_ratio": 0.058,
+          "face_height_ratio": 0.2086,
+          "center_distance_ratio": 0.0834
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\1\\20260223_113151.jpg",
+        "group": "known",
+        "identity": "1",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 99.18,
+          "brightness_mean": 130.431,
+          "faces_detected": 0,
+          "image_width": 800,
+          "image_height": 800
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\1\\20260223_113156.jpg",
+        "group": "known",
+        "identity": "1",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 39.139,
+          "brightness_mean": 156.13,
+          "faces_detected": 0,
+          "image_width": 216,
+          "image_height": 216
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\11\\20260223_115030.jpg",
+        "group": "known",
+        "identity": "11",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 296.59,
+          "brightness_mean": 96.311,
+          "faces_detected": 0,
+          "image_width": 212,
+          "image_height": 216
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\12\\20260223_115134.jpg",
+        "group": "known",
+        "identity": "12",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 86.615,
+          "brightness_mean": 36.421,
+          "faces_detected": 0,
+          "image_width": 161,
+          "image_height": 161
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\2\\20260223_113703.jpg",
+        "group": "known",
+        "identity": "2",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 165.581,
+          "brightness_mean": 32.615,
+          "faces_detected": 0,
+          "image_width": 242,
+          "image_height": 242
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\2\\20260223_113720.jpg",
+        "group": "known",
+        "identity": "2",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 387.762,
+          "brightness_mean": 141.856,
+          "faces_detected": 0,
+          "image_width": 960,
+          "image_height": 1280
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\2\\20260223_113724.jpg",
+        "group": "known",
+        "identity": "2",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 123.829,
+          "brightness_mean": 40.116,
+          "faces_detected": 0,
+          "image_width": 242,
+          "image_height": 242
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\3\\20260223_113923.jpg",
+        "group": "known",
+        "identity": "3",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 174.566,
+          "brightness_mean": 141.11,
+          "faces_detected": 0,
+          "image_width": 372,
+          "image_height": 372
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\3\\20260223_113931.jpg",
+        "group": "known",
+        "identity": "3",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 967.796,
+          "brightness_mean": 140.005,
+          "faces_detected": 0,
+          "image_width": 800,
+          "image_height": 800
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\3\\20260223_113940.jpg",
+        "group": "known",
+        "identity": "3",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 195.438,
+          "brightness_mean": 123.094,
+          "faces_detected": 0,
+          "image_width": 469,
+          "image_height": 469
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\5\\20260223_114136.jpg",
+        "group": "known",
+        "identity": "5",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 55.995,
+          "brightness_mean": 150.117,
+          "faces_detected": 0,
+          "image_width": 800,
+          "image_height": 800
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\7\\20260223_114615.jpg",
+        "group": "known",
+        "identity": "7",
+        "issues": [
+          "rostro_pequeno",
+          "rostro_area_baja"
+        ],
+        "metrics": {
+          "blur_score": 496.599,
+          "brightness_mean": 128.532,
+          "faces_detected": 1,
+          "image_width": 960,
+          "image_height": 1280,
+          "face_width_px": 223,
+          "face_height_px": 223,
+          "face_area_ratio": 0.0405,
+          "face_height_ratio": 0.1742,
+          "center_distance_ratio": 0.0318
+        }
+      },
+      {
+        "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\8\\20260223_114656.jpg",
+        "group": "known",
+        "identity": "8",
+        "issues": [
+          "sin_rostro_detectado"
+        ],
+        "metrics": {
+          "blur_score": 96.944,
+          "brightness_mean": 107.963,
+          "faces_detected": 0,
+          "image_width": 192,
+          "image_height": 192
+        }
+      }
+    ]
+  },
+  "retake_summary_by_identity": [
+    {
+      "group": "known",
+      "identity": "2",
+      "photos_to_retake": 3
+    },
+    {
+      "group": "known",
+      "identity": "3",
+      "photos_to_retake": 3
+    },
+    {
+      "group": "genuine",
+      "identity": "1",
+      "photos_to_retake": 2
+    },
+    {
+      "group": "genuine",
+      "identity": "2",
+      "photos_to_retake": 2
+    },
+    {
+      "group": "genuine",
+      "identity": "6",
+      "photos_to_retake": 2
+    },
+    {
+      "group": "genuine",
+      "identity": "8",
+      "photos_to_retake": 2
+    },
+    {
+      "group": "known",
+      "identity": "1",
+      "photos_to_retake": 2
+    },
+    {
+      "group": "genuine",
+      "identity": "12",
+      "photos_to_retake": 1
+    },
+    {
+      "group": "genuine",
+      "identity": "3",
+      "photos_to_retake": 1
+    },
+    {
+      "group": "impostor",
+      "identity": "persona_001",
+      "photos_to_retake": 1
+    },
+    {
+      "group": "known",
+      "identity": "11",
+      "photos_to_retake": 1
+    },
+    {
+      "group": "known",
+      "identity": "12",
+      "photos_to_retake": 1
+    },
+    {
+      "group": "known",
+      "identity": "5",
+      "photos_to_retake": 1
+    },
+    {
+      "group": "known",
+      "identity": "7",
+      "photos_to_retake": 1
+    },
+    {
+      "group": "known",
+      "identity": "8",
+      "photos_to_retake": 1
+    }
+  ],
+  "results": [
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\1\\20260223_113315.jpg",
+      "group": "genuine",
+      "identity": "1",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 570.335,
+        "brightness_mean": 139.164,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\1\\20260223_113338.jpg",
+      "group": "genuine",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 73.708,
+        "brightness_mean": 100.629,
+        "faces_detected": 0,
+        "image_width": 545,
+        "image_height": 545
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\1\\20260223_113345.jpg",
+      "group": "genuine",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 52.329,
+        "brightness_mean": 165.404,
+        "faces_detected": 0,
+        "image_width": 512,
+        "image_height": 512
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\11\\20260223_115059.jpg",
+      "group": "genuine",
+      "identity": "11",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 519.766,
+        "brightness_mean": 104.562,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0058
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\11\\20260223_115103.jpg",
+      "group": "genuine",
+      "identity": "11",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 920.076,
+        "brightness_mean": 127.871,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\12\\20260223_115156.jpg",
+      "group": "genuine",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 26.775,
+        "brightness_mean": 192.342,
+        "faces_detected": 0,
+        "image_width": 258,
+        "image_height": 201
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\12\\20260223_115159.jpg",
+      "group": "genuine",
+      "identity": "12",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 532.786,
+        "brightness_mean": 140.569,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\12\\20260223_115202.jpg",
+      "group": "genuine",
+      "identity": "12",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 694.227,
+        "brightness_mean": 145.12,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\2\\20260223_113735.jpg",
+      "group": "genuine",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 18.421,
+        "brightness_mean": 164.077,
+        "faces_detected": 0,
+        "image_width": 171,
+        "image_height": 171
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\2\\20260223_113739.jpg",
+      "group": "genuine",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 168.26,
+        "brightness_mean": 94.33,
+        "faces_detected": 0,
+        "image_width": 145,
+        "image_height": 145
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\3\\20260223_113944.jpg",
+      "group": "genuine",
+      "identity": "3",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 712.519,
+        "brightness_mean": 139.325,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0027
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\3\\20260223_114005.jpg",
+      "group": "genuine",
+      "identity": "3",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 289.157,
+        "brightness_mean": 121.108,
+        "faces_detected": 0,
+        "image_width": 507,
+        "image_height": 507
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\4\\20260223_114058.jpg",
+      "group": "genuine",
+      "identity": "4",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 330.181,
+        "brightness_mean": 144.316,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0058
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\4\\20260223_114113.jpg",
+      "group": "genuine",
+      "identity": "4",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 557.665,
+        "brightness_mean": 142.368,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\5\\20260223_114210.jpg",
+      "group": "genuine",
+      "identity": "5",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 596.36,
+        "brightness_mean": 137.528,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 267,
+        "face_height_px": 267,
+        "face_area_ratio": 0.1114,
+        "face_height_ratio": 0.3337,
+        "center_distance_ratio": 0.1933
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\6\\20260223_114438.jpg",
+      "group": "genuine",
+      "identity": "6",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 50.909,
+        "brightness_mean": 150.281,
+        "faces_detected": 0,
+        "image_width": 149,
+        "image_height": 149
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\6\\20260223_114441.jpg",
+      "group": "genuine",
+      "identity": "6",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 74.855,
+        "brightness_mean": 80.941,
+        "faces_detected": 0,
+        "image_width": 192,
+        "image_height": 192
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\6\\20260223_114443.jpg",
+      "group": "genuine",
+      "identity": "6",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 363.253,
+        "brightness_mean": 91.833,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\7\\20260223_114635.jpg",
+      "group": "genuine",
+      "identity": "7",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 427.625,
+        "brightness_mean": 85.76,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0582
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\7\\20260223_114639.jpg",
+      "group": "genuine",
+      "identity": "7",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 514.605,
+        "brightness_mean": 103.827,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0495
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\7\\20260223_114642.jpg",
+      "group": "genuine",
+      "identity": "7",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 293.382,
+        "brightness_mean": 96.609,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\7\\20260223_114645.jpg",
+      "group": "genuine",
+      "identity": "7",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 314.827,
+        "brightness_mean": 97.457,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\8\\20260223_114711.jpg",
+      "group": "genuine",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 140.194,
+        "brightness_mean": 82.679,
+        "faces_detected": 0,
+        "image_width": 638,
+        "image_height": 638
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\8\\20260223_114715.jpg",
+      "group": "genuine",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 122.681,
+        "brightness_mean": 61.16,
+        "faces_detected": 0,
+        "image_width": 389,
+        "image_height": 389
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\8\\20260223_114717.jpg",
+      "group": "genuine",
+      "identity": "8",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 327.107,
+        "brightness_mean": 141.847,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\genuine\\8\\20260223_114720.jpg",
+      "group": "genuine",
+      "identity": "8",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 234.726,
+        "brightness_mean": 151.777,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_001\\20260223_115248.jpg",
+      "group": "impostor",
+      "identity": "persona_001",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 541.92,
+        "brightness_mean": 167.922,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_001\\20260223_115252.jpg",
+      "group": "impostor",
+      "identity": "persona_001",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 525.922,
+        "brightness_mean": 136.307,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0058
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_001\\20260223_115256.jpg",
+      "group": "impostor",
+      "identity": "persona_001",
+      "ok": false,
+      "issues": [
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 287.226,
+        "brightness_mean": 130.087,
+        "faces_detected": 1,
+        "image_width": 960,
+        "image_height": 1280,
+        "face_width_px": 267,
+        "face_height_px": 267,
+        "face_area_ratio": 0.058,
+        "face_height_ratio": 0.2086,
+        "center_distance_ratio": 0.0834
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_001\\20260223_115259.jpg",
+      "group": "impostor",
+      "identity": "persona_001",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 502.199,
+        "brightness_mean": 125.139,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_001\\20260223_115304.jpg",
+      "group": "impostor",
+      "identity": "persona_001",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 553.023,
+        "brightness_mean": 160.531,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_001\\20260223_115307.jpg",
+      "group": "impostor",
+      "identity": "persona_001",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 523.707,
+        "brightness_mean": 137.676,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0027
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_001\\20260223_115309.jpg",
+      "group": "impostor",
+      "identity": "persona_001",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 437.891,
+        "brightness_mean": 147.138,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_002\\20260223_114257.jpg",
+      "group": "impostor",
+      "identity": "persona_002",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 1724.864,
+        "brightness_mean": 124.528,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0582
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_002\\20260223_114300.jpg",
+      "group": "impostor",
+      "identity": "persona_002",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 2723.71,
+        "brightness_mean": 121.598,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0495
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_002\\20260223_114304.jpg",
+      "group": "impostor",
+      "identity": "persona_002",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 1024.203,
+        "brightness_mean": 132.823,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 267,
+        "face_height_px": 268,
+        "face_area_ratio": 0.1118,
+        "face_height_ratio": 0.335,
+        "center_distance_ratio": 0.0311
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_002\\20260223_114315.jpg",
+      "group": "impostor",
+      "identity": "persona_002",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 2399.099,
+        "brightness_mean": 128.064,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 267,
+        "face_height_px": 268,
+        "face_area_ratio": 0.1118,
+        "face_height_ratio": 0.335,
+        "center_distance_ratio": 0.0311
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_002\\20260223_114319.jpg",
+      "group": "impostor",
+      "identity": "persona_002",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 478.819,
+        "brightness_mean": 134.002,
+        "faces_detected": 1,
+        "image_width": 794,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.234,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0038
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\impostor\\persona_002\\20260223_114321.jpg",
+      "group": "impostor",
+      "identity": "persona_002",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 572.988,
+        "brightness_mean": 151.629,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0058
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\1\\20260223_113147.jpg",
+      "group": "known",
+      "identity": "1",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 327.439,
+        "brightness_mean": 144.754,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\1\\20260223_113151.jpg",
+      "group": "known",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 99.18,
+        "brightness_mean": 130.431,
+        "faces_detected": 0,
+        "image_width": 800,
+        "image_height": 800
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\1\\20260223_113156.jpg",
+      "group": "known",
+      "identity": "1",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 39.139,
+        "brightness_mean": 156.13,
+        "faces_detected": 0,
+        "image_width": 216,
+        "image_height": 216
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\1\\20260223_113206.jpg",
+      "group": "known",
+      "identity": "1",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 473.676,
+        "brightness_mean": 133.602,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\1\\20260223_113310.jpg",
+      "group": "known",
+      "identity": "1",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 335.098,
+        "brightness_mean": 154.201,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\10\\20260223_114942.jpg",
+      "group": "known",
+      "identity": "10",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 869.097,
+        "brightness_mean": 117.52,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\10\\20260223_114952.jpg",
+      "group": "known",
+      "identity": "10",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 348.111,
+        "brightness_mean": 126.328,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0058
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\10\\20260223_114956.jpg",
+      "group": "known",
+      "identity": "10",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 1950.313,
+        "brightness_mean": 133.239,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\10\\20260223_114958.jpg",
+      "group": "known",
+      "identity": "10",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 1209.056,
+        "brightness_mean": 123.498,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\11\\20260223_115026.jpg",
+      "group": "known",
+      "identity": "11",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 584.767,
+        "brightness_mean": 128.405,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\11\\20260223_115030.jpg",
+      "group": "known",
+      "identity": "11",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 296.59,
+        "brightness_mean": 96.311,
+        "faces_detected": 0,
+        "image_width": 212,
+        "image_height": 216
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\11\\20260223_115034.jpg",
+      "group": "known",
+      "identity": "11",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 241.63,
+        "brightness_mean": 115.213,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0058
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\11\\20260223_115037.jpg",
+      "group": "known",
+      "identity": "11",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 514.665,
+        "brightness_mean": 123.328,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\11\\20260223_115054.jpg",
+      "group": "known",
+      "identity": "11",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 360.457,
+        "brightness_mean": 118.125,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0058
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\12\\20260223_115124.jpg",
+      "group": "known",
+      "identity": "12",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 376.129,
+        "brightness_mean": 138.888,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\12\\20260223_115131.jpg",
+      "group": "known",
+      "identity": "12",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 1416.464,
+        "brightness_mean": 134.274,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0058
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\12\\20260223_115134.jpg",
+      "group": "known",
+      "identity": "12",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 86.615,
+        "brightness_mean": 36.421,
+        "faces_detected": 0,
+        "image_width": 161,
+        "image_height": 161
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\12\\20260223_115137.jpg",
+      "group": "known",
+      "identity": "12",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 1893.575,
+        "brightness_mean": 148.477,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\12\\20260223_115148.jpg",
+      "group": "known",
+      "identity": "12",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 1006.099,
+        "brightness_mean": 142.667,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\2\\20260223_113657.jpg",
+      "group": "known",
+      "identity": "2",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 718.198,
+        "brightness_mean": 118.1,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\2\\20260223_113703.jpg",
+      "group": "known",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 165.581,
+        "brightness_mean": 32.615,
+        "faces_detected": 0,
+        "image_width": 242,
+        "image_height": 242
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\2\\20260223_113720.jpg",
+      "group": "known",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 387.762,
+        "brightness_mean": 141.856,
+        "faces_detected": 0,
+        "image_width": 960,
+        "image_height": 1280
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\2\\20260223_113724.jpg",
+      "group": "known",
+      "identity": "2",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 123.829,
+        "brightness_mean": 40.116,
+        "faces_detected": 0,
+        "image_width": 242,
+        "image_height": 242
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\2\\20260223_113729.jpg",
+      "group": "known",
+      "identity": "2",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 624.564,
+        "brightness_mean": 101.509,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\3\\20260223_113914.jpg",
+      "group": "known",
+      "identity": "3",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 786.255,
+        "brightness_mean": 145.27,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\3\\20260223_113923.jpg",
+      "group": "known",
+      "identity": "3",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 174.566,
+        "brightness_mean": 141.11,
+        "faces_detected": 0,
+        "image_width": 372,
+        "image_height": 372
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\3\\20260223_113926.jpg",
+      "group": "known",
+      "identity": "3",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 662.89,
+        "brightness_mean": 102.94,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0987
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\3\\20260223_113931.jpg",
+      "group": "known",
+      "identity": "3",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 967.796,
+        "brightness_mean": 140.005,
+        "faces_detected": 0,
+        "image_width": 800,
+        "image_height": 800
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\3\\20260223_113940.jpg",
+      "group": "known",
+      "identity": "3",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 195.438,
+        "brightness_mean": 123.094,
+        "faces_detected": 0,
+        "image_width": 469,
+        "image_height": 469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\4\\20260223_114037.jpg",
+      "group": "known",
+      "identity": "4",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 606.406,
+        "brightness_mean": 152.308,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0469
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\4\\20260223_114043.jpg",
+      "group": "known",
+      "identity": "4",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 496.796,
+        "brightness_mean": 141.241,
+        "faces_detected": 1,
+        "image_width": 799,
+        "image_height": 799,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2328,
+        "face_height_ratio": 0.4831,
+        "center_distance_ratio": 0.0049
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\4\\20260223_114050.jpg",
+      "group": "known",
+      "identity": "4",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 686.09,
+        "brightness_mean": 156.23,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 267,
+        "face_height_px": 268,
+        "face_area_ratio": 0.1118,
+        "face_height_ratio": 0.335,
+        "center_distance_ratio": 0.0311
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\4\\20260223_114055.jpg",
+      "group": "known",
+      "identity": "4",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 714.955,
+        "brightness_mean": 135.048,
+        "faces_detected": 1,
+        "image_width": 793,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.1624,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0066
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\5\\20260223_114128.jpg",
+      "group": "known",
+      "identity": "5",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 1159.019,
+        "brightness_mean": 131.687,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.2182
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\5\\20260223_114136.jpg",
+      "group": "known",
+      "identity": "5",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 55.995,
+        "brightness_mean": 150.117,
+        "faces_detected": 0,
+        "image_width": 800,
+        "image_height": 800
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\5\\20260223_114139.jpg",
+      "group": "known",
+      "identity": "5",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 1348.104,
+        "brightness_mean": 117.526,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\5\\20260223_114202.jpg",
+      "group": "known",
+      "identity": "5",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 891.883,
+        "brightness_mean": 112.084,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\5\\20260223_114204.jpg",
+      "group": "known",
+      "identity": "5",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 1009.03,
+        "brightness_mean": 98.157,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0058
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\6\\20260223_114416.jpg",
+      "group": "known",
+      "identity": "6",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 384.319,
+        "brightness_mean": 107.155,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\6\\20260223_114425.jpg",
+      "group": "known",
+      "identity": "6",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 236.851,
+        "brightness_mean": 109.162,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 386,
+        "face_area_ratio": 0.2322,
+        "face_height_ratio": 0.4825,
+        "center_distance_ratio": 0.0058
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\6\\20260223_114428.jpg",
+      "group": "known",
+      "identity": "6",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 238.027,
+        "brightness_mean": 89.235,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\6\\20260223_114435.jpg",
+      "group": "known",
+      "identity": "6",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 293.033,
+        "brightness_mean": 99.187,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\7\\20260223_114608.jpg",
+      "group": "known",
+      "identity": "7",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 268.821,
+        "brightness_mean": 98.798,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\7\\20260223_114615.jpg",
+      "group": "known",
+      "identity": "7",
+      "ok": false,
+      "issues": [
+        "rostro_pequeno",
+        "rostro_area_baja"
+      ],
+      "metrics": {
+        "blur_score": 496.599,
+        "brightness_mean": 128.532,
+        "faces_detected": 1,
+        "image_width": 960,
+        "image_height": 1280,
+        "face_width_px": 223,
+        "face_height_px": 223,
+        "face_area_ratio": 0.0405,
+        "face_height_ratio": 0.1742,
+        "center_distance_ratio": 0.0318
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\7\\20260223_114618.jpg",
+      "group": "known",
+      "identity": "7",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 566.008,
+        "brightness_mean": 101.29,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 321,
+        "face_height_px": 321,
+        "face_area_ratio": 0.161,
+        "face_height_ratio": 0.4012,
+        "center_distance_ratio": 0.0027
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\7\\20260223_114622.jpg",
+      "group": "known",
+      "identity": "7",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 377.979,
+        "brightness_mean": 91.756,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\7\\20260223_114632.jpg",
+      "group": "known",
+      "identity": "7",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 272.217,
+        "brightness_mean": 107.751,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\8\\20260223_114653.jpg",
+      "group": "known",
+      "identity": "8",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 450.567,
+        "brightness_mean": 138.962,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\8\\20260223_114656.jpg",
+      "group": "known",
+      "identity": "8",
+      "ok": false,
+      "issues": [
+        "sin_rostro_detectado"
+      ],
+      "metrics": {
+        "blur_score": 96.944,
+        "brightness_mean": 107.963,
+        "faces_detected": 0,
+        "image_width": 192,
+        "image_height": 192
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\8\\20260223_114700.jpg",
+      "group": "known",
+      "identity": "8",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 625.155,
+        "brightness_mean": 135.048,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 462,
+        "face_height_px": 463,
+        "face_area_ratio": 0.3342,
+        "face_height_ratio": 0.5787,
+        "center_distance_ratio": 0.0446
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\8\\20260223_114703.jpg",
+      "group": "known",
+      "identity": "8",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 760.569,
+        "brightness_mean": 138.597,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    },
+    {
+      "path": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5\\known\\8\\20260223_114709.jpg",
+      "group": "known",
+      "identity": "8",
+      "ok": true,
+      "issues": [],
+      "metrics": {
+        "blur_score": 360.742,
+        "brightness_mean": 148.99,
+        "faces_detected": 1,
+        "image_width": 800,
+        "image_height": 800,
+        "face_width_px": 385,
+        "face_height_px": 385,
+        "face_area_ratio": 0.2316,
+        "face_height_ratio": 0.4813,
+        "center_distance_ratio": 0.0496
+      }
+    }
+  ],
+  "retake_csv": "reports\\ia\\recaptura_fotos_20260303_093313.csv"
+}

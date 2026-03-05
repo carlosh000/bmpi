@@ -1,4 +1,4 @@
-# BMPI - Sistema de Asistencia con Reconocimiento Facial
+﻿# BMPI - Sistema de Asistencia con Reconocimiento Facial
 
 Sistema para registrar automáticamente entradas y salidas de empleados mediante reconocimiento facial.
 
@@ -164,6 +164,13 @@ Integración automática en flujo frontend:
 - `POST /api/employees/register-photos` ahora evalúa calidad por foto en backend y devuelve `qualityWarnings` en la respuesta (sin bloquear el guardado).
 - La UI muestra estas advertencias para recapturar solo las fotos con problemas.
 
+Reconocimiento para paso en movimiento (ráfaga):
+
+- `POST /api/attendance/recognize-burst` recibe varios frames y decide por votación + confianza.
+- Soporta `registerAttendance=true` para registrar asistencia automáticamente al confirmar identidad.
+- Diseñado para entrada caminando (evita depender de un solo frame).
+- La UI incluye vista `Reconocimiento entrada` con cámara + ráfaga automática para operación diaria.
+
 Diagnóstico unificado (avance + calidad + evaluación) en un solo comando:
 
 ```powershell
@@ -206,9 +213,11 @@ scripts/verificar_proto_sync.sh
 - `BMPI_ALLOWED_ORIGINS`: lista separada por coma para CORS.
 - `BMPI_OPERATOR_API_KEY`: clave para operaciones de asistencia y registro.
 - `BMPI_ADMIN_API_KEY`: clave para operaciones administrativas (incluye fotos en storage).
+- `BMPI_FRONTEND_API_KEY`: opcional para SSR; si se define se inyecta a frontend como `window.__BMPI_API_KEY__` (si no, usa `BMPI_OPERATOR_API_KEY`).
 - `BMPI_FACE_GRPC_ADDR`: direcciÃ³n del servicio IA (default `localhost:50051`).
 - `BMPI_FACE_GRPC_TLS`: `true/false` para dial gRPC con TLS.
 - `BMPI_FACE_GRPC_CA_CERT`: ruta a CA PEM (si TLS habilitado).
+- `BMPI_TLS_AUTO_CERTS`: `true/false`, valida y regenera certificados gRPC automáticamente al iniciar en `prod` si faltan, vencen pronto o cambia host/SAN.
 - `BMPI_EXTRACT_MODE`: `auto` (default), `batch` o `legacy` para extracción de embeddings.
 - `BMPI_EXTRACT_WORKERS`: número de workers para modo `legacy` (default: núcleos CPU).
 - `BMPI_REGISTER_PHOTO_WORKERS`: número de workers para `POST /api/employees/register-photos` (default: núcleos CPU).
@@ -220,7 +229,19 @@ scripts/verificar_proto_sync.sh
 - `BMPI_QUALITY_BRIGHTNESS_MIN`: brillo mínimo para advertencia de iluminación baja, default `55`.
 - `BMPI_QUALITY_BRIGHTNESS_MAX`: brillo máximo para advertencia de iluminación alta, default `210`.
 - `BMPI_QUALITY_DETAIL_MIN`: umbral de detalle mínimo para advertencia de posible blur, default `2.5`.
+- `BMPI_QUALITY_BLOCKING_ENABLED`: si está en `true`, descarta fotos con problemas de calidad antes de registrar embeddings.
+- `BMPI_QUALITY_BLOCKING_ISSUES`: lista CSV de issues que bloquean (`resolucion_baja,detalle_bajo_posible_blur,iluminacion_baja,iluminacion_alta`).
 - `BMPI_EMBEDDING_SCRIPT`: ruta explícita de `face_server.py` (opcional si autodetección funciona).
+- `BMPI_RECOGNIZE_BURST_MAX_FRAMES`: máximo de frames por solicitud en `recognize-burst` (default `7`).
+- `BMPI_RECOGNIZE_BURST_MIN_VOTES`: votos mínimos para aceptar identidad en `recognize-burst` (default `2`).
+- `BMPI_RECOGNIZE_BURST_MIN_CONFIDENCE`: confianza mínima por frame para entrar a votación (default `0.35`).
+- `BMPI_RECOGNIZE_BURST_RPC_TIMEOUT_MS`: timeout por frame hacia IA en ms para `recognize-burst` (default `7000`).
+
+Nota operativa API key (frontend):
+
+- El frontend envía `X-API-Key` si encuentra valor en:
+  - `window.__BMPI_API_KEY__`, o
+  - `localStorage['bmpi_api_key']` (configurable desde UI).
 
 ### Recomendación de producción (benchmark final)
 

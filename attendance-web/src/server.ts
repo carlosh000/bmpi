@@ -9,6 +9,7 @@ import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 const apiBaseUrl = process.env['BMPI_API_BASE_URL'] || 'http://127.0.0.1:8080';
+const frontendApiKey = (process.env['BMPI_FRONTEND_API_KEY'] || '').trim();
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
@@ -91,9 +92,34 @@ app.use(
 app.use((req, res, next) => {
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then(async (response) => {
+      if (!response) {
+        next();
+        return;
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!frontendApiKey || !contentType.includes('text/html')) {
+        await writeResponseToNodeResponse(response, res);
+        return;
+      }
+
+      const html = await response.text();
+      const safeKey = JSON.stringify(frontendApiKey);
+      const injected = `<script>window.__BMPI_API_KEY__=${safeKey};</script>`;
+      const patchedHtml = html.includes('</head>')
+        ? html.replace('</head>', `${injected}</head>`)
+        : `${injected}${html}`;
+
+      res.status(response.status);
+      response.headers.forEach((value, key) => {
+        if (key === 'content-length' || key === 'transfer-encoding' || key === 'content-encoding') {
+          return;
+        }
+        res.setHeader(key, value);
+      });
+      res.type('html').send(patchedHtml);
+    })
     .catch(next);
 });
 

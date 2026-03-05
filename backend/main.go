@@ -70,6 +70,11 @@ type embeddingInputFile struct {
 	Data string `json:"data"`
 }
 
+type burstFrameInput struct {
+	Name string `json:"name"`
+	Data string `json:"data"`
+}
+
 type embeddingExtractItem struct {
 	Name      string
 	Embedding []float64
@@ -267,6 +272,189 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 		default:
 			http.Error(w, "método no permitido", http.StatusMethodNotAllowed)
 		}
+	})
+
+	mux.HandleFunc("/api/attendance/recognize-burst", func(w http.ResponseWriter, r *http.Request) {
+		setJSONHeaders(w, r)
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		if !requireRole(w, r, roleOperator) {
+			return
+		}
+		if r.Method != http.MethodPost {
+			http.Error(w, "método no permitido", http.StatusMethodNotAllowed)
+			return
+		}
+
+		var payload struct {
+			Frames             []burstFrameInput `json:"frames"`
+			MinVotes           *int              `json:"minVotes,omitempty"`
+			MinConfidence      *float64          `json:"minConfidence,omitempty"`
+			RegisterAttendance bool              `json:"registerAttendance"`
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			http.Error(w, "JSON inválido", http.StatusBadRequest)
+			return
+		}
+
+		maxFrames := resolveBurstRecognizeMaxFrames()
+		if len(payload.Frames) == 0 {
+			http.Error(w, "se requiere al menos 1 frame", http.StatusBadRequest)
+			return
+		}
+		if len(payload.Frames) > maxFrames {
+			http.Error(w, fmt.Sprintf("máximo %d frames por solicitud", maxFrames), http.StatusBadRequest)
+			return
+		}
+
+		minVotes := resolveBurstRecognizeMinVotes()
+		if payload.MinVotes != nil && *payload.MinVotes > 0 {
+			minVotes = *payload.MinVotes
+		}
+
+		minConfidence := resolveBurstRecognizeMinConfidence()
+		if payload.MinConfidence != nil {
+			minConfidence = *payload.MinConfidence
+		}
+		if minConfidence < 0 {
+			minConfidence = 0
+		}
+		if minConfidence > 1 {
+			minConfidence = 1
+		}
+
+		type candidateScore struct {
+			Votes         int
+			ConfidenceSum float64
+			BestConfidence float64
+		}
+
+		candidates := make(map[string]*candidateScore)
+		errors := make([]string, 0)
+		recognizedFrames := 0
+		framesProcessed := 0
+
+		for index, frame := range payload.Frames {
+			imageData, decodeErr := decodeBase64Image(frame.Data)
+			if decodeErr != nil {
+				errors = append(errors, fmt.Sprintf("frame_%d: payload inválido", index+1))
+				continue
+			}
+
+			ctx, cancel := context.WithTimeout(r.Context(), resolveBurstRecognizeRPCTimeout())
+			resp, grpcErr := grpcClient.RecognizeFace(ctx, &pb.RecognizeFaceRequest{Image: imageData})
+			cancel()
+			framesProcessed++
+
+			if grpcErr != nil {
+				errors = append(errors, fmt.Sprintf("frame_%d: %s", index+1, describeRegisterGRPCError(grpcErr)))
+				continue
+			}
+			if !resp.GetRecognized() {
+				continue
+			}
+
+			employeeID := strings.TrimSpace(resp.GetEmployeeId())
+			confidence := float64(resp.GetConfidence())
+			if employeeID == "" || confidence < minConfidence {
+				continue
+			}
+
+			recognizedFrames++
+			entry, ok := candidates[employeeID]
+			if !ok {
+				entry = &candidateScore{}
+				candidates[employeeID] = entry
+			}
+			entry.Votes++
+			entry.ConfidenceSum += confidence
+			if confidence > entry.BestConfidence {
+				entry.BestConfidence = confidence
+			}
+		}
+
+		bestEmployeeID := ""
+		bestVotes := 0
+		bestAvgConfidence := -1.0
+		bestConfidence := -1.0
+		for employeeID, score := range candidates {
+			if score.Votes <= 0 {
+				continue
+			}
+			avg := score.ConfidenceSum / float64(score.Votes)
+			if score.Votes > bestVotes ||
+				(score.Votes == bestVotes && avg > bestAvgConfidence) ||
+				(score.Votes == bestVotes && avg == bestAvgConfidence && score.BestConfidence > bestConfidence) {
+				bestEmployeeID = employeeID
+				bestVotes = score.Votes
+				bestAvgConfidence = avg
+				bestConfidence = score.BestConfidence
+			}
+		}
+
+		if bestEmployeeID == "" || bestVotes < minVotes {
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"recognized":       false,
+				"employee_id":      "",
+				"name":             "",
+				"confidence":       0,
+				"votes":            bestVotes,
+				"minVotes":         minVotes,
+				"framesProcessed":  framesProcessed,
+				"recognizedFrames": recognizedFrames,
+				"errors":           errors,
+			})
+			return
+		}
+
+		employeeName := strings.TrimSpace(resolveEmployeeName(r.Context(), db, grpcClient, bestEmployeeID))
+		if employeeName == "" {
+			employeeName = bestEmployeeID
+		}
+
+		attendanceLogged := false
+		attendanceMessage := ""
+		if payload.RegisterAttendance {
+			if db != nil {
+				_, success, message, logErr := logAttendanceInDB(r.Context(), db, bestEmployeeID, employeeName, nil)
+				if logErr != nil {
+					attendanceMessage = "no se pudo registrar asistencia"
+				} else if success {
+					attendanceLogged = true
+					attendanceMessage = "asistencia registrada"
+				} else {
+					attendanceMessage = message
+				}
+			} else {
+				ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+				resp, logErr := grpcClient.LogAttendance(ctx, &pb.AttendanceRequest{EmployeeId: bestEmployeeID})
+				cancel()
+				if logErr != nil {
+					attendanceMessage = "no se pudo registrar asistencia"
+				} else {
+					attendanceLogged = resp.GetSuccess()
+					attendanceMessage = strings.TrimSpace(resp.GetMessage())
+				}
+			}
+		}
+
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"recognized":        true,
+			"employee_id":       bestEmployeeID,
+			"name":              employeeName,
+			"confidence":        bestAvgConfidence,
+			"bestFrameConfidence": bestConfidence,
+			"votes":             bestVotes,
+			"minVotes":          minVotes,
+			"framesProcessed":   framesProcessed,
+			"recognizedFrames":  recognizedFrames,
+			"attendanceLogged":  attendanceLogged,
+			"attendanceMessage": attendanceMessage,
+			"errors":            errors,
+		})
 	})
 
 	mux.HandleFunc("/api/attendance/", func(w http.ResponseWriter, r *http.Request) {
@@ -595,6 +783,8 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 		rpcTimeout := resolveRegisterPhotoRPCTimeout()
 		retryCount := resolveRegisterPhotoRetryCount()
 		retryBackoff := resolveRegisterPhotoRetryBackoff()
+		qualityBlockingEnabled := resolveQualityBlockingEnabled()
+		qualityBlockingIssues := resolveQualityBlockingIssues()
 		jobs := make(chan registerPhotoJob)
 		out := make(chan registerPhotoResult, len(payload.Files))
 
@@ -613,6 +803,18 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 					qualityIssues, qualityErr := evaluatePhotoQuality(imageData)
 					if qualityErr != nil {
 						qualityIssues = append(qualityIssues, "no_se_pudo_validar_calidad")
+					}
+					if qualityBlockingEnabled {
+						blockIssues := intersectIssues(qualityIssues, qualityBlockingIssues)
+						if len(blockIssues) > 0 {
+							out <- registerPhotoResult{
+								index:         job.index,
+								name:          job.name,
+								errMsg:        fmt.Sprintf("%s: descartada por calidad (%s)", job.name, strings.Join(blockIssues, ",")),
+								qualityIssues: qualityIssues,
+							}
+							continue
+						}
 					}
 
 					resp, grpcErr := registerEmployeeWithRetry(
@@ -771,6 +973,57 @@ func resolveRegisterPhotoRPCTimeout() time.Duration {
 	return time.Duration(parsed) * time.Millisecond
 }
 
+func resolveBurstRecognizeMaxFrames() int {
+	raw := strings.TrimSpace(os.Getenv("BMPI_RECOGNIZE_BURST_MAX_FRAMES"))
+	if raw == "" {
+		return 7
+	}
+	parsed, err := strconv.Atoi(raw)
+	if err != nil || parsed < 1 {
+		return 7
+	}
+	if parsed > 20 {
+		return 20
+	}
+	return parsed
+}
+
+func resolveBurstRecognizeMinVotes() int {
+	raw := strings.TrimSpace(os.Getenv("BMPI_RECOGNIZE_BURST_MIN_VOTES"))
+	if raw == "" {
+		return 2
+	}
+	parsed, err := strconv.Atoi(raw)
+	if err != nil || parsed < 1 {
+		return 2
+	}
+	return parsed
+}
+
+func resolveBurstRecognizeMinConfidence() float64 {
+	raw := strings.TrimSpace(os.Getenv("BMPI_RECOGNIZE_BURST_MIN_CONFIDENCE"))
+	if raw == "" {
+		return 0.35
+	}
+	parsed, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		return 0.35
+	}
+	return parsed
+}
+
+func resolveBurstRecognizeRPCTimeout() time.Duration {
+	raw := strings.TrimSpace(os.Getenv("BMPI_RECOGNIZE_BURST_RPC_TIMEOUT_MS"))
+	if raw == "" {
+		return 7000 * time.Millisecond
+	}
+	parsed, err := strconv.Atoi(raw)
+	if err != nil || parsed < 1000 {
+		return 7000 * time.Millisecond
+	}
+	return time.Duration(parsed) * time.Millisecond
+}
+
 func resolveRegisterPhotoRetryCount() int {
 	defaultRetries := 1
 	raw := strings.TrimSpace(os.Getenv("BMPI_REGISTER_PHOTO_RETRIES"))
@@ -876,6 +1129,37 @@ func describeRegisterGRPCError(grpcErr error) string {
 	}
 
 	return errText
+}
+
+func resolveEmployeeName(ctx context.Context, db *sql.DB, grpcClient pb.FaceRecognitionServiceClient, employeeID string) string {
+	employeeID = strings.TrimSpace(employeeID)
+	if employeeID == "" {
+		return ""
+	}
+
+	if db != nil {
+		queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		defer cancel()
+		var name string
+		err := db.QueryRowContext(queryCtx, `SELECT name FROM employees WHERE employee_id = $1`, employeeID).Scan(&name)
+		if err == nil {
+			return strings.TrimSpace(name)
+		}
+	}
+
+	listCtx, cancel := context.WithTimeout(ctx, 4*time.Second)
+	defer cancel()
+	employees, err := grpcClient.ListEmployees(listCtx, &pb.Empty{})
+	if err != nil {
+		return ""
+	}
+
+	for _, employee := range employees.GetEmployees() {
+		if strings.TrimSpace(employee.GetEmployeeId()) == employeeID {
+			return strings.TrimSpace(employee.GetName())
+		}
+	}
+	return ""
 }
 
 func normalizeExtractionMode(raw string) string {
@@ -1325,6 +1609,44 @@ func resolvePhotoQualityDetailMin() float64 {
 		return 2.5
 	}
 	return parsed
+}
+
+func resolveQualityBlockingEnabled() bool {
+	raw := strings.TrimSpace(os.Getenv("BMPI_QUALITY_BLOCKING_ENABLED"))
+	if raw == "" {
+		return false
+	}
+	return strings.EqualFold(raw, "1") || strings.EqualFold(raw, "true") || strings.EqualFold(raw, "yes")
+}
+
+func resolveQualityBlockingIssues() map[string]struct{} {
+	raw := strings.TrimSpace(os.Getenv("BMPI_QUALITY_BLOCKING_ISSUES"))
+	if raw == "" {
+		raw = "resolucion_baja,detalle_bajo_posible_blur,iluminacion_baja,iluminacion_alta"
+	}
+
+	values := map[string]struct{}{}
+	for _, item := range strings.Split(raw, ",") {
+		key := strings.TrimSpace(item)
+		if key == "" {
+			continue
+		}
+		values[key] = struct{}{}
+	}
+	return values
+}
+
+func intersectIssues(issues []string, allow map[string]struct{}) []string {
+	if len(issues) == 0 || len(allow) == 0 {
+		return nil
+	}
+	found := make([]string, 0, len(issues))
+	for _, issue := range issues {
+		if _, ok := allow[issue]; ok {
+			found = append(found, issue)
+		}
+	}
+	return found
 }
 
 func evaluatePhotoQuality(imageData []byte) ([]string, error) {

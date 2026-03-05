@@ -20,6 +20,6 @@ describe('App', () => {
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h2')?.textContent).toContain('Gestión de Asistencia y Embeddings');
+    expect(compiled.querySelector('h2')?.textContent).toContain('Registro de Asistencia de la empresa BMPI');
   });
 });

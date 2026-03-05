@@ -19,6 +19,7 @@ __pycache__/
 scripts/.env.dev
 scripts/.env.production
 scripts/.bmpi-runtime.json
+scripts/certs/
 
 # Runtime logs
 backend/stdout.txt

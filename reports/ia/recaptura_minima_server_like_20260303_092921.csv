@@ -1,0 +1,6 @@
+grupo,identidad,archivo,path,status
+known,10,20260223_114948.jpg,known/10/20260223_114948.jpg,FAIL
+known,4,20260223_114046.jpg,known/4/20260223_114046.jpg,FAIL
+known,6,20260223_114421.jpg,known/6/20260223_114421.jpg,FAIL
+genuine,12,20260223_115151.jpg,genuine/12/20260223_115151.jpg,FAIL
+genuine,5,20260223_114208.jpg,genuine/5/20260223_114208.jpg,FAIL

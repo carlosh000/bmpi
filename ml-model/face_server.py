@@ -3,6 +3,7 @@
 
 from concurrent import futures
 from datetime import datetime, timedelta
+import io
 import json
 import os
 import pickle
@@ -16,6 +17,7 @@ import face_recognition
 import grpc
 import numpy as np
 import psycopg2
+from PIL import Image, ImageOps
 from psycopg2 import pool
 
 import pb.face_recognition_pb2 as pb2
@@ -35,6 +37,8 @@ FACE_ROTATION_ANGLES_RAW = os.getenv("BMPI_FACE_ROTATION_ANGLES", "-12,12,-20,20
 FACE_ENCODING_MODEL = os.getenv("BMPI_FACE_ENCODING_MODEL", "small")
 FACE_ENCODING_JITTERS_REGISTER = max(1, int(os.getenv("BMPI_FACE_ENCODING_JITTERS_REGISTER", "2")))
 FACE_ENCODING_JITTERS_RECOGNIZE = max(1, int(os.getenv("BMPI_FACE_ENCODING_JITTERS_RECOGNIZE", "1")))
+RECOGNIZE_MAX_CANDIDATES = max(1, int(os.getenv("BMPI_RECOGNIZE_MAX_CANDIDATES", "10")))
+RECOGNIZE_LOCATIONS_PER_VARIANT = max(1, int(os.getenv("BMPI_RECOGNIZE_LOCATIONS_PER_VARIANT", "3")))
 MAX_PROTOTYPES_PER_EMPLOYEE = max(1, int(os.getenv("BMPI_MAX_PROTOTYPES_PER_EMPLOYEE", "6")))
 REFRESH_SECONDS = int(os.getenv("BMPI_EMBEDDINGS_REFRESH_SECONDS", "30"))
 GRPC_WORKERS = int(os.getenv("BMPI_GRPC_WORKERS", "10"))
@@ -241,7 +245,7 @@ def extract_candidate_encodings(rgb_image, num_jitters=1, max_candidates=3):
             reverse=True,
         )
 
-        for location in ordered_locations[:2]:
+        for location in ordered_locations[:RECOGNIZE_LOCATIONS_PER_VARIANT]:
             encodings = face_recognition.face_encodings(
                 variant_rgb,
                 [location],
@@ -251,10 +255,31 @@ def extract_candidate_encodings(rgb_image, num_jitters=1, max_candidates=3):
             if not encodings:
                 continue
             candidates.append(encodings[0])
-            if len(candidates) >= max_candidates:
-                return candidates
 
-    return candidates
+    return select_diverse_candidates(candidates, max_candidates)
+
+
+def select_diverse_candidates(candidates, max_candidates):
+    if len(candidates) <= max_candidates:
+        return candidates
+
+    selected = [np.array(candidates[0], dtype=np.float64)]
+    remaining = [np.array(item, dtype=np.float64) for item in candidates[1:]]
+
+    while remaining and len(selected) < max_candidates:
+        best_index = 0
+        best_score = -1.0
+
+        for idx, candidate in enumerate(remaining):
+            distances = [float(np.linalg.norm(candidate - chosen)) for chosen in selected]
+            score = min(distances) if distances else 0.0
+            if score > best_score:
+                best_score = score
+                best_index = idx
+
+        selected.append(remaining.pop(best_index))
+
+    return selected
 
 
 def decode_embedding_payload(raw_embedding):
@@ -411,13 +436,40 @@ def ensure_schema(pool_conn):
 
 def extract_face_embedding_from_path(image_path):
     try:
-        image = face_recognition.load_image_file(image_path)
+        image = load_image_rgb_auto_oriented(image_path)
         encoding = extract_primary_face_encoding(image, num_jitters=FACE_ENCODING_JITTERS_REGISTER)
         if encoding is None:
             return None
         return encoding.tolist()
     except Exception:
         return None
+
+
+def load_image_rgb_auto_oriented(image_path):
+    try:
+        with Image.open(image_path) as pil_image:
+            normalized = ImageOps.exif_transpose(pil_image).convert("RGB")
+            return np.array(normalized)
+    except Exception:
+        return face_recognition.load_image_file(image_path)
+
+
+def decode_request_image_bgr_auto_oriented(image_bytes):
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as pil_image:
+            normalized = ImageOps.exif_transpose(pil_image).convert("RGB")
+            rgb_np = np.array(normalized)
+            return cv2.cvtColor(rgb_np, cv2.COLOR_RGB2BGR)
+    except Exception:
+        image = np.frombuffer(image_bytes, np.uint8)
+        return cv2.imdecode(image, cv2.IMREAD_COLOR)
+
+
+def encode_bgr_to_jpeg_bytes(frame, quality=92):
+    ok, encoded = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
+    if not ok:
+        return None
+    return encoded.tobytes()
 
 
 def extract_face_embeddings_from_paths(image_paths):
@@ -532,8 +584,7 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
 
     def RegisterEmployee(self, request, context):
         try:
-            image = np.frombuffer(request.image, np.uint8)
-            frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
+            frame = decode_request_image_bgr_auto_oriented(request.image)
 
             if frame is None:
                 return pb2.RegisterEmployeeResponse(success=False, message="Invalid image")
@@ -546,6 +597,7 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
                 return pb2.RegisterEmployeeResponse(success=False, message="No face detected")
 
             new_embedding = np.array(encoding, dtype=np.float64)
+            normalized_photo_bytes = encode_bgr_to_jpeg_bytes(frame) or request.image
 
             pool_conn = get_connection_pool()
             conn = pool_conn.getconn()
@@ -579,7 +631,7 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
                             (
                                 request.name,
                                 pickle.dumps(payload),
-                                request.image,
+                                normalized_photo_bytes,
                                 samples_count + 1,
                                 request.employee_id,
                             ),
@@ -589,7 +641,7 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
                         payload = build_embedding_payload([new_embedding])
                         cur.execute(
                             "INSERT INTO employees (name, employee_id, embedding, photo, samples_count) VALUES (%s,%s,%s,%s,%s)",
-                            (request.name, request.employee_id, pickle.dumps(payload), request.image, 1),
+                            (request.name, request.employee_id, pickle.dumps(payload), normalized_photo_bytes, 1),
                         )
                         message = "Employee registered"
 
@@ -616,8 +668,7 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
             if len(known_embeddings) == 0:
                 return pb2.RecognizeFaceResponse(recognized=False)
 
-            image = np.frombuffer(request.image, np.uint8)
-            frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
+            frame = decode_request_image_bgr_auto_oriented(request.image)
             if frame is None:
                 return pb2.RecognizeFaceResponse(recognized=False)
 
@@ -626,7 +677,7 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
                 encodings = extract_candidate_encodings(
                     rgb_frame,
                     num_jitters=FACE_ENCODING_JITTERS_RECOGNIZE,
-                    max_candidates=4,
+                    max_candidates=RECOGNIZE_MAX_CANDIDATES,
                 )
                 if len(encodings) == 0:
                     return pb2.RecognizeFaceResponse(recognized=False)

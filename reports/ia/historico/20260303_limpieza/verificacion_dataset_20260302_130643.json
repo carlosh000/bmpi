@@ -1,0 +1,262 @@
+{
+  "generated_at": "2026-03-02T13:06:43",
+  "dataset": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1",
+  "summary": {
+    "rows_total": 28,
+    "rows_complete": 13,
+    "rows_pending": 15,
+    "images_expected_total": 215,
+    "images_found_total": 96,
+    "groups": {
+      "known": {
+        "rows_total": 13,
+        "rows_complete": 13,
+        "rows_pending": 0,
+        "images_expected_total": 65,
+        "images_found_total": 65
+      },
+      "genuine": {
+        "rows_total": 13,
+        "rows_complete": 0,
+        "rows_pending": 13,
+        "images_expected_total": 130,
+        "images_found_total": 31
+      },
+      "impostor": {
+        "rows_total": 2,
+        "rows_complete": 0,
+        "rows_pending": 2,
+        "images_expected_total": 20,
+        "images_found_total": 0
+      }
+    },
+    "completion_rate": 0.464286
+  },
+  "updated_rows": 13,
+  "details": [
+    {
+      "grupo": "known",
+      "identidad": "1",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "1",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 3,
+      "faltantes": 7,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "2",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "2",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 2,
+      "faltantes": 8,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "3",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "3",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 2,
+      "faltantes": 8,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "4",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "4",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 2,
+      "faltantes": 8,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "5",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "5",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 2,
+      "faltantes": 8,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "6",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "6",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 3,
+      "faltantes": 7,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "7",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "7",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 4,
+      "faltantes": 6,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "8",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "8",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 4,
+      "faltantes": 6,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "10",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "10",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "11",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "11",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 2,
+      "faltantes": 8,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "12",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "12",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 4,
+      "faltantes": 6,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "13",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "13",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 2,
+      "faltantes": 8,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "known",
+      "identidad": "14",
+      "fotos_objetivo": 5,
+      "fotos_encontradas": 5,
+      "faltantes": 0,
+      "estado_sugerido": "completo"
+    },
+    {
+      "grupo": "genuine",
+      "identidad": "14",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 1,
+      "faltantes": 9,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_001",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    },
+    {
+      "grupo": "impostor",
+      "identidad": "persona_002",
+      "fotos_objetivo": 10,
+      "fotos_encontradas": 0,
+      "faltantes": 10,
+      "estado_sugerido": "pendiente"
+    }
+  ]
+}

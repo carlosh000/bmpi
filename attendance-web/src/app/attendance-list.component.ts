@@ -1,6 +1,13 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
-import { AttendanceService, AttendanceRecord, EmbeddingResult, EmployeeStorageRecord, RegisterPhotosResponse } from './attendance.service';
+import {
+  AttendanceService,
+  AttendanceRecord,
+  EmbeddingResult,
+  EmployeeStorageRecord,
+  RecognizeBurstResponse,
+  RegisterPhotosResponse,
+} from './attendance.service';
 import { finalize, firstValueFrom } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -31,6 +38,30 @@ interface EmbeddingAssignment {
         <div class="toolbar section-toolbar">
           <button type="button" class="section-toggle" (click)="openManualView()">Registro manual</button>
           <button type="button" class="section-toggle" (click)="openEmbeddingView()">Extraer embeddings</button>
+          <button type="button" class="section-toggle" (click)="openRecognitionView()">Reconocimiento entrada</button>
+          <button type="button" class="section-toggle" (click)="toggleApiKeyPanel()">
+            {{ showApiKeyPanel ? 'Ocultar API key' : 'Config API key' }}
+          </button>
+        </div>
+
+        <div class="panel" *ngIf="showApiKeyPanel">
+          <h4>Configuración de API key</h4>
+          <div class="form-grid">
+            <label>
+              API key operador/admin
+              <input
+                type="password"
+                [value]="apiKeyInput"
+                (input)="apiKeyInput = readInputValue($event)"
+                placeholder="Pega la API key de backend"
+              />
+            </label>
+            <div class="toolbar compact">
+              <button type="button" (click)="saveApiKey()">Guardar key</button>
+              <button type="button" class="danger" (click)="clearApiKey()">Limpiar key</button>
+            </div>
+          </div>
+          <p class="status">{{ apiKeyStatus }}</p>
         </div>
 
         <div class="toolbar compact">
@@ -235,6 +266,48 @@ interface EmbeddingAssignment {
         </div>
 
       </section>
+
+      <section class="panel" *ngIf="activeView === 'recognition'">
+        <h3>Reconocimiento en entrada (ráfaga)</h3>
+        <div class="toolbar compact">
+          <button type="button" class="section-toggle" (click)="backToHome()">Volver</button>
+          <button type="button" [disabled]="isCameraRunning" (click)="startRecognitionCamera()">Iniciar cámara</button>
+          <button type="button" class="danger" [disabled]="!isCameraRunning" (click)="stopRecognitionCamera()">Detener cámara</button>
+          <button type="button" [disabled]="!canCaptureBurstNow()" (click)="captureBurstNow()">Capturar ahora</button>
+        </div>
+
+        <div class="toolbar compact">
+          <label>
+            Frames por ráfaga
+            <input type="number" min="3" max="7" [value]="burstFrameCount" (input)="burstFrameCount = clampBurstFrameCount(readInputNumber($event))" />
+          </label>
+          <label>
+            Intervalo entre frames (ms)
+            <input type="number" min="120" max="600" [value]="burstFrameDelayMs" (input)="burstFrameDelayMs = clampBurstFrameDelayMs(readInputNumber($event))" />
+          </label>
+          <label>
+            Votos mínimos
+            <input type="number" min="1" max="5" [value]="burstMinVotes" (input)="burstMinVotes = clampBurstMinVotes(readInputNumber($event))" />
+          </label>
+          <label>
+            Confianza mínima
+            <input type="number" min="0.20" max="0.95" step="0.01" [value]="burstMinConfidence" (input)="burstMinConfidence = clampBurstMinConfidence(readInputNumber($event))" />
+          </label>
+          <label>
+            <input type="checkbox" [checked]="autoRecognitionEnabled" (change)="onToggleAutoRecognition($event)" />
+            Auto (escaneo continuo)
+          </label>
+        </div>
+
+        <div *ngIf="message" class="toast toast-success">{{ message }}</div>
+        <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
+        <p *ngIf="recognitionStatus" class="status">{{ recognitionStatus }}</p>
+
+        <div class="recognition-stage">
+          <video #recognitionVideo autoplay muted playsinline></video>
+          <canvas #recognitionCanvas class="hidden-input"></canvas>
+        </div>
+      </section>
     </section>
   `,
   styles: [
@@ -280,6 +353,8 @@ interface EmbeddingAssignment {
       .embedding-results li { align-items: baseline; display: flex; gap: 0.75rem; padding: 0.25rem 0; }
       .embedding-results span { color: #475569; font-family: 'Courier New', monospace; }
       .mini-table { margin-top: 1rem; }
+      .recognition-stage { margin-top: 0.8rem; border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden; max-width: 560px; background: #0f172a; }
+      .recognition-stage video { display: block; width: 100%; height: auto; }
     `,
   ],
 })
@@ -289,6 +364,8 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   @ViewChild('photoFolderInput') photoFolderInput?: ElementRef<HTMLInputElement>;
   @ViewChild('excelImportInput') excelImportInput?: ElementRef<HTMLInputElement>;
   @ViewChild('attendanceDateInput') attendanceDateInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('recognitionVideo') recognitionVideo?: ElementRef<HTMLVideoElement>;
+  @ViewChild('recognitionCanvas') recognitionCanvas?: ElementRef<HTMLCanvasElement>;
 
   attendance: AttendanceRecord[] = [];
   selectedAttendanceDate = '';
@@ -307,6 +384,19 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   embeddingFinalStatus = '';
   retryFailedPhotosQueue: File[] = [];
   private isRetryFailedFlow = false;
+  recognitionStatus = '';
+  burstFrameCount = 4;
+  burstFrameDelayMs = 220;
+  burstMinVotes = 2;
+  burstMinConfidence = 0.35;
+  autoRecognitionEnabled = true;
+  isCameraRunning = false;
+  isRecognizingBurst = false;
+  showApiKeyPanel = false;
+  apiKeyInput = '';
+  apiKeyStatus = 'API key no configurada.';
+  private recognitionStream: MediaStream | null = null;
+  private autoRecognitionTimer: ReturnType<typeof setInterval> | null = null;
 
   isExtracting = false;
   isSavingEmbeddings = false;
@@ -340,7 +430,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
 
   isEditing = false;
   isCreating = false;
-  activeView: 'home' | 'manual' | 'embedding' = 'home';
+  activeView: 'home' | 'manual' | 'embedding' | 'recognition' = 'home';
   editingRecord: AttendanceRecord = this.emptyRecord();
   editingOriginalRowId: number | null = null;
 
@@ -364,6 +454,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       clearTimeout(this.embeddingWatchdogTimer);
       this.embeddingWatchdogTimer = null;
     }
+    this.stopRecognitionCamera();
   }
 
   ngOnInit(): void {
@@ -372,6 +463,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       this.loadAttendance();
       this.loadEmployeesFromDb();
       this.loadEmployeeStorage();
+      this.refreshApiKeyStatus();
     }
   }
 
@@ -468,9 +560,296 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.activeView = 'embedding';
   }
 
+  openRecognitionView(): void {
+    this.errorMessage = '';
+    this.activeView = 'recognition';
+    this.message = '';
+    this.recognitionStatus = 'Listo para iniciar cámara.';
+  }
+
+  toggleApiKeyPanel(): void {
+    this.showApiKeyPanel = !this.showApiKeyPanel;
+    if (this.showApiKeyPanel) {
+      this.refreshApiKeyStatus();
+    }
+  }
+
+  saveApiKey(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    const key = this.apiKeyInput.trim();
+    if (!key) {
+      this.errorMessage = 'Ingresa una API key válida.';
+      return;
+    }
+    try {
+      window.localStorage.setItem('bmpi_api_key', key);
+      this.apiKeyInput = '';
+      this.errorMessage = '';
+      this.message = 'API key guardada.';
+      this.refreshApiKeyStatus();
+    } catch {
+      this.errorMessage = 'No se pudo guardar API key en el navegador.';
+    }
+  }
+
+  clearApiKey(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    try {
+      window.localStorage.removeItem('bmpi_api_key');
+      this.apiKeyInput = '';
+      this.message = 'API key eliminada.';
+      this.refreshApiKeyStatus();
+    } catch {
+      this.errorMessage = 'No se pudo limpiar API key.';
+    }
+  }
+
+  private refreshApiKeyStatus(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      this.apiKeyStatus = 'API key no disponible en este entorno.';
+      return;
+    }
+    const key = window.localStorage.getItem('bmpi_api_key')?.trim() ?? '';
+    if (!key) {
+      this.apiKeyStatus = 'API key no configurada.';
+      return;
+    }
+    const tail = key.length >= 4 ? key.slice(-4) : key;
+    this.apiKeyStatus = `API key configurada (termina en ${tail}).`;
+  }
+
   backToHome(): void {
     this.errorMessage = '';
+    this.stopRecognitionCamera();
     this.activeView = 'home';
+  }
+
+  async startRecognitionCamera(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId) || this.isCameraRunning) {
+      return;
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      this.errorMessage = 'Este navegador no soporta acceso a cámara.';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.message = '';
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        },
+        audio: false,
+      });
+
+      this.recognitionStream = stream;
+      const video = this.recognitionVideo?.nativeElement;
+      if (!video) {
+        this.errorMessage = 'No se pudo inicializar el visor de cámara.';
+        this.stopRecognitionCamera();
+        return;
+      }
+
+      video.srcObject = stream;
+      await video.play();
+      this.isCameraRunning = true;
+      this.recognitionStatus = 'Cámara activa. Esperando rostro...';
+      this.configureAutoRecognitionLoop();
+    } catch {
+      this.errorMessage = 'No se pudo abrir la cámara. Revisa permisos.';
+      this.stopRecognitionCamera();
+    }
+  }
+
+  stopRecognitionCamera(): void {
+    if (this.autoRecognitionTimer) {
+      clearInterval(this.autoRecognitionTimer);
+      this.autoRecognitionTimer = null;
+    }
+
+    if (this.recognitionStream) {
+      this.recognitionStream.getTracks().forEach((track) => track.stop());
+      this.recognitionStream = null;
+    }
+
+    const video = this.recognitionVideo?.nativeElement;
+    if (video) {
+      video.pause();
+      video.srcObject = null;
+    }
+
+    this.isCameraRunning = false;
+    this.isRecognizingBurst = false;
+    if (this.activeView === 'recognition') {
+      this.recognitionStatus = 'Cámara detenida.';
+    }
+  }
+
+  onToggleAutoRecognition(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.autoRecognitionEnabled = target.checked;
+    this.configureAutoRecognitionLoop();
+  }
+
+  canCaptureBurstNow(): boolean {
+    return this.isCameraRunning && !this.isRecognizingBurst;
+  }
+
+  async captureBurstNow(): Promise<void> {
+    await this.captureBurstAndRecognize();
+  }
+
+  private configureAutoRecognitionLoop(): void {
+    if (this.autoRecognitionTimer) {
+      clearInterval(this.autoRecognitionTimer);
+      this.autoRecognitionTimer = null;
+    }
+
+    if (!this.isCameraRunning || !this.autoRecognitionEnabled) {
+      return;
+    }
+
+    this.autoRecognitionTimer = setInterval(() => {
+      void this.captureBurstAndRecognize();
+    }, 2200);
+  }
+
+  private async captureBurstAndRecognize(): Promise<void> {
+    if (!this.isCameraRunning || this.isRecognizingBurst) {
+      return;
+    }
+
+    const video = this.recognitionVideo?.nativeElement;
+    const canvas = this.recognitionCanvas?.nativeElement;
+    if (!video || !canvas) {
+      return;
+    }
+    if (video.videoWidth <= 0 || video.videoHeight <= 0) {
+      return;
+    }
+
+    this.isRecognizingBurst = true;
+    this.recognitionStatus = 'Analizando ráfaga...';
+
+    try {
+      const frames = await this.captureFramesFromVideo(video, canvas, this.burstFrameCount, this.burstFrameDelayMs);
+      if (frames.length === 0) {
+        this.recognitionStatus = 'No se pudo capturar frames.';
+        return;
+      }
+
+      const response = await firstValueFrom(
+        this.attendanceService.recognizeBurst({
+          frames,
+          minVotes: this.burstMinVotes,
+          minConfidence: this.burstMinConfidence,
+          registerAttendance: true,
+        }),
+      );
+
+      this.applyBurstRecognitionResult(response);
+      if (response.attendanceLogged) {
+        this.loadAttendance();
+      }
+    } catch {
+      this.recognitionStatus = 'Error en reconocimiento. Reintentando...';
+    } finally {
+      this.isRecognizingBurst = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private async captureFramesFromVideo(
+    video: HTMLVideoElement,
+    canvas: HTMLCanvasElement,
+    frameCount: number,
+    delayMs: number,
+  ): Promise<{ name: string; data: string }[]> {
+    const safeCount = this.clampBurstFrameCount(frameCount);
+    const safeDelay = this.clampBurstFrameDelayMs(delayMs);
+    const frames: { name: string; data: string }[] = [];
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return frames;
+    }
+
+    for (let index = 0; index < safeCount; index++) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const data = canvas.toDataURL('image/jpeg', this.uploadJpegQuality);
+      frames.push({
+        name: `frame_${index + 1}.jpg`,
+        data,
+      });
+      if (index < safeCount - 1) {
+        await this.delay(safeDelay);
+      }
+    }
+
+    return frames;
+  }
+
+  private applyBurstRecognitionResult(response: RecognizeBurstResponse): void {
+    if (response.recognized) {
+      const confidencePct = Math.round((response.confidence || 0) * 100);
+      const attendanceText = response.attendanceLogged ? 'asistencia registrada' : response.attendanceMessage || 'sin registro';
+      this.recognitionStatus = `Reconocido: ${response.name || response.employee_id} · conf ${confidencePct}% · votos ${response.votes}/${response.minVotes} · ${attendanceText}`;
+      this.errorMessage = '';
+      return;
+    }
+
+    if (response.errors && response.errors.length > 0) {
+      this.recognitionStatus = `Sin reconocimiento (${response.framesProcessed} frames). ${response.errors[0]}`;
+      return;
+    }
+
+    this.recognitionStatus = `Sin reconocimiento (${response.framesProcessed} frames).`;
+  }
+
+  clampBurstFrameCount(value: number): number {
+    if (!Number.isFinite(value)) {
+      return 4;
+    }
+    return Math.max(3, Math.min(7, Math.round(value)));
+  }
+
+  clampBurstFrameDelayMs(value: number): number {
+    if (!Number.isFinite(value)) {
+      return 220;
+    }
+    return Math.max(120, Math.min(600, Math.round(value)));
+  }
+
+  clampBurstMinVotes(value: number): number {
+    if (!Number.isFinite(value)) {
+      return 2;
+    }
+    return Math.max(1, Math.min(5, Math.round(value)));
+  }
+
+  clampBurstMinConfidence(value: number): number {
+    if (!Number.isFinite(value)) {
+      return 0.35;
+    }
+    const clamped = Math.max(0.2, Math.min(0.95, value));
+    return Number(clamped.toFixed(2));
+  }
+
+  private async delay(ms: number): Promise<void> {
+    await new Promise<void>((resolve) => {
+      setTimeout(() => resolve(), ms);
+    });
   }
 
   onPhotoFolderSelected(event: Event): void {

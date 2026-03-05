@@ -1,0 +1,301 @@
+{
+  "generated_at": "2026-03-03T09:35:18",
+  "dataset": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260303_sin5",
+  "model": "hog",
+  "known": {
+    "employees": 11,
+    "parse": {
+      "images_total": 52,
+      "images_with_face": 40,
+      "images_without_face": 12
+    }
+  },
+  "counts": {
+    "genuine_images": 26,
+    "impostor_images": 13
+  },
+  "results": [
+    {
+      "threshold": 0.35,
+      "frr": 0.461538,
+      "far": 0.0,
+      "detection_rate": 0.74359,
+      "latency_avg_ms": 623.19,
+      "latency_p95_ms": 748.77,
+      "genuine": {
+        "total": 26,
+        "detected": 16,
+        "accepted": 14,
+        "correct": 14,
+        "rejected": 2,
+        "wrong_identity": 0,
+        "detection_rate": 0.615385,
+        "latency": {
+          "count": 26,
+          "avg_ms": 492.02,
+          "p95_ms": 748.77,
+          "max_ms": 754.58
+        }
+      },
+      "impostor": {
+        "total": 13,
+        "detected": 13,
+        "accepted": 0,
+        "correct": 0,
+        "rejected": 13,
+        "wrong_identity": 0,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 13,
+          "avg_ms": 754.36,
+          "p95_ms": 743.31,
+          "max_ms": 1037.92
+        }
+      }
+    },
+    {
+      "threshold": 0.4,
+      "frr": 0.384615,
+      "far": 0.0,
+      "detection_rate": 0.74359,
+      "latency_avg_ms": 617.84,
+      "latency_p95_ms": 745.4,
+      "genuine": {
+        "total": 26,
+        "detected": 16,
+        "accepted": 16,
+        "correct": 16,
+        "rejected": 0,
+        "wrong_identity": 0,
+        "detection_rate": 0.615385,
+        "latency": {
+          "count": 26,
+          "avg_ms": 481.9,
+          "p95_ms": 734.77,
+          "max_ms": 746.96
+        }
+      },
+      "impostor": {
+        "total": 13,
+        "detected": 13,
+        "accepted": 0,
+        "correct": 0,
+        "rejected": 13,
+        "wrong_identity": 0,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 13,
+          "avg_ms": 753.77,
+          "p95_ms": 745.4,
+          "max_ms": 1045.22
+        }
+      }
+    },
+    {
+      "threshold": 0.45,
+      "frr": 0.384615,
+      "far": 0.0,
+      "detection_rate": 0.74359,
+      "latency_avg_ms": 619.39,
+      "latency_p95_ms": 749.25,
+      "genuine": {
+        "total": 26,
+        "detected": 16,
+        "accepted": 16,
+        "correct": 16,
+        "rejected": 0,
+        "wrong_identity": 0,
+        "detection_rate": 0.615385,
+        "latency": {
+          "count": 26,
+          "avg_ms": 482.19,
+          "p95_ms": 735.61,
+          "max_ms": 737.24
+        }
+      },
+      "impostor": {
+        "total": 13,
+        "detected": 13,
+        "accepted": 0,
+        "correct": 0,
+        "rejected": 13,
+        "wrong_identity": 0,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 13,
+          "avg_ms": 756.59,
+          "p95_ms": 749.25,
+          "max_ms": 1050.79
+        }
+      }
+    },
+    {
+      "threshold": 0.5,
+      "frr": 0.384615,
+      "far": 0.0,
+      "detection_rate": 0.74359,
+      "latency_avg_ms": 617.79,
+      "latency_p95_ms": 740.74,
+      "genuine": {
+        "total": 26,
+        "detected": 16,
+        "accepted": 16,
+        "correct": 16,
+        "rejected": 0,
+        "wrong_identity": 0,
+        "detection_rate": 0.615385,
+        "latency": {
+          "count": 26,
+          "avg_ms": 482.89,
+          "p95_ms": 740.74,
+          "max_ms": 744.05
+        }
+      },
+      "impostor": {
+        "total": 13,
+        "detected": 13,
+        "accepted": 0,
+        "correct": 0,
+        "rejected": 13,
+        "wrong_identity": 0,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 13,
+          "avg_ms": 752.69,
+          "p95_ms": 732.43,
+          "max_ms": 1040.71
+        }
+      }
+    },
+    {
+      "threshold": 0.55,
+      "frr": 0.384615,
+      "far": 0.153846,
+      "detection_rate": 0.74359,
+      "latency_avg_ms": 618.49,
+      "latency_p95_ms": 748.04,
+      "genuine": {
+        "total": 26,
+        "detected": 16,
+        "accepted": 16,
+        "correct": 16,
+        "rejected": 0,
+        "wrong_identity": 0,
+        "detection_rate": 0.615385,
+        "latency": {
+          "count": 26,
+          "avg_ms": 482.31,
+          "p95_ms": 732.3,
+          "max_ms": 745.58
+        }
+      },
+      "impostor": {
+        "total": 13,
+        "detected": 13,
+        "accepted": 2,
+        "correct": 0,
+        "rejected": 11,
+        "wrong_identity": 2,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 13,
+          "avg_ms": 754.67,
+          "p95_ms": 748.04,
+          "max_ms": 1043.03
+        }
+      }
+    },
+    {
+      "threshold": 0.6,
+      "frr": 0.384615,
+      "far": 0.846154,
+      "detection_rate": 0.74359,
+      "latency_avg_ms": 617.16,
+      "latency_p95_ms": 744.3,
+      "genuine": {
+        "total": 26,
+        "detected": 16,
+        "accepted": 16,
+        "correct": 16,
+        "rejected": 0,
+        "wrong_identity": 0,
+        "detection_rate": 0.615385,
+        "latency": {
+          "count": 26,
+          "avg_ms": 483.23,
+          "p95_ms": 744.3,
+          "max_ms": 750.31
+        }
+      },
+      "impostor": {
+        "total": 13,
+        "detected": 13,
+        "accepted": 11,
+        "correct": 0,
+        "rejected": 2,
+        "wrong_identity": 11,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 13,
+          "avg_ms": 751.09,
+          "p95_ms": 729.49,
+          "max_ms": 1040.61
+        }
+      }
+    }
+  ],
+  "recommended": {
+    "threshold": 0.5,
+    "frr": 0.384615,
+    "far": 0.0,
+    "detection_rate": 0.74359,
+    "latency_avg_ms": 617.79,
+    "latency_p95_ms": 740.74,
+    "genuine": {
+      "total": 26,
+      "detected": 16,
+      "accepted": 16,
+      "correct": 16,
+      "rejected": 0,
+      "wrong_identity": 0,
+      "detection_rate": 0.615385,
+      "latency": {
+        "count": 26,
+        "avg_ms": 482.89,
+        "p95_ms": 740.74,
+        "max_ms": 744.05
+      }
+    },
+    "impostor": {
+      "total": 13,
+      "detected": 13,
+      "accepted": 0,
+      "correct": 0,
+      "rejected": 13,
+      "wrong_identity": 0,
+      "detection_rate": 1.0,
+      "latency": {
+        "count": 13,
+        "avg_ms": 752.69,
+        "p95_ms": 732.43,
+        "max_ms": 1040.71
+      }
+    }
+  },
+  "traffic_light": "ROJO",
+  "traffic_note": "No apto para salida empresarial; requiere mejoras antes de liberar.",
+  "policy": {
+    "green": {
+      "far_max": 0.005,
+      "frr_max": 0.03,
+      "p95_ms_max": 1200.0,
+      "detection_min": 0.98
+    },
+    "yellow": {
+      "far_max": 0.02,
+      "frr_max": 0.08,
+      "p95_ms_max": 2200.0,
+      "detection_min": 0.92
+    }
+  }
+}

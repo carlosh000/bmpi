@@ -148,6 +148,116 @@ function Set-EnvironmentVariables {
     }
 }
 
+function Ensure-GrpcTlsCertificates {
+    param(
+        [hashtable]$EnvMap,
+        [string]$RootPath,
+        [string]$ScriptsPath
+    )
+
+    $tlsEnabledServer = [string]$EnvMap["BMPI_GRPC_TLS"]
+    $tlsEnabledClient = [string]$EnvMap["BMPI_FACE_GRPC_TLS"]
+    $autoTls = [string]$EnvMap["BMPI_TLS_AUTO_CERTS"]
+
+    $serverTlsOn = $tlsEnabledServer -match "^(?i:true|1|yes)$"
+    $clientTlsOn = $tlsEnabledClient -match "^(?i:true|1|yes)$"
+    $autoOn = $true
+    if (-not [string]::IsNullOrWhiteSpace($autoTls)) {
+        $autoOn = $autoTls -match "^(?i:true|1|yes)$"
+    }
+
+    if (-not $autoOn) {
+        return
+    }
+    if (-not ($serverTlsOn -or $clientTlsOn)) {
+        return
+    }
+
+    $certDir = Join-Path $ScriptsPath "certs"
+    $defaultCaCert = Join-Path $certDir "local-ca.pem"
+    $defaultCaKey = Join-Path $certDir "local-ca-key.pem"
+    $defaultServerCert = Join-Path $certDir "grpc-server.pem"
+    $defaultServerKey = Join-Path $certDir "grpc-server-key.pem"
+
+    if ([string]::IsNullOrWhiteSpace($EnvMap["BMPI_FACE_GRPC_CA_CERT"])) {
+        $EnvMap["BMPI_FACE_GRPC_CA_CERT"] = $defaultCaCert
+    }
+    if ([string]::IsNullOrWhiteSpace($EnvMap["BMPI_GRPC_CERT_FILE"])) {
+        $EnvMap["BMPI_GRPC_CERT_FILE"] = $defaultServerCert
+    }
+    if ([string]::IsNullOrWhiteSpace($EnvMap["BMPI_GRPC_KEY_FILE"])) {
+        $EnvMap["BMPI_GRPC_KEY_FILE"] = $defaultServerKey
+    }
+
+    $grpcAddr = [string]$EnvMap["BMPI_FACE_GRPC_ADDR"]
+    if ([string]::IsNullOrWhiteSpace($grpcAddr)) {
+        $grpcAddr = "127.0.0.1:50051"
+    }
+    $hostPart = $grpcAddr
+    if ($grpcAddr.Contains(":")) {
+        $hostPart = $grpcAddr.Substring(0, $grpcAddr.LastIndexOf(":"))
+    }
+    $hostPart = $hostPart.Trim()
+    if ($hostPart.StartsWith("[") -and $hostPart.EndsWith("]")) {
+        $hostPart = $hostPart.TrimStart("[").TrimEnd("]")
+    }
+    if ([string]::IsNullOrWhiteSpace($hostPart)) {
+        $hostPart = "127.0.0.1"
+    }
+
+    $pythonCandidates = @()
+    $venvPython = Join-Path $RootPath ".venv\Scripts\python.exe"
+    if (Test-Path $venvPython) {
+        $pythonCandidates += $venvPython
+    }
+    $pythonCandidates += "python"
+
+    $pythonExe = $null
+    foreach ($candidate in $pythonCandidates) {
+        try {
+            & $candidate -c "import cryptography" 1>$null 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                $pythonExe = $candidate
+                break
+            }
+        }
+        catch {
+        }
+    }
+
+    if (-not $pythonExe) {
+        $pythonExe = $pythonCandidates[0]
+        Write-Info "Instalando dependencia cryptography para autogestion TLS"
+        & $pythonExe -m pip install cryptography
+        if ($LASTEXITCODE -ne 0) {
+            throw "No se pudo instalar cryptography para autogestion TLS"
+        }
+    }
+
+    $ensureScript = Join-Path $ScriptsPath "ensure_tls_certs.py"
+    if (-not (Test-Path $ensureScript)) {
+        throw "No existe $ensureScript para autogestion de certificados TLS"
+    }
+
+    Write-Info "Verificando certificados TLS gRPC (auto)"
+    $args = @(
+        $ensureScript,
+        "--ca-cert", $EnvMap["BMPI_FACE_GRPC_CA_CERT"],
+        "--ca-key", $defaultCaKey,
+        "--server-cert", $EnvMap["BMPI_GRPC_CERT_FILE"],
+        "--server-key", $EnvMap["BMPI_GRPC_KEY_FILE"],
+        "--hosts", "localhost,127.0.0.1,$hostPart",
+        "--renew-days", "30"
+    )
+
+    & $pythonExe @args
+    if ($LASTEXITCODE -ne 0) {
+        throw "Fallo la verificacion/regeneracion automatica de certificados TLS"
+    }
+
+    Write-Pass "Certificados TLS gRPC verificados"
+}
+
 function Test-LocalPortListening {
     param([int]$LocalPort)
 
@@ -397,8 +507,11 @@ try {
     if (-not $envMap["BMPI_HTTP_ADDR"]) { $envMap["BMPI_HTTP_ADDR"] = ":8080" }
     if (-not $envMap["BMPI_FACE_GRPC_ADDR"]) { $envMap["BMPI_FACE_GRPC_ADDR"] = "127.0.0.1:50051" }
     if (-not $envMap["BMPI_FACE_GRPC_TLS"]) { $envMap["BMPI_FACE_GRPC_TLS"] = "false" }
+    if (-not $envMap["BMPI_TLS_AUTO_CERTS"]) { $envMap["BMPI_TLS_AUTO_CERTS"] = "true" }
     if (-not $envMap["BMPI_API_BASE_URL"]) { $envMap["BMPI_API_BASE_URL"] = "http://127.0.0.1:8080" }
     if (-not $envMap["BMPI_ALLOWED_ORIGINS"]) { $envMap["BMPI_ALLOWED_ORIGINS"] = "http://localhost:$ProdPort,http://127.0.0.1:$ProdPort" }
+
+    Ensure-GrpcTlsCertificates -EnvMap $envMap -RootPath $rootPath -ScriptsPath $scriptsPath
 
     $requiredVars = @(
         "DB_HOST",
@@ -498,7 +611,11 @@ try {
             Write-Pass "Frontend SSR ya activo en :$ProdPort"
         }
         else {
-            $frontendCommand = "$env:PORT=$ProdPort; $env:BMPI_API_BASE_URL='$($envMap['BMPI_API_BASE_URL'])'; node 'dist/attendance-web/server/server.mjs'"
+            $frontendApiKey = $envMap["BMPI_FRONTEND_API_KEY"]
+            if ([string]::IsNullOrWhiteSpace($frontendApiKey)) {
+                $frontendApiKey = $envMap["BMPI_OPERATOR_API_KEY"]
+            }
+            $frontendCommand = "`$env:PORT=$ProdPort; `$env:BMPI_API_BASE_URL='$($envMap['BMPI_API_BASE_URL'])'; `$env:BMPI_FRONTEND_API_KEY='$frontendApiKey'; node 'dist/attendance-web/server/server.mjs'"
             Start-ComponentTerminal -Name "Frontend SSR" -WorkingDirectory $attendancePath -Command $frontendCommand
             if (-not $NoHealthCheck) {
                 Write-Info "Esperando frontend SSR en :$ProdPort"

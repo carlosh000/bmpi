@@ -1,0 +1,111 @@
+{
+  "generated_at": "2026-03-02T14:02:56",
+  "dataset": "C:\\Users\\practicante\\Desktop\\bmpi-main\\datasets\\empresa_eval_20260302_lote1",
+  "model": "hog",
+  "known": {
+    "employees": 11,
+    "parse": {
+      "images_total": 55,
+      "images_with_face": 40,
+      "images_without_face": 15
+    }
+  },
+  "counts": {
+    "genuine_images": 28,
+    "impostor_images": 13
+  },
+  "results": [
+    {
+      "threshold": 0.55,
+      "frr": 0.428571,
+      "far": 0.153846,
+      "detection_rate": 0.707317,
+      "latency_avg_ms": 625.21,
+      "latency_p95_ms": 758.95,
+      "genuine": {
+        "total": 28,
+        "detected": 16,
+        "accepted": 16,
+        "correct": 16,
+        "rejected": 0,
+        "wrong_identity": 0,
+        "detection_rate": 0.571429,
+        "latency": {
+          "count": 28,
+          "avg_ms": 474.53,
+          "p95_ms": 752.42,
+          "max_ms": 773.82
+        }
+      },
+      "impostor": {
+        "total": 13,
+        "detected": 13,
+        "accepted": 2,
+        "correct": 0,
+        "rejected": 11,
+        "wrong_identity": 2,
+        "detection_rate": 1.0,
+        "latency": {
+          "count": 13,
+          "avg_ms": 775.9,
+          "p95_ms": 758.95,
+          "max_ms": 1078.53
+        }
+      }
+    }
+  ],
+  "recommended": {
+    "threshold": 0.55,
+    "frr": 0.428571,
+    "far": 0.153846,
+    "detection_rate": 0.707317,
+    "latency_avg_ms": 625.21,
+    "latency_p95_ms": 758.95,
+    "genuine": {
+      "total": 28,
+      "detected": 16,
+      "accepted": 16,
+      "correct": 16,
+      "rejected": 0,
+      "wrong_identity": 0,
+      "detection_rate": 0.571429,
+      "latency": {
+        "count": 28,
+        "avg_ms": 474.53,
+        "p95_ms": 752.42,
+        "max_ms": 773.82
+      }
+    },
+    "impostor": {
+      "total": 13,
+      "detected": 13,
+      "accepted": 2,
+      "correct": 0,
+      "rejected": 11,
+      "wrong_identity": 2,
+      "detection_rate": 1.0,
+      "latency": {
+        "count": 13,
+        "avg_ms": 775.9,
+        "p95_ms": 758.95,
+        "max_ms": 1078.53
+      }
+    }
+  },
+  "traffic_light": "ROJO",
+  "traffic_note": "No apto para salida empresarial; requiere mejoras antes de liberar.",
+  "policy": {
+    "green": {
+      "far_max": 0.005,
+      "frr_max": 0.03,
+      "p95_ms_max": 1200.0,
+      "detection_min": 0.98
+    },
+    "yellow": {
+      "far_max": 0.02,
+      "frr_max": 0.08,
+      "p95_ms_max": 2200.0,
+      "detection_min": 0.92
+    }
+  }
+}
