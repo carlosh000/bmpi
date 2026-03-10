@@ -11,7 +11,9 @@ param(
     [switch]$SkipFrontend,
     [switch]$NoHealthCheck,
     [switch]$AutoPrepareIA,
-    [string]$EnvFile = ""
+    [string]$EnvFile = "",
+    [ValidateSet("Normal", "Minimized", "Hidden")]
+    [string]$WindowStyle = "Minimized"
 )
 
 $ErrorActionPreference = "Stop"
@@ -108,8 +110,59 @@ function Set-NodePath {
 
     $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
     if (-not [string]::IsNullOrWhiteSpace($userPath) -and $userPath -notmatch [regex]::Escape($nodeDir)) {
-        [Environment]::SetEnvironmentVariable("Path", "$userPath;$nodeDir", "User")
+        try {
+            [Environment]::SetEnvironmentVariable("Path", "$userPath;$nodeDir", "User")
+        }
+        catch {
+            Write-Warn "No se pudo actualizar PATH de usuario (se continúa con PATH de sesión): $($_.Exception.Message)"
+        }
     }
+}
+
+function Convert-ToPsSingleQuoted {
+    param([string]$Value)
+
+    if ($null -eq $Value) {
+        $Value = ""
+    }
+    return "'" + ($Value -replace "'", "''") + "'"
+}
+
+function Get-LaunchEnvVars {
+    $vars = @{}
+    Get-ChildItem Env: |
+        Where-Object { $_.Name -like "BMPI_*" -or $_.Name -like "DB_*" } |
+        ForEach-Object { $vars[$_.Name] = [string]$_.Value }
+    return $vars
+}
+
+function Join-CommandWithEnv {
+    param(
+        [string]$BaseCommand,
+        [hashtable]$EnvVars
+    )
+
+    if ([string]::IsNullOrWhiteSpace($BaseCommand)) {
+        return $BaseCommand
+    }
+    if ($null -eq $EnvVars -or $EnvVars.Count -eq 0) {
+        return $BaseCommand
+    }
+
+    $prefix = @()
+    foreach ($key in ($EnvVars.Keys | Sort-Object)) {
+        if ([string]::IsNullOrWhiteSpace($key)) {
+            continue
+        }
+        $value = [string]$EnvVars[$key]
+        $prefix += "`$env:$key = $(Convert-ToPsSingleQuoted -Value $value)"
+    }
+
+    if ($prefix.Count -eq 0) {
+        return $BaseCommand
+    }
+
+    return ($prefix -join "; ") + "; " + $BaseCommand
 }
 
 function Import-DotEnv {
@@ -338,9 +391,12 @@ function Start-ComponentTerminal {
     )
 
     Write-Info "Lanzando $Name en una nueva terminal"
+    $launchEnv = Get-LaunchEnvVars
+    $commandWithEnv = Join-CommandWithEnv -BaseCommand $Command -EnvVars $launchEnv
     $proc = Start-Process -FilePath "powershell.exe" `
-        -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $Command) `
+        -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $commandWithEnv) `
         -WorkingDirectory $WorkingDirectory `
+        -WindowStyle $WindowStyle `
         -PassThru
 
     if ($proc -and $proc.Id) {

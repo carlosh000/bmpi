@@ -617,3 +617,12 @@ Durante la jornada del 5-mar-2026 se cerraron mejoras de produccion para operaci
 ### 19.4 Pendiente unico para cierre empresarial 100%
 
 - Ejecutar prueba en campo con camara real (bloque corto + 1-2 dias), congelar parametros finales por sede/camara y firmar acta go-live.
+
+## 20) Avance general del dia (2026-03-10) - aceleracion de busqueda con FAISS
+
+- Se integro FAISS en `ml-model/face_server.py` para acelerar busqueda de identidad con grandes volumenes (5k+ empleados).
+- Estrategia: FAISS (HNSW) + verificacion exacta top-k + fallback a busqueda completa cerca del umbral para maxima precision.
+- Configuracion agregada en `.env`:
+  - `BMPI_USE_FAISS`, `BMPI_FAISS_INDEX`, `BMPI_FAISS_HNSW_M`, `BMPI_FAISS_HNSW_EF_SEARCH`, `BMPI_FAISS_HNSW_EF_CONSTRUCTION`
+  - `BMPI_FAISS_TOPK`, `BMPI_FAISS_FALLBACK_RATIO`
+- Dependencia agregada: `faiss-cpu` (si no esta disponible, se usa busqueda lineal automaticamente).

@@ -260,6 +260,13 @@ Nota operativa API key (frontend):
 - `BMPI_FACE_DETECT_UPSAMPLE`: detalle base de detección de rostro (default `1`).
 - `BMPI_FACE_DETECT_RETRY_UPSAMPLE`: reintento automático con mayor detalle cuando una foto no detecta rostro (recomendado `2`).
 - `BMPI_FACE_ENCODE_CONCURRENCY`: concurrencia interna de codificación facial (`face_recognition`), recomendado `1` para máxima estabilidad.
+- `BMPI_USE_FAISS`: habilita FAISS para acelerar la búsqueda de identidad (requiere `faiss-cpu`).
+- `BMPI_FAISS_INDEX`: `flat` (exacto) u `hnsw` (rápido).
+- `BMPI_FAISS_HNSW_M`, `BMPI_FAISS_HNSW_EF_SEARCH`, `BMPI_FAISS_HNSW_EF_CONSTRUCTION`: parámetros de HNSW.
+- `BMPI_FAISS_TOPK`: top-k candidatos de FAISS para verificación exacta.
+- `BMPI_FAISS_FALLBACK_RATIO`: si la mejor distancia es cercana al umbral, hace fallback a búsqueda completa para máxima precisión.
+
+Nota: si FAISS no está instalado o falla, el sistema cae automáticamente a búsqueda lineal (más lenta, misma precisión).
 
 ## Script maestro (dev + producción)
 

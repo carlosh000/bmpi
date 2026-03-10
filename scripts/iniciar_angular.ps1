@@ -5,7 +5,9 @@ param(
     [switch]$SkipServe,
     [switch]$SkipBackend,
     [switch]$SkipIA,
-    [switch]$NoHealthCheck
+    [switch]$NoHealthCheck,
+    [ValidateSet("Normal", "Minimized", "Hidden")]
+    [string]$WindowStyle = "Minimized"
 )
 
 $ErrorActionPreference = "Stop"
@@ -37,17 +39,68 @@ function Set-NodePath {
     }
 
     $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-    if ([string]::IsNullOrWhiteSpace($userPath)) {
-        [Environment]::SetEnvironmentVariable("Path", $nodeDir, "User")
-        Write-Info "PATH de usuario inicializado con $nodeDir"
+    try {
+        if ([string]::IsNullOrWhiteSpace($userPath)) {
+            [Environment]::SetEnvironmentVariable("Path", $nodeDir, "User")
+            Write-Info "PATH de usuario inicializado con $nodeDir"
+        }
+        elseif ($userPath -notmatch [regex]::Escape($nodeDir)) {
+            [Environment]::SetEnvironmentVariable("Path", "$userPath;$nodeDir", "User")
+            Write-Info "PATH de usuario actualizado permanentemente con $nodeDir"
+        }
+        else {
+            Write-Info "PATH de usuario ya contiene $nodeDir"
+        }
     }
-    elseif ($userPath -notmatch [regex]::Escape($nodeDir)) {
-        [Environment]::SetEnvironmentVariable("Path", "$userPath;$nodeDir", "User")
-        Write-Info "PATH de usuario actualizado permanentemente con $nodeDir"
+    catch {
+        Write-Warn "No se pudo actualizar PATH de usuario (se continúa con PATH de sesión): $($_.Exception.Message)"
     }
-    else {
-        Write-Info "PATH de usuario ya contiene $nodeDir"
+}
+
+function Convert-ToPsSingleQuoted {
+    param([string]$Value)
+
+    if ($null -eq $Value) {
+        $Value = ""
     }
+    return "'" + ($Value -replace "'", "''") + "'"
+}
+
+function Get-LaunchEnvVars {
+    $vars = @{}
+    Get-ChildItem Env: |
+        Where-Object { $_.Name -like "BMPI_*" -or $_.Name -like "DB_*" } |
+        ForEach-Object { $vars[$_.Name] = [string]$_.Value }
+    return $vars
+}
+
+function Join-CommandWithEnv {
+    param(
+        [string]$BaseCommand,
+        [hashtable]$EnvVars
+    )
+
+    if ([string]::IsNullOrWhiteSpace($BaseCommand)) {
+        return $BaseCommand
+    }
+    if ($null -eq $EnvVars -or $EnvVars.Count -eq 0) {
+        return $BaseCommand
+    }
+
+    $prefix = @()
+    foreach ($key in ($EnvVars.Keys | Sort-Object)) {
+        if ([string]::IsNullOrWhiteSpace($key)) {
+            continue
+        }
+        $value = [string]$EnvVars[$key]
+        $prefix += "`$env:$key = $(Convert-ToPsSingleQuoted -Value $value)"
+    }
+
+    if ($prefix.Count -eq 0) {
+        return $BaseCommand
+    }
+
+    return ($prefix -join "; ") + "; " + $BaseCommand
 }
 
 function Test-LocalPortListening {
@@ -128,9 +181,12 @@ function Start-ComponentTerminal {
     )
 
     Write-Info "Lanzando $Name en una nueva terminal"
+    $launchEnv = Get-LaunchEnvVars
+    $commandWithEnv = Join-CommandWithEnv -BaseCommand $Command -EnvVars $launchEnv
     Start-Process -FilePath "powershell.exe" `
-        -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $Command) `
-        -WorkingDirectory $WorkingDirectory | Out-Null
+        -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $commandWithEnv) `
+        -WorkingDirectory $WorkingDirectory `
+        -WindowStyle $WindowStyle | Out-Null
 }
 
 try {

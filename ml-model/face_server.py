@@ -23,6 +23,14 @@ from psycopg2 import pool
 import pb.face_recognition_pb2 as pb2
 import pb.face_recognition_pb2_grpc as pb2_grpc
 
+try:
+    import faiss  # type: ignore
+    FAISS_AVAILABLE = True
+    FAISS_IMPORT_ERROR = ""
+except Exception as exc:
+    FAISS_AVAILABLE = False
+    FAISS_IMPORT_ERROR = str(exc)
+
 
 connection_pool = None
 schema_initialized = False
@@ -49,6 +57,13 @@ GRPC_MAX_MSG_BYTES = GRPC_MAX_MSG_MB * 1024 * 1024
 FACE_DETECT_UPSAMPLE = max(0, int(os.getenv("BMPI_FACE_DETECT_UPSAMPLE", "1")))
 FACE_DETECT_RETRY_UPSAMPLE = max(FACE_DETECT_UPSAMPLE, int(os.getenv("BMPI_FACE_DETECT_RETRY_UPSAMPLE", "2")))
 HAAR_MIN_FACE = max(24, int(os.getenv("BMPI_HAAR_MIN_FACE", "64")))
+USE_FAISS = os.getenv("BMPI_USE_FAISS", "true").strip().lower() in ("1", "true", "yes")
+FAISS_INDEX_TYPE = os.getenv("BMPI_FAISS_INDEX", "flat").strip().lower()
+FAISS_HNSW_M = max(4, int(os.getenv("BMPI_FAISS_HNSW_M", "32")))
+FAISS_HNSW_EF_SEARCH = max(8, int(os.getenv("BMPI_FAISS_HNSW_EF_SEARCH", "64")))
+FAISS_HNSW_EF_CONSTRUCTION = max(8, int(os.getenv("BMPI_FAISS_HNSW_EF_CONSTRUCTION", "80")))
+FAISS_TOPK = max(1, int(os.getenv("BMPI_FAISS_TOPK", "5")))
+FAISS_FALLBACK_RATIO = float(os.getenv("BMPI_FAISS_FALLBACK_RATIO", "0.95"))
 
 haar_frontal = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 haar_profile = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_profileface.xml")
@@ -503,6 +518,17 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
         self.known_embeddings = np.array([])
         self._cache_lock = threading.RLock()
         self._last_refresh_ts = 0.0
+        self._faiss_enabled = USE_FAISS and FAISS_AVAILABLE
+        self._faiss_index_type = FAISS_INDEX_TYPE or "flat"
+        self._faiss_index = None
+        self._faiss_ids = []
+        if USE_FAISS and not FAISS_AVAILABLE:
+            print(f"[WARN] FAISS no disponible, se usara busqueda lineal: {FAISS_IMPORT_ERROR}")
+        if self._faiss_enabled:
+            print(
+                "[INFO] FAISS habilitado: index=%s topk=%d fallback_ratio=%.2f"
+                % (self._faiss_index_type, FAISS_TOPK, FAISS_FALLBACK_RATIO)
+            )
         self.load_embeddings()
 
     def load_embeddings(self):
@@ -534,6 +560,7 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
             else:
                 self.known_embeddings = np.array([])
                 self.known_ids = []
+            self._rebuild_faiss_index()
             self._last_refresh_ts = time.time()
 
         print(f"Loaded {len(self.known_ids)} embeddings into memory.")
@@ -550,6 +577,49 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
             if len(self.known_embeddings) == 0:
                 return np.array([]), []
             return np.array(self.known_embeddings, copy=True), list(self.known_ids)
+
+    def _rebuild_faiss_index(self):
+        if not self._faiss_enabled:
+            self._faiss_index = None
+            self._faiss_ids = []
+            return
+        if len(self.known_embeddings) == 0:
+            self._faiss_index = None
+            self._faiss_ids = []
+            return
+        vectors = np.array(self.known_embeddings, dtype=np.float32)
+        if vectors.ndim != 2:
+            self._faiss_index = None
+            self._faiss_ids = []
+            return
+        dims = vectors.shape[1]
+        if self._faiss_index_type == "hnsw":
+            index = faiss.IndexHNSWFlat(dims, FAISS_HNSW_M)
+            index.hnsw.efSearch = FAISS_HNSW_EF_SEARCH
+            index.hnsw.efConstruction = FAISS_HNSW_EF_CONSTRUCTION
+        else:
+            index = faiss.IndexFlatL2(dims)
+        index.add(vectors)
+        self._faiss_index = index
+        self._faiss_ids = list(self.known_ids)
+
+    def _faiss_search_candidates(self, vector, k):
+        if not self._faiss_enabled or self._faiss_index is None or len(self._faiss_ids) == 0:
+            return []
+        vec = np.array(vector, dtype=np.float32).reshape(1, -1)
+        distances, indices = self._faiss_index.search(vec, k)
+        if indices.size == 0:
+            return []
+        pairs = []
+        for idx, dist in zip(indices[0].tolist(), distances[0].tolist()):
+            if idx is None:
+                continue
+            idx = int(idx)
+            if idx < 0 or idx >= len(self._faiss_ids):
+                continue
+            # FAISS IndexFlatL2 returns squared L2 distance.
+            pairs.append((idx, float(np.sqrt(dist))))
+        return pairs
 
     def _upsert_cache_entry(self, employee_id, embeddings):
         vectors = []
@@ -580,6 +650,7 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
                 self.known_embeddings = np.array([])
                 self.known_ids = []
 
+            self._rebuild_faiss_index()
             self._last_refresh_ts = time.time()
 
     def RegisterEmployee(self, request, context):
@@ -683,17 +754,43 @@ class FaceService(pb2_grpc.FaceRecognitionServiceServicer):
                     return pb2.RecognizeFaceResponse(recognized=False)
 
             best_distance = None
-            best_index = -1
+            best_employee_id = None
             for unknown in encodings:
-                distances = face_recognition.face_distance(known_embeddings, unknown)
-                local_index = int(np.argmin(distances))
-                local_distance = float(distances[local_index])
+                local_distance = None
+                local_employee_id = None
+                if self._faiss_enabled:
+                    candidates = self._faiss_search_candidates(unknown, FAISS_TOPK)
+                    if candidates:
+                        # Exact check on FAISS top-k to keep precision high.
+                        best_idx = None
+                        best_local = None
+                        for idx, _ in candidates:
+                            dist = float(np.linalg.norm(known_embeddings[idx] - unknown))
+                            if best_local is None or dist < best_local:
+                                best_local = dist
+                                best_idx = idx
+                        if best_idx is not None and best_local is not None:
+                            local_distance = best_local
+                            local_employee_id = str(known_ids[best_idx])
+                            # If close to threshold, fall back to full scan to avoid misses.
+                            if local_distance >= THRESHOLD * FAISS_FALLBACK_RATIO:
+                                distances = face_recognition.face_distance(known_embeddings, unknown)
+                                local_index = int(np.argmin(distances))
+                                local_distance = float(distances[local_index])
+                                local_employee_id = str(known_ids[local_index])
+                else:
+                    distances = face_recognition.face_distance(known_embeddings, unknown)
+                    local_index = int(np.argmin(distances))
+                    local_distance = float(distances[local_index])
+                    local_employee_id = str(known_ids[local_index])
+                if local_distance is None or local_employee_id is None:
+                    continue
                 if best_distance is None or local_distance < best_distance:
                     best_distance = local_distance
-                    best_index = local_index
+                    best_employee_id = local_employee_id
 
-            if best_distance is not None and best_distance < THRESHOLD and best_index >= 0:
-                employee_id = str(known_ids[best_index])
+            if best_distance is not None and best_distance < THRESHOLD and best_employee_id:
+                employee_id = best_employee_id
                 confidence = max(0, 1 - (best_distance / THRESHOLD))
                 return pb2.RecognizeFaceResponse(
                     recognized=True,
