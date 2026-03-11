@@ -1,6 +1,6 @@
 # ESTADO GENERAL BMPI
 
-Última actualización: 2026-02-25
+Última actualización: 2026-03-11
 
 Este documento unifica el contenido de análisis, inspección, estado y versión final del proyecto BMPI en una sola fuente de verdad.
 
@@ -626,3 +626,16 @@ Durante la jornada del 5-mar-2026 se cerraron mejoras de produccion para operaci
   - `BMPI_USE_FAISS`, `BMPI_FAISS_INDEX`, `BMPI_FAISS_HNSW_M`, `BMPI_FAISS_HNSW_EF_SEARCH`, `BMPI_FAISS_HNSW_EF_CONSTRUCTION`
   - `BMPI_FAISS_TOPK`, `BMPI_FAISS_FALLBACK_RATIO`
 - Dependencia agregada: `faiss-cpu` (si no esta disponible, se usa busqueda lineal automaticamente).
+
+## 21) Avance general del dia (2026-03-11) - login y roles
+
+- Login con token y roles implementado en backend y frontend.
+- Permisos por rol:
+  - admin: todo.
+  - rh: lectura + export + embeddings (sin registro manual ni reconocimiento).
+  - operator/vigilante: reconocimiento + registro manual + export.
+  - jefe: lectura + export.
+- Pantalla "Usuarios y roles" para admin con creacion, activacion/desactivacion y reset de password.
+- Auditoria de cambios en tabla `auth_audit`.
+- Sesion persiste en recarga (sessionStorage) y cierra tras 60 minutos de inactividad.
+- Inicio DEV actualizado para recompilar backend y evitar binario viejo (login 404).
