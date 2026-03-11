@@ -1,0 +1,21 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "powershell.enableProfileLoading": false,
+  "powershell.codeLens.enable": false,
+  "powershell.integratedConsole.showOnStartup": false,
+  "powershell.startAutomatically": false,
+  "terminal.integrated.defaultProfile.windows": "Windows PowerShell",
+  "terminal.integrated.profiles.windows": {
+    "Windows PowerShell": {
+      "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "args": [
+        "-NoLogo",
+        "-NoProfile"
+      ]
+    }
+  },
+  "terminal.integrated.env.windows": {
+    "PATH": "C:\\Program Files\\Git\\cmd;${env:PATH}"
+  },
+  "debug.defaultLaunchConfiguration": "BMPI: Iniciar DEV"
+}

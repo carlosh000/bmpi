@@ -383,6 +383,47 @@ function Wait-HttpEndpoint {
     return $false
 }
 
+function Test-EndpointNot404 {
+    param([string]$Url)
+
+    try {
+        $resp = Invoke-WebRequest -UseBasicParsing -Uri $Url -TimeoutSec 4 -Method Get
+        return $resp.StatusCode -ne 404
+    }
+    catch {
+        if ($_.Exception.Response) {
+            try {
+                return $_.Exception.Response.StatusCode -ne 404
+            }
+            catch {
+                return $true
+            }
+        }
+        return $false
+    }
+}
+
+function Get-PidsByPort {
+    param([int]$Port)
+
+    $pids = @()
+    try {
+        $lines = netstat -ano | Select-String ":$Port" | ForEach-Object { $_.ToString() }
+        foreach ($line in $lines) {
+            $parts = ($line -replace "\s+", " ").Trim().Split(" ")
+            if ($parts.Length -ge 5) {
+                $pidRaw = $parts[-1]
+                if ($pidRaw -match "^\d+$") {
+                    $pids += [int]$pidRaw
+                }
+            }
+        }
+    }
+    catch {
+    }
+    return $pids | Select-Object -Unique
+}
+
 function Start-ComponentTerminal {
     param(
         [string]$Name,
@@ -414,6 +455,17 @@ try {
     $binPath = Join-Path $rootPath "bin"
     $backendExe = Join-Path $binPath "bmpi-backend.exe"
     $iaPrepScript = Join-Path $scriptsPath "preparar_entorno_ia.ps1"
+    $goCache = Join-Path $rootPath ".gocache"
+    $goModCache = Join-Path $rootPath ".gomodcache"
+
+    if (-not (Test-Path $goCache)) {
+        New-Item -ItemType Directory -Path $goCache | Out-Null
+    }
+    if (-not (Test-Path $goModCache)) {
+        New-Item -ItemType Directory -Path $goModCache | Out-Null
+    }
+    $env:GOCACHE = $goCache
+    $env:GOMODCACHE = $goModCache
 
     if (-not (Test-Path $attendancePath)) {
         throw "No existe carpeta attendance-web en $rootPath"
@@ -501,10 +553,30 @@ try {
 
         if (-not $SkipBackend) {
             if (Test-LocalPortListening -LocalPort 8080) {
+                $authOk = Test-EndpointNot404 -Url "http://localhost:8080/api/auth/login"
+                if (-not $authOk) {
+                    Write-Warn "Backend activo en :8080 parece ser una versiÃ³n antigua (auth 404). Reiniciando backend..."
+                    $pids = Get-PidsByPort -Port 8080
+                    foreach ($procId in $pids) {
+                        try { Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue } catch { }
+                    }
+                    Start-Sleep -Seconds 1
+                }
+            }
+            if (Test-LocalPortListening -LocalPort 8080) {
                 Write-Pass "Backend REST ya activo en :8080"
             }
             else {
-                Start-ComponentTerminal -Name "Backend Go" -WorkingDirectory $backendPath -Command "go run ."
+                Set-Location $backendPath
+                Write-Info "Compilando backend Go (dev)"
+                & "C:\\Program Files\\Go\\bin\\go.exe" build -o backend.exe .
+                Write-Info "Lanzando Backend Go en nueva terminal"
+                $backendScript = Join-Path $scriptsPath "run_backend_exe_dev.ps1"
+                Start-Process -FilePath "powershell.exe" `
+                    -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-File", $backendScript) `
+                    -WorkingDirectory $rootPath `
+                    -WindowStyle $WindowStyle `
+                    -PassThru | Out-Null
 
                 if (-not $NoHealthCheck) {
                     $healthDate = (Get-Date).ToString("yyyy-MM-dd")

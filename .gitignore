@@ -28,3 +28,11 @@ backend/stderr.txt
 # OS/editor
 .DS_Store
 .vscode/
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.json
+
+# Local caches
+.gocache/
+.gomodcache/
+.npm-cache/

@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "BMPI: Iniciar DEV",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/iniciar_bmpi.ps1\" -Mode dev -WindowStyle Minimized",
+            "postDebugTask": "BMPI: Detener"
+        },
+        {
+            "name": "BMPI: Iniciar PROD",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/iniciar_bmpi.ps1\" -Mode prod -WindowStyle Minimized",
+            "postDebugTask": "BMPI: Detener"
+        },
+        {
+            "name": "BMPI: Detener",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/detener_bmpi.ps1\" -Mode all"
+        }
+    ]
+}

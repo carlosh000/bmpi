@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "shell": {
+      "executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command"
+      ]
+    }
+  },
+  "tasks": [
+    {
+      "label": "BMPI: Iniciar DEV",
+      "type": "shell",
+      "command": "& '${workspaceFolder}/scripts/iniciar_bmpi.ps1' -Mode dev -WindowStyle Minimized",
+      "args": [
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "BMPI: Iniciar PROD",
+      "type": "shell",
+      "command": "& '${workspaceFolder}/scripts/iniciar_bmpi.ps1' -Mode prod -WindowStyle Minimized",
+      "args": [
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "BMPI: Detener",
+      "type": "shell",
+      "command": "& '${workspaceFolder}/scripts/detener_bmpi.ps1' -Mode all",
+      "args": [
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

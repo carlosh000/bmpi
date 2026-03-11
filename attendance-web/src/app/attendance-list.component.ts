@@ -5,6 +5,7 @@ import {
   AttendanceRecord,
   EmbeddingResult,
   EmployeeStorageRecord,
+  AuthUser,
   RecognizeBurstResponse,
   RegisterPhotosResponse,
 } from './attendance.service';
@@ -20,6 +21,12 @@ interface EmbeddingAssignment {
   source?: 'db' | 'session';
 }
 
+interface UserEditState {
+  role: string;
+  active: boolean;
+  password: string;
+}
+
 @Component({
   selector: 'app-attendance-list',
   standalone: true,
@@ -33,12 +40,52 @@ interface EmbeddingAssignment {
         </p>
       </header>
 
-      <section class="panel" *ngIf="activeView === 'home'">
+      <section class="panel" *ngIf="!isLoggedIn">
+        <h3>Acceso</h3>
+        <div class="form-grid">
+          <label>
+            Usuario
+            <input type="text" [value]="loginUsername" (input)="loginUsername = readInputValue($event)" />
+          </label>
+          <label>
+            Password
+            <div class="password-field">
+              <input
+                [type]="showLoginPassword ? 'text' : 'password'"
+                [value]="loginPassword"
+                (input)="loginPassword = readInputValue($event)"
+              />
+              <button type="button" class="small" (click)="showLoginPassword = !showLoginPassword">
+                {{ showLoginPassword ? 'Ocultar' : 'Ver' }}
+              </button>
+            </div>
+          </label>
+        </div>
+        <div class="toolbar compact">
+          <button type="button" [disabled]="isLoggingIn || !canSubmitLogin()" (click)="submitLogin()">
+            {{ isLoggingIn ? 'Ingresando...' : 'Entrar' }}
+          </button>
+        </div>
+        <p class="status" *ngIf="authStatus">{{ authStatus }}</p>
+        <p class="status" *ngIf="authInfo">{{ authInfo }}</p>
+        <p class="error" *ngIf="authError">{{ authError }}</p>
+      </section>
+
+      <section class="panel" *ngIf="isLoggedIn">
+        <h3>Sesion activa</h3>
+        <p class="status">Usuario: {{ authUsername }} · Rol: {{ authRole }}</p>
+        <div class="toolbar compact">
+          <button type="button" class="danger" (click)="logout()">Cerrar sesion</button>
+        </div>
+      </section>
+
+      <section class="panel" *ngIf="activeView === 'home' && isLoggedIn">
         <h3>Tabla de asistencias</h3>
         <div class="toolbar section-toolbar">
-          <button type="button" class="section-toggle" (click)="openManualView()">Registro manual</button>
-          <button type="button" class="section-toggle" (click)="openEmbeddingView()">Extraer embeddings</button>
-          <button type="button" class="section-toggle" (click)="openRecognitionView()">Reconocimiento entrada</button>
+          <button type="button" class="section-toggle" [disabled]="!canAccessAttendanceWrite()" (click)="openManualView()">Registro manual</button>
+          <button type="button" class="section-toggle" [disabled]="!canAccessEmbedding()" (click)="openEmbeddingView()">Extraer embeddings</button>
+          <button type="button" class="section-toggle" [disabled]="!canAccessRecognition()" (click)="openRecognitionView()">Reconocimiento entrada</button>
+          <button type="button" class="section-toggle" *ngIf="canAccessUserAdmin()" (click)="openAdminView()">Usuarios y roles</button>
           <button type="button" class="section-toggle" (click)="toggleApiKeyPanel()">
             {{ showApiKeyPanel ? 'Ocultar API key' : 'Config API key' }}
           </button>
@@ -65,9 +112,9 @@ interface EmbeddingAssignment {
         </div>
 
         <div class="toolbar compact">
-          <button type="button" [disabled]="attendance.length === 0" (click)="exportAsExcel()">Exportar Excel (CSV)</button>
-          <button type="button" (click)="openExcelImportPicker()">Importar Excel (CSV)</button>
-          <button type="button" [disabled]="attendance.length === 0" (click)="exportAsPdf()">Exportar PDF</button>
+          <button type="button" [disabled]="attendance.length === 0 || !canAccessExports()" (click)="exportAsExcel()">Exportar Excel (CSV)</button>
+          <button type="button" [disabled]="!canAccessAttendanceWrite()" (click)="openExcelImportPicker()">Importar Excel (CSV)</button>
+          <button type="button" [disabled]="attendance.length === 0 || !canAccessExports()" (click)="exportAsPdf()">Exportar PDF</button>
         </div>
 
         <div class="toolbar compact">
@@ -110,8 +157,8 @@ interface EmbeddingAssignment {
               <td>{{ record.name }}</td>
               <td>{{ formatAttendanceTimestamp(record.timestamp) }}</td>
               <td class="actions">
-                <button type="button" class="small" [disabled]="!isRecordFromToday(record)" [title]="isRecordFromToday(record) ? '' : 'Solo se permite editar registros de hoy'" (click)="editRecord(record)">Editar</button>
-                <button type="button" class="small danger" [disabled]="!isRecordFromToday(record)" [title]="isRecordFromToday(record) ? '' : 'Solo se permite eliminar registros de hoy'" (click)="deleteRecord(record)">Eliminar</button>
+                <button type="button" class="small" [disabled]="!isRecordFromToday(record) || !canAccessAttendanceWrite()" [title]="isRecordFromToday(record) ? '' : 'Solo se permite editar registros de hoy'" (click)="editRecord(record)">Editar</button>
+                <button type="button" class="small danger" [disabled]="!isRecordFromToday(record) || !canAccessAttendanceWrite()" [title]="isRecordFromToday(record) ? '' : 'Solo se permite eliminar registros de hoy'" (click)="deleteRecord(record)">Eliminar</button>
                 <small *ngIf="!isRecordFromToday(record)" class="row-lock-note">No editable (día anterior)</small>
               </td>
             </tr>
@@ -124,58 +171,63 @@ interface EmbeddingAssignment {
 
       <section class="panel" *ngIf="activeView === 'manual'">
         <h3>Registro manual</h3>
-        <div class="toolbar compact">
-          <button type="button" class="section-toggle" (click)="backToHome()">Volver</button>
-          <button type="button" (click)="startCreateRecord()">Añadir registro</button>
-        </div>
-
-        <div *ngIf="message" class="toast toast-success">{{ message }}</div>
-        <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
-
-        <form *ngIf="isEditing || isCreating" class="record-form" (submit)="$event.preventDefault()">
-          <div class="form-grid three">
-            <label>
-              ID Empleado
-              <input
-                #manualEmployeeIdField
-                type="text"
-                inputmode="numeric"
-                pattern="[0-9]*"
-                [value]="manualEmployeeIdInput"
-                (input)="onManualEmployeeIdInput($event)"
-                (change)="onManualEmployeeIdInput($event)"
-              />
-            </label>
-            <label>
-              Nombre
-              <input
-                #manualEmployeeNameField
-                type="text"
-                [value]="manualEmployeeNameInput"
-                (input)="onManualEmployeeNameInput($event)"
-                (change)="onManualEmployeeNameInput($event)"
-                placeholder="Nombre empleado"
-              />
-            </label>
-            <label>
-              Fecha/Hora
-              <input
-                type="datetime-local"
-                [value]="editingRecord.timestamp"
-                [max]="getCurrentDateTimeLocal()"
-                (input)="editingRecord.timestamp = readInputValue($event)"
-              />
-            </label>
-          </div>
+        <p *ngIf="!canAccessAttendanceWrite()" class="status">No tienes permisos para registrar asistencia manual.</p>
+        <ng-container *ngIf="canAccessAttendanceWrite()">
           <div class="toolbar compact">
-            <button type="button" [disabled]="isSavingRecord" (click)="saveRecord()">Guardar</button>
-            <button type="button" class="danger" (click)="cancelRecordEditor()">Cancelar</button>
+            <button type="button" class="section-toggle" (click)="backToHome()">Volver</button>
+            <button type="button" (click)="startCreateRecord()">Añadir registro</button>
           </div>
-        </form>
+
+          <div *ngIf="message" class="toast toast-success">{{ message }}</div>
+          <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
+
+          <form *ngIf="isEditing || isCreating" class="record-form" (submit)="$event.preventDefault()">
+            <div class="form-grid three">
+              <label>
+                ID Empleado
+                <input
+                  #manualEmployeeIdField
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  [value]="manualEmployeeIdInput"
+                  (input)="onManualEmployeeIdInput($event)"
+                  (change)="onManualEmployeeIdInput($event)"
+                />
+              </label>
+              <label>
+                Nombre
+                <input
+                  #manualEmployeeNameField
+                  type="text"
+                  [value]="manualEmployeeNameInput"
+                  (input)="onManualEmployeeNameInput($event)"
+                  (change)="onManualEmployeeNameInput($event)"
+                  placeholder="Nombre empleado"
+                />
+              </label>
+              <label>
+                Fecha/Hora
+                <input
+                  type="datetime-local"
+                  [value]="editingRecord.timestamp"
+                  [max]="getCurrentDateTimeLocal()"
+                  (input)="editingRecord.timestamp = readInputValue($event)"
+                />
+              </label>
+            </div>
+            <div class="toolbar compact">
+              <button type="button" [disabled]="isSavingRecord" (click)="saveRecord()">Guardar</button>
+              <button type="button" class="danger" (click)="cancelRecordEditor()">Cancelar</button>
+            </div>
+          </form>
+        </ng-container>
       </section>
 
       <section class="panel" *ngIf="activeView === 'embedding'">
         <h3>Extraer embeddings</h3>
+        <p *ngIf="!canAccessEmbedding()" class="status">No tienes permisos para gestionar embeddings.</p>
+        <ng-container *ngIf="canAccessEmbedding()">
         <form class="assign-form" (submit)="$event.preventDefault()">
           <h4>Datos del empleado (obligatorios)</h4>
           <div class="form-grid">
@@ -211,6 +263,32 @@ interface EmbeddingAssignment {
           <button type="button" [disabled]="!canRunEmbeddingExtraction()" (click)="confirmEmbeddingExtraction()">
             {{ isExtracting ? 'Procesando...' : 'Extraer y guardar embeddings' }}
           </button>
+          <button type="button" class="danger" [disabled]="!canAccessEmployeeDelete()" (click)="toggleDeleteEmployeePanel()">
+            {{ showDeleteEmployeePanel ? 'Ocultar eliminar' : 'Eliminar empleado' }}
+          </button>
+        </div>
+
+        <div class="panel admin-panel" *ngIf="showDeleteEmployeePanel && canAccessEmployeeDelete()">
+          <h4>Eliminar empleado (admin)</h4>
+          <div class="form-grid">
+            <label>
+              ID de empleado a eliminar
+              <input
+                type="number"
+                min="1"
+                [value]="deleteEmployeeIdInput"
+                (input)="deleteEmployeeIdInput = readInputNumber($event)"
+                placeholder="Ej: 1001"
+              />
+            </label>
+            <div class="toolbar compact">
+              <button type="button" class="danger" [disabled]="!canDeleteEmployee()" (click)="deleteEmployeeById()">
+                {{ isDeletingEmployee ? 'Eliminando...' : 'Eliminar empleado' }}
+              </button>
+              <button type="button" (click)="toggleDeleteEmployeePanel()">Volver</button>
+            </div>
+          </div>
+          <small class="row-lock-note">Esta accion borra embeddings, foto y asistencias del empleado.</small>
         </div>
 
         <input
@@ -264,11 +342,13 @@ interface EmbeddingAssignment {
             </li>
           </ul>
         </div>
-
+        </ng-container>
       </section>
 
       <section class="panel" *ngIf="activeView === 'recognition'">
         <h3>Reconocimiento en entrada (ráfaga)</h3>
+        <p *ngIf="!canAccessRecognition()" class="status">No tienes permisos para reconocimiento en entrada.</p>
+        <ng-container *ngIf="canAccessRecognition()">
         <div class="toolbar compact">
           <button type="button" class="section-toggle" (click)="backToHome()">Volver</button>
           <button type="button" [disabled]="isCameraRunning" (click)="startRecognitionCamera()">Iniciar cámara</button>
@@ -307,6 +387,104 @@ interface EmbeddingAssignment {
           <video #recognitionVideo autoplay muted playsinline></video>
           <canvas #recognitionCanvas class="hidden-input"></canvas>
         </div>
+        </ng-container>
+      </section>
+
+      <section class="panel" *ngIf="activeView === 'admin'">
+        <h3>Usuarios y roles</h3>
+        <p *ngIf="!canAccessUserAdmin()" class="status">No tienes permisos para administrar usuarios.</p>
+        <ng-container *ngIf="canAccessUserAdmin()">
+          <div class="toolbar compact">
+            <button type="button" class="section-toggle" (click)="backToHome()">Volver</button>
+            <button type="button" [disabled]="isLoadingUsers" (click)="loadUsers()">
+              {{ isLoadingUsers ? 'Cargando...' : 'Recargar usuarios' }}
+            </button>
+            <button type="button" [disabled]="authUsers.length === 0" (click)="exportUsersCsv()">Exportar usuarios (CSV)</button>
+          </div>
+
+          <form class="assign-form" (submit)="$event.preventDefault()">
+            <h4>Crear usuario</h4>
+            <div class="form-grid three">
+              <label>
+                Usuario
+                <input type="text" [value]="newUserUsername" (input)="newUserUsername = readInputValue($event)" />
+              </label>
+              <label>
+                Password
+                <input type="password" [value]="newUserPassword" (input)="newUserPassword = readInputValue($event)" />
+              </label>
+              <label>
+                Rol
+                <select [value]="newUserRole" (change)="newUserRole = readInputValue($event)">
+                  <option value="admin">admin</option>
+                  <option value="rh">rh</option>
+                  <option value="operator">operator</option>
+                  <option value="vigilante">vigilante</option>
+                  <option value="jefe">jefe</option>
+                </select>
+              </label>
+            </div>
+            <div class="toolbar compact">
+              <label>
+                <input type="checkbox" [checked]="newUserActive" (change)="newUserActive = readInputBool($event)" />
+                Activo
+              </label>
+              <button type="button" [disabled]="isCreatingUser || !canCreateUser()" (click)="createUser()">
+                {{ isCreatingUser ? 'Creando...' : 'Crear usuario' }}
+              </button>
+            </div>
+          </form>
+
+          <div *ngIf="userAdminStatus" class="toast toast-success">{{ userAdminStatus }}</div>
+          <div *ngIf="userAdminError" class="toast toast-error">{{ userAdminError }}</div>
+
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Activo</th>
+                <th>Password nuevo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of authUsers">
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>
+                  <select [value]="getUserEdit(user.id).role" (change)="onUserRoleChange(user.id, $event)">
+                    <option value="admin">admin</option>
+                    <option value="rh">rh</option>
+                    <option value="operator">operator</option>
+                    <option value="vigilante">vigilante</option>
+                    <option value="jefe">jefe</option>
+                  </select>
+                </td>
+                <td>
+                  <input type="checkbox" [checked]="getUserEdit(user.id).active" (change)="onUserActiveChange(user.id, $event)" />
+                </td>
+                <td>
+                  <input
+                    type="password"
+                    [value]="getUserEdit(user.id).password"
+                    (input)="onUserPasswordChange(user.id, $event)"
+                    placeholder="Opcional"
+                  />
+                </td>
+                <td>
+                  <button type="button" class="small" [disabled]="isUpdatingUserId === user.id" (click)="updateUser(user)">
+                    {{ isUpdatingUserId === user.id ? 'Actualizando...' : 'Actualizar' }}
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="authUsers.length === 0">
+                <td colspan="6" class="empty">No hay usuarios registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
       </section>
     </section>
   `,
@@ -315,6 +493,7 @@ interface EmbeddingAssignment {
       .attendance-container { margin: 2rem auto; max-width: 1040px; font-family: Arial, sans-serif; display: grid; gap: 1.5rem; }
       .description { color: #4b5563; margin-top: 0.25rem; }
       .panel { border: 1px solid #dbeafe; border-radius: 10px; padding: 1rem; background: #f8fbff; }
+      .admin-panel { background: #fff5f5; border-color: #fecaca; }
       .toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1rem 0; }
       .toolbar.compact { margin: 0.75rem 0; }
       .section-toolbar { margin-bottom: 0.35rem; }
@@ -338,10 +517,12 @@ interface EmbeddingAssignment {
       .form-grid { display: grid; gap: 0.75rem; grid-template-columns: 2fr auto; align-items: end; }
       .form-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       label { display: grid; gap: 0.35rem; font-size: 0.88rem; color: #334155; }
+      .password-field { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; align-items: center; }
       small { font-size: 0.78rem; }
       .hint-valid { color: #166534; }
       .hint-invalid { color: #b91c1c; }
       input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; }
+      select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; background: #fff; }
       table { border-collapse: collapse; width: 100%; margin-top: 0.75rem; }
       th, td { border: 1px solid #d1d5db; padding: 0.65rem; }
       th { background: #eff6ff; text-align: left; }
@@ -377,6 +558,8 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   manualEmployeeNameInput = '';
   embeddingNameInput = '';
   employeeIdInput = 0;
+  deleteEmployeeIdInput = 0;
+  showDeleteEmployeePanel = false;
   embeddingsReadyToSave = false;
   embeddingProgressCurrent = 0;
   embeddingProgressTotal = 0;
@@ -395,11 +578,44 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   showApiKeyPanel = false;
   apiKeyInput = '';
   apiKeyStatus = 'API key no configurada.';
+  loginUsername = '';
+  loginPassword = '';
+  authRole = '';
+  authUsername = '';
+  authStatus = '';
+  authToken = '';
+  authExpiresAt = '';
+  isLoggingIn = false;
+  showLoginPassword = false;
+  private inactivityTimer: ReturnType<typeof setInterval> | null = null;
+  private readonly inactivityLimitMs = 60 * 60 * 1000;
+  private readonly lastActivityKey = 'bmpi_last_activity';
+  private readonly selectedDateKey = 'bmpi_selected_date';
+  private readonly activityHandler = () => this.recordActivity();
+  authView: 'login' = 'login';
+  authInfo = '';
+  authError = '';
+  authUsers: AuthUser[] = [];
+  userAdminStatus = '';
+  userAdminError = '';
+  isLoadingUsers = false;
+  isCreatingUser = false;
+  isUpdatingUserId: number | null = null;
+  newUserUsername = '';
+  newUserPassword = '';
+  newUserRole = 'vigilante';
+  newUserActive = true;
+  private userEdits: Record<string, UserEditState> = {};
+  private readonly authTokenStorageKey = 'bmpi_auth_token';
+  private readonly authRoleStorageKey = 'bmpi_auth_role';
+  private readonly authUsernameStorageKey = 'bmpi_auth_username';
+  private readonly authExpiresStorageKey = 'bmpi_auth_expires';
   private recognitionStream: MediaStream | null = null;
   private autoRecognitionTimer: ReturnType<typeof setInterval> | null = null;
 
   isExtracting = false;
   isSavingEmbeddings = false;
+  isDeletingEmployee = false;
   isSavingRecord = false;
   private _message = '';
   private _errorMessage = '';
@@ -428,9 +644,13 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.resetErrorMessageTimer(value);
   }
 
+  get isLoggedIn(): boolean {
+    return Boolean(this.authToken && this.authRole && this.authUsername);
+  }
+
   isEditing = false;
   isCreating = false;
-  activeView: 'home' | 'manual' | 'embedding' | 'recognition' = 'home';
+  activeView: 'home' | 'manual' | 'embedding' | 'recognition' | 'admin' = 'home';
   editingRecord: AttendanceRecord = this.emptyRecord();
   editingOriginalRowId: number | null = null;
 
@@ -454,20 +674,36 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       clearTimeout(this.embeddingWatchdogTimer);
       this.embeddingWatchdogTimer = null;
     }
+    if (this.inactivityTimer) {
+      clearInterval(this.inactivityTimer);
+      this.inactivityTimer = null;
+    }
+    this.removeActivityListeners();
     this.stopRecognitionCamera();
   }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.selectedAttendanceDate = this.getTodayDate();
-      this.loadAttendance();
-      this.loadEmployeesFromDb();
-      this.loadEmployeeStorage();
+      this.selectedAttendanceDate = this.loadSelectedDate() || this.getTodayDate();
       this.refreshApiKeyStatus();
+      this.setupActivityListeners();
+      this.setupInactivityWatcher();
+      void this.loadAuth().then(() => {
+        if (this.canAccessAttendanceRead()) {
+          this.loadAttendance();
+        }
+        if (this.canAccessEmbedding()) {
+          this.loadEmployeesFromDb();
+          this.loadEmployeeStorage();
+        }
+      });
     }
   }
 
   loadAttendance(dateOverride?: string): void {
+    if (!this.canAccessAttendanceRead()) {
+      return;
+    }
     const requestedDate = (dateOverride ?? this.selectedAttendanceDate).trim();
 
     if (requestedDate) {
@@ -500,6 +736,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
 
   applyAttendanceDateFilter(): void {
     const selectedFromInput = this.attendanceDateInput?.nativeElement.value?.trim() ?? this.selectedAttendanceDate;
+    this.persistSelectedDate(selectedFromInput);
     this.loadAttendance(selectedFromInput);
   }
 
@@ -508,10 +745,14 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     if (this.attendanceDateInput?.nativeElement) {
       this.attendanceDateInput.nativeElement.value = today;
     }
+    this.persistSelectedDate(today);
     this.loadAttendance(today);
   }
 
   loadEmployeesFromDb(): void {
+    if (!this.canAccessEmbedding()) {
+      return;
+    }
     this.attendanceService.getEmployees().subscribe({
       next: (employees) => {
         const dbAssignments: EmbeddingAssignment[] = employees.map((employee) => ({
@@ -532,6 +773,9 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   }
 
   loadEmployeeStorage(): void {
+    if (!this.canAccessEmbedding()) {
+      return;
+    }
     this.attendanceService.getEmployeeStorage().subscribe({
       next: (rows) => {
         this.employeeStorageRecords = rows;
@@ -551,20 +795,44 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   }
 
   openManualView(): void {
+    if (!this.canAccessAttendanceWrite()) {
+      this.errorMessage = 'No tienes permisos para registro manual.';
+      return;
+    }
     this.errorMessage = '';
     this.activeView = 'manual';
   }
 
   openEmbeddingView(): void {
+    if (!this.canAccessEmbedding()) {
+      this.errorMessage = 'No tienes permisos para gestionar embeddings.';
+      return;
+    }
     this.errorMessage = '';
     this.activeView = 'embedding';
   }
 
   openRecognitionView(): void {
+    if (!this.canAccessRecognition()) {
+      this.errorMessage = 'No tienes permisos para reconocimiento en entrada.';
+      return;
+    }
     this.errorMessage = '';
     this.activeView = 'recognition';
     this.message = '';
-    this.recognitionStatus = 'Listo para iniciar cámara.';
+    this.recognitionStatus = 'Listo para iniciar camara.';
+  }
+
+  openAdminView(): void {
+    if (!this.canAccessUserAdmin()) {
+      this.errorMessage = 'No tienes permisos para administrar usuarios.';
+      return;
+    }
+    this.errorMessage = '';
+    this.activeView = 'admin';
+    this.userAdminStatus = '';
+    this.userAdminError = '';
+    this.loadUsers();
   }
 
   toggleApiKeyPanel(): void {
@@ -620,6 +888,267 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     }
     const tail = key.length >= 4 ? key.slice(-4) : key;
     this.apiKeyStatus = `API key configurada (termina en ${tail}).`;
+  }
+
+  canSubmitLogin(): boolean {
+    return Boolean(this.loginUsername.trim() && this.loginPassword.trim());
+  }
+
+  async submitLogin(): Promise<void> {
+    if (this.isLoggingIn || !this.canSubmitLogin()) {
+      return;
+    }
+    this.isLoggingIn = true;
+    this.authStatus = '';
+    this.authError = '';
+    try {
+      const response = await firstValueFrom(
+        this.attendanceService.login({
+          username: this.loginUsername.trim(),
+          password: this.loginPassword,
+        }),
+      );
+      this.persistAuth(response.token, response.role, response.username, response.expiresAt);
+      this.recordActivity();
+      this.authToken = response.token;
+      this.authRole = response.role;
+      this.authUsername = response.username;
+      this.authExpiresAt = response.expiresAt;
+      this.loginPassword = '';
+      this.authStatus = 'Sesion iniciada correctamente.';
+      if (this.canAccessAttendanceRead()) {
+        this.loadAttendance();
+      }
+      if (this.canAccessEmbedding()) {
+        this.loadEmployeesFromDb();
+        this.loadEmployeeStorage();
+      }
+    } catch (err) {
+      this.clearAuthState();
+      this.authError = this.extractBackendErrorMessage(err) || 'No se pudo iniciar sesion.';
+    } finally {
+      this.isLoggingIn = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+
+  async loadAuth(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    if (this.isInactiveSession()) {
+      this.clearAuthState();
+      return;
+    }
+    this.loadAuthFromStorage();
+    if (!this.authToken) {
+      return;
+    }
+    try {
+      const me = await firstValueFrom(this.attendanceService.getMe());
+      this.authRole = me.role;
+      this.authUsername = me.username;
+      this.authStatus = 'Sesion activa.';
+      this.persistAuth(this.authToken, me.role, me.username, this.authExpiresAt);
+      this.recordActivity();
+      if (this.canAccessAttendanceRead()) {
+        this.loadAttendance();
+      }
+    } catch {
+      this.authStatus = 'Sesion no valida. Inicia sesion de nuevo.';
+      this.clearAuthState();
+    } finally {
+      this.cdr.detectChanges();
+    }
+  }
+
+  async logout(): Promise<void> {
+    if (!this.isLoggedIn) {
+      return;
+    }
+    try {
+      await firstValueFrom(this.attendanceService.logout());
+    } catch {
+      // ignore backend logout errors
+    } finally {
+      this.backToHome();
+      this.clearAuthState();
+      this.authStatus = 'Sesion cerrada.';
+    }
+  }
+
+  private loadAuthFromStorage(): void {
+    try {
+      this.authToken = window.sessionStorage.getItem(this.authTokenStorageKey)?.trim() ?? '';
+      this.authRole = window.sessionStorage.getItem(this.authRoleStorageKey)?.trim() ?? '';
+      this.authUsername = window.sessionStorage.getItem(this.authUsernameStorageKey)?.trim() ?? '';
+      this.authExpiresAt = window.sessionStorage.getItem(this.authExpiresStorageKey)?.trim() ?? '';
+    } catch {
+      this.authToken = '';
+      this.authRole = '';
+      this.authUsername = '';
+      this.authExpiresAt = '';
+    }
+  }
+
+  private persistAuth(token: string, role: string, username: string, expiresAt: string): void {
+    try {
+      window.sessionStorage.setItem(this.authTokenStorageKey, token);
+      window.sessionStorage.setItem(this.authRoleStorageKey, role);
+      window.sessionStorage.setItem(this.authUsernameStorageKey, username);
+      if (expiresAt) {
+        window.sessionStorage.setItem(this.authExpiresStorageKey, expiresAt);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  private clearAuthState(): void {
+    this.authToken = '';
+    this.authRole = '';
+    this.authUsername = '';
+    this.authExpiresAt = '';
+    this.attendance = [];
+    this.embeddingAssignments = [];
+    this.employeeStorageRecords = [];
+    this.authUsers = [];
+    this.userAdminStatus = '';
+    this.userAdminError = '';
+    this.userEdits = {};
+    this.authView = 'login';
+    this.loginPassword = '';
+    try {
+      window.sessionStorage.removeItem(this.authTokenStorageKey);
+      window.sessionStorage.removeItem(this.authRoleStorageKey);
+      window.sessionStorage.removeItem(this.authUsernameStorageKey);
+      window.sessionStorage.removeItem(this.authExpiresStorageKey);
+      window.sessionStorage.removeItem(this.lastActivityKey);
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  private recordActivity(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    try {
+      window.sessionStorage.setItem(this.lastActivityKey, String(Date.now()));
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  private isInactiveSession(): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+    try {
+      const raw = window.sessionStorage.getItem(this.lastActivityKey);
+      if (!raw) {
+        return false;
+      }
+      const last = Number(raw);
+      if (!Number.isFinite(last)) {
+        return false;
+      }
+      return Date.now() - last > this.inactivityLimitMs;
+    } catch {
+      return false;
+    }
+  }
+
+  private setupActivityListeners(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    window.addEventListener('click', this.activityHandler, { passive: true });
+    window.addEventListener('keydown', this.activityHandler, { passive: true });
+    window.addEventListener('mousemove', this.activityHandler, { passive: true });
+    window.addEventListener('touchstart', this.activityHandler, { passive: true });
+  }
+
+  private removeActivityListeners(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    window.removeEventListener('click', this.activityHandler);
+    window.removeEventListener('keydown', this.activityHandler);
+    window.removeEventListener('mousemove', this.activityHandler);
+    window.removeEventListener('touchstart', this.activityHandler);
+  }
+
+  private setupInactivityWatcher(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    if (this.inactivityTimer) {
+      clearInterval(this.inactivityTimer);
+    }
+    this.inactivityTimer = setInterval(() => {
+      if (this.isLoggedIn && this.isInactiveSession()) {
+        this.logout();
+      }
+    }, 60000);
+  }
+
+  private persistSelectedDate(value: string): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    try {
+      window.sessionStorage.setItem(this.selectedDateKey, value);
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  private loadSelectedDate(): string {
+    if (!isPlatformBrowser(this.platformId)) {
+      return '';
+    }
+    try {
+      return window.sessionStorage.getItem(this.selectedDateKey) ?? '';
+    } catch {
+      return '';
+    }
+  }
+
+  private hasRole(roles: string[]): boolean {
+    if (!this.isLoggedIn) {
+      return false;
+    }
+    return roles.includes(this.authRole);
+  }
+
+  canAccessAttendanceRead(): boolean {
+    return this.hasRole(['admin', 'rh', 'jefe', 'vigilante', 'operator']);
+  }
+
+  canAccessAttendanceWrite(): boolean {
+    return this.hasRole(['admin', 'operator', 'vigilante']);
+  }
+
+  canAccessEmbedding(): boolean {
+    return this.hasRole(['admin', 'rh']);
+  }
+
+  canAccessRecognition(): boolean {
+    return this.hasRole(['admin', 'operator', 'vigilante']);
+  }
+
+  canAccessExports(): boolean {
+    return this.hasRole(['admin', 'rh', 'jefe', 'vigilante', 'operator']);
+  }
+
+  canAccessEmployeeDelete(): boolean {
+    return this.hasRole(['admin']);
+  }
+
+  canAccessUserAdmin(): boolean {
+    return this.hasRole(['admin']);
   }
 
   backToHome(): void {
@@ -1258,6 +1787,213 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     }
   }
 
+  canDeleteEmployee(): boolean {
+    return Number.isFinite(this.deleteEmployeeIdInput) && this.deleteEmployeeIdInput > 0 && !this.isDeletingEmployee;
+  }
+
+  async deleteEmployeeById(): Promise<void> {
+    if (!this.canAccessEmployeeDelete() || !this.canDeleteEmployee()) {
+      return;
+    }
+    const employeeId = String(this.deleteEmployeeIdInput);
+    const confirmed = window.confirm(
+      `Eliminar definitivamente al empleado ${employeeId}? Esto borra embeddings, foto y asistencias.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    this.isDeletingEmployee = true;
+    try {
+      await firstValueFrom(this.attendanceService.deleteEmployee(employeeId));
+      this.message = `Empleado ${employeeId} eliminado correctamente.`;
+      this.errorMessage = '';
+      this.deleteEmployeeIdInput = 0;
+      this.loadEmployeesFromDb();
+      this.loadEmployeeStorage();
+    } catch (err) {
+      this.errorMessage = this.extractBackendErrorMessage(err) || 'No se pudo eliminar el empleado.';
+    } finally {
+      this.isDeletingEmployee = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  toggleDeleteEmployeePanel(): void {
+    if (!this.canAccessEmployeeDelete()) {
+      this.errorMessage = 'No tienes permisos para eliminar empleados.';
+      return;
+    }
+    this.showDeleteEmployeePanel = !this.showDeleteEmployeePanel;
+  }
+
+  loadUsers(): void {
+    if (!this.canAccessUserAdmin()) {
+      return;
+    }
+    this.isLoadingUsers = true;
+    this.userAdminError = '';
+    this.attendanceService
+      .getUsers()
+      .pipe(
+        finalize(() => {
+          this.isLoadingUsers = false;
+          this.cdr.detectChanges();
+        }),
+      )
+      .subscribe({
+        next: (users) => {
+          this.authUsers = users;
+          this.syncUserEdits(users);
+        },
+        error: () => {
+          this.userAdminError = 'No se pudieron cargar usuarios.';
+        },
+      });
+  }
+
+  canCreateUser(): boolean {
+    return Boolean(
+      this.newUserUsername.trim() && this.newUserPassword.trim() && this.newUserRole.trim(),
+    );
+  }
+
+  async createUser(): Promise<void> {
+    if (!this.canAccessUserAdmin() || this.isCreatingUser || !this.canCreateUser()) {
+      return;
+    }
+    this.isCreatingUser = true;
+    this.userAdminStatus = '';
+    this.userAdminError = '';
+    try {
+      await firstValueFrom(
+        this.attendanceService.createUser({
+          username: this.newUserUsername.trim(),
+          password: this.newUserPassword,
+          role: this.newUserRole.trim(),
+          active: this.newUserActive,
+        }),
+      );
+      this.userAdminStatus = 'Usuario creado correctamente.';
+      this.newUserUsername = '';
+      this.newUserPassword = '';
+      this.newUserRole = 'vigilante';
+      this.newUserActive = true;
+      this.loadUsers();
+    } catch (err) {
+      this.userAdminError = this.extractBackendErrorMessage(err) || 'No se pudo crear el usuario.';
+    } finally {
+      this.isCreatingUser = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  exportUsersCsv(): void {
+    if (this.authUsers.length === 0) {
+      return;
+    }
+    const headers = ['id', 'username', 'role', 'active', 'created_at'];
+    const rows = this.authUsers.map((user) => [
+      user.id,
+      user.username,
+      user.role,
+      user.active ? 'true' : 'false',
+      user.created_at,
+    ]);
+    this.downloadCsv('usuarios.csv', [headers, ...rows]);
+  }
+
+  getUserEdit(userID: number): UserEditState {
+    const key = String(userID);
+    const existing = this.userEdits[key];
+    if (existing) {
+      return existing;
+    }
+    const user = this.authUsers.find((row) => row.id === userID);
+    const fallback: UserEditState = {
+      role: user?.role ?? 'vigilante',
+      active: user?.active ?? true,
+      password: '',
+    };
+    this.userEdits[key] = fallback;
+    return fallback;
+  }
+
+  onUserRoleChange(userID: number, event: Event): void {
+    this.getUserEdit(userID).role = this.readInputValue(event);
+  }
+
+  onUserActiveChange(userID: number, event: Event): void {
+    this.getUserEdit(userID).active = this.readInputBool(event);
+  }
+
+  onUserPasswordChange(userID: number, event: Event): void {
+    this.getUserEdit(userID).password = this.readInputValue(event);
+  }
+
+  private syncUserEdits(users: AuthUser[]): void {
+    const next: Record<string, UserEditState> = {};
+    users.forEach((user) => {
+      next[String(user.id)] = {
+        role: user.role,
+        active: user.active,
+        password: '',
+      };
+    });
+    this.userEdits = next;
+  }
+
+  async updateUser(user: AuthUser): Promise<void> {
+    if (!this.canAccessUserAdmin() || this.isUpdatingUserId !== null) {
+      return;
+    }
+    const edit = this.getUserEdit(user.id);
+    if (edit.password.trim()) {
+      const confirmed = window.confirm('Confirmar cambio de password para este usuario?');
+      if (!confirmed) {
+        return;
+      }
+    }
+    if (edit.active === false && user.active === true) {
+      const confirmed = window.confirm(`Desactivar usuario ${user.username}?`);
+      if (!confirmed) {
+        return;
+      }
+    }
+    if (edit.role !== user.role) {
+      const confirmed = window.confirm(`Cambiar rol de ${user.username} a ${edit.role}?`);
+      if (!confirmed) {
+        return;
+      }
+    }
+    const payload: { id: number; role?: string; active?: boolean; password?: string } = { id: user.id };
+    if (edit.role !== user.role) {
+      payload.role = edit.role;
+    }
+    if (edit.active !== user.active) {
+      payload.active = edit.active;
+    }
+    if (edit.password.trim()) {
+      payload.password = edit.password.trim();
+    }
+    if (!payload.role && payload.active === undefined && !payload.password) {
+      this.userAdminStatus = 'Sin cambios por aplicar.';
+      return;
+    }
+    this.isUpdatingUserId = user.id;
+    this.userAdminStatus = '';
+    this.userAdminError = '';
+    try {
+      await firstValueFrom(this.attendanceService.updateUser(payload));
+      this.userAdminStatus = 'Usuario actualizado.';
+      this.loadUsers();
+    } catch (err) {
+      this.userAdminError = this.extractBackendErrorMessage(err) || 'No se pudo actualizar el usuario.';
+    } finally {
+      this.isUpdatingUserId = null;
+      this.cdr.detectChanges();
+    }
+  }
+
   startCreateRecord(): void {
     this.isCreating = true;
     this.isEditing = false;
@@ -1598,6 +2334,10 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
 
     const value = Number(rawValue);
     return Number.isFinite(value) && value > 0 ? value : 0;
+  }
+
+  readInputBool(event: Event): boolean {
+    return (event.target as HTMLInputElement).checked;
   }
 
   private emptyRecord(): AttendanceRecord {
