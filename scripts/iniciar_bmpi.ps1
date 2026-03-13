@@ -33,6 +33,40 @@ function Write-Warn {
     Write-Host "[WARN] $Message" -ForegroundColor Yellow
 }
 
+function Test-PortInUse {
+    param([int]$Port)
+
+    try {
+        $pattern = ":{0}\s" -f $Port
+        $line = netstat -ano | Select-String -Pattern $pattern | Select-Object -First 1
+        return $null -ne $line
+    }
+    catch {
+        return $false
+    }
+}
+
+function Resolve-AvailablePort {
+    param([int]$StartPort, [int]$MaxChecks = 5)
+
+    $port = $StartPort
+    for ($i = 0; $i -lt $MaxChecks; $i++) {
+        if (-not (Test-PortInUse -Port $port)) {
+            return $port
+        }
+        $port++
+    }
+    return $StartPort
+}
+
+function Ensure-NodeMemory {
+    param([int]$MaxMb = 4096)
+
+    if ([string]::IsNullOrWhiteSpace($env:NODE_OPTIONS) -or $env:NODE_OPTIONS -notmatch "max-old-space-size") {
+        $env:NODE_OPTIONS = "--max-old-space-size=$MaxMb"
+    }
+}
+
 function Get-RuntimeStatePath {
     return Join-Path $PSScriptRoot ".bmpi-runtime.json"
 }
@@ -100,6 +134,13 @@ function Add-RuntimePid {
 
 function Set-NodePath {
     $nodeDir = "C:\Program Files\nodejs"
+    $fallbackNode22 = "C:\Users\practicante\Tools\node-22\node-v22.12.0-win-x64"
+    if (Test-Path $fallbackNode22) {
+        $nodeDir = $fallbackNode22
+    }
+    if (-not [string]::IsNullOrWhiteSpace($env:BMPI_NODE_PATH) -and (Test-Path $env:BMPI_NODE_PATH)) {
+        $nodeDir = $env:BMPI_NODE_PATH
+    }
     if (-not (Test-Path $nodeDir)) {
         throw "No existe $nodeDir. Instala Node.js LTS primero."
     }
@@ -499,6 +540,14 @@ try {
     $nodeVersion = & node -v
     $npmVersion = & npm.cmd -v
     Write-Pass "Node $nodeVersion y npm $npmVersion detectados"
+    try {
+        $major = [int]($nodeVersion.TrimStart("v").Split(".")[0])
+        if ($major -ge 24) {
+            Write-Warn "Node $nodeVersion puede causar fallas de memoria con Angular. Recomendado usar Node 20 o 22 LTS."
+        }
+    } catch {
+        # ignore parse errors
+    }
 
     if ($Mode -eq "dev") {
         Write-Info "Modo desarrollo: inicia IA + backend + Angular (ng serve)"
@@ -598,9 +647,14 @@ try {
         }
 
         if (-not $SkipFrontend) {
-            Write-Info "Iniciando Angular en puerto $DevPort"
-            Write-Pass "Stack lista: IA :50051, Backend :8080, Frontend :$DevPort"
-            & npx.cmd ng serve --host localhost --port $DevPort
+            $resolvedDevPort = Resolve-AvailablePort -StartPort $DevPort -MaxChecks 6
+            if ($resolvedDevPort -ne $DevPort) {
+                Write-Warn "Puerto $DevPort ocupado. Se usarÃ¡ el puerto $resolvedDevPort."
+            }
+            Ensure-NodeMemory -MaxMb 4096
+            Write-Info "Iniciando Angular en puerto $resolvedDevPort"
+            Write-Pass "Stack lista: IA :50051, Backend :8080, Frontend :$resolvedDevPort"
+            & npx.cmd ng serve --host localhost --port $resolvedDevPort
         }
         else {
             Write-Pass "Preparación completada (sin ng serve por -SkipFrontend)"

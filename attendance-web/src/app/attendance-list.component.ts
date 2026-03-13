@@ -32,19 +32,43 @@ interface UserEditState {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="intro-splash" *ngIf="showIntroSplash" aria-hidden="true">
-      <div class="intro-logo">
+    <div class="intro-splash" *ngIf="showIntroSplash" [class.is-logout]="isLogoutSplash" aria-hidden="true">
+      <div class="intro-logo" *ngIf="!isLogoutSplash">
         <img src="bmpi-logo.png" alt="BMPI" />
       </div>
-      <div class="intro-line"></div>
-      <div class="intro-flash"></div>
+      <div class="intro-line" *ngIf="!isLogoutSplash"></div>
+      <div class="intro-flash" *ngIf="!isLogoutSplash"></div>
     </div>
     <section class="attendance-container" [class.reveal]="uiRevealPulse">
       <header>
-        <h2>Registro de Asistencia de la empresa BMPI</h2>
-        <p class="description">
-          Administra registros de asistencia y prepara embeddings faciales por empleado desde carpetas de fotos.
-        </p>
+        <div class="header-bar">
+          <div class="brand-row">
+            <img class="brand-logo" src="bmpi-logo.png" alt="BMPI" />
+            <div>
+              <h2>Registro de Asistencia de la empresa BMPI</h2>
+              <p class="description">
+                Administra registros de asistencia y prepara embeddings faciales por empleado desde carpetas de fotos.
+              </p>
+            </div>
+          </div>
+          <div class="session-compact" *ngIf="isLoggedIn">
+            <button type="button" class="session-trigger" (click)="toggleSessionMenu()">
+              <span class="session-avatar">BMPI</span>
+              <span class="session-text">{{ authUsername }} · {{ authRole }}</span>
+              <span class="session-caret">▾</span>
+            </button>
+            <div class="session-menu" *ngIf="showSessionMenu">
+              <p class="status">Usuario: {{ authUsername }}</p>
+              <p class="status">Rol: {{ authRole }}</p>
+              <p class="status">Sesion expira: {{ formatAuthExpiry(authExpiresAt) }}</p>
+              <p class="status" *ngIf="authInfo">{{ authInfo }}</p>
+              <div class="toolbar compact">
+                <button type="button" class="small" (click)="openAccountView()">Mi cuenta</button>
+                <button type="button" class="small danger" (click)="logout()">Cerrar sesion</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </header>
 
       <section class="panel" *ngIf="!isLoggedIn">
@@ -87,21 +111,11 @@ interface UserEditState {
             </button>
           </div>
         </form>
-        <p class="status" *ngIf="authStatus">{{ authStatus }}</p>
+        <div class="toast toast-success" *ngIf="authStatus">{{ authStatus }}</div>
         <p class="status" *ngIf="authInfo">{{ authInfo }}</p>
         <p class="error" *ngIf="authError">{{ authError }}</p>
       </section>
 
-      <section class="panel" *ngIf="isLoggedIn">
-        <h3>Sesion activa</h3>
-        <p class="status">Usuario: {{ authUsername }} · Rol: {{ authRole }}</p>
-        <p class="status">Sesion expira: {{ formatAuthExpiry(authExpiresAt) }}</p>
-        <p class="status" *ngIf="authInfo">{{ authInfo }}</p>
-        <div class="toolbar compact">
-          <button type="button" class="small" (click)="openAccountView()">Mi cuenta</button>
-          <button type="button" class="danger" (click)="logout()">Cerrar sesion</button>
-        </div>
-      </section>
 
       <section class="panel" *ngIf="activeView === 'account' && isLoggedIn">
         <h3>Mi cuenta</h3>
@@ -597,6 +611,81 @@ interface UserEditState {
         letter-spacing: -0.02em;
       }
 
+      .header-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+      }
+
+      .brand-row {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .brand-logo {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 0.35rem;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+      }
+
+      .session-compact {
+        position: relative;
+      }
+
+      .session-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        background: #0f172a;
+        color: #f8fafc;
+        border-radius: 999px;
+        padding: 0.45rem 0.8rem;
+        box-shadow: 0 10px 18px rgba(15, 23, 42, 0.2);
+      }
+
+      .session-avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-size: 0.7rem;
+        font-weight: 700;
+        background: #2563eb;
+        letter-spacing: 0.08em;
+      }
+
+      .session-text {
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .session-caret {
+        font-size: 0.75rem;
+        opacity: 0.85;
+      }
+
+      .session-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 0.6rem);
+        background: #ffffff;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        border-radius: 14px;
+        padding: 0.8rem 0.9rem;
+        min-width: 240px;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+        z-index: 5;
+      }
+
       .description {
         color: var(--text-muted);
         margin-top: 0.25rem;
@@ -606,10 +695,7 @@ interface UserEditState {
       .intro-splash {
         position: fixed;
         inset: 0;
-        background:
-          radial-gradient(circle at 18% 22%, rgba(59, 130, 246, 0.18), transparent 45%),
-          radial-gradient(circle at 82% 18%, rgba(245, 158, 11, 0.16), transparent 40%),
-          linear-gradient(160deg, #f8fafc 0%, #eef2ff 50%, #e2e8f0 100%);
+        background: transparent;
         display: grid;
         place-items: center;
         align-items: center;
@@ -622,15 +708,8 @@ interface UserEditState {
         padding: 0;
       }
 
-      .intro-splash::before {
-        content: '';
-        position: absolute;
-        inset: -10%;
-        background:
-          radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.22), transparent 55%),
-          radial-gradient(circle at 78% 20%, rgba(245, 158, 11, 0.2), transparent 50%);
-        opacity: 0.9;
-        animation: splash-zoom 1.6s ease forwards;
+      .intro-splash.is-logout {
+        animation: splash-logout 900ms ease forwards;
       }
 
       .intro-logo {
@@ -640,9 +719,11 @@ interface UserEditState {
         height: 100vh;
         justify-items: center;
         align-items: center;
-        filter: drop-shadow(0 28px 50px rgba(15, 23, 42, 0.4));
-        transform: translateZ(0) scale(0.9);
-        animation: letters-in 520ms ease forwards, letters-out 820ms ease 0.85s forwards;
+        transform-origin: center center;
+        transform: translate3d(0, 0, 0) scale(0.9);
+        will-change: transform, opacity;
+        animation: letters-in 420ms cubic-bezier(0.16, 0.84, 0.44, 1) forwards,
+          letters-out 900ms cubic-bezier(0.16, 0.84, 0.44, 1) 0.8s forwards;
       }
 
       .intro-logo img {
@@ -653,10 +734,11 @@ interface UserEditState {
         width: auto;
         height: auto;
         object-fit: contain;
+        filter: drop-shadow(0 12px 24px rgba(15, 23, 42, 0.18));
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
         transform: translateZ(0);
-        will-change: transform, opacity, filter;
+        will-change: transform;
         image-rendering: auto;
         filter: none;
         opacity: 1;
@@ -860,20 +942,25 @@ interface UserEditState {
         100% { opacity: 0; visibility: hidden; }
       }
 
+      @keyframes splash-logout {
+        0% { opacity: 0; }
+        40% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+
       @keyframes splash-zoom {
         0% { transform: scale(1); }
-        100% { transform: scale(1.08); }
+        100% { transform: scale(1.04); }
       }
 
       @keyframes letters-in {
-        0% { opacity: 0; transform: scale(0.82) translateY(6px); filter: none; }
-        100% { opacity: 1; transform: scale(1) translateY(0); filter: none; }
+        0% { opacity: 0; transform: scale(0.9) translateY(4px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
       }
 
       @keyframes letters-out {
-        0% { opacity: 1; transform: scale(1) translateY(0); filter: none; }
-        40% { opacity: 1; transform: scale(1.35) translateY(-6px); filter: blur(1px); }
-        100% { opacity: 0; transform: scale(2.6) translateY(-12px); filter: blur(8px); }
+        0% { opacity: 1; transform: scale(1) translateY(0); }
+        100% { opacity: 0; transform: scale(2.4) translateY(-10px); }
       }
 
       @keyframes flash-pop {
@@ -893,6 +980,11 @@ interface UserEditState {
         .form-grid.three { grid-template-columns: 1fr; }
         .actions { flex-direction: column; }
         button.section-toggle { width: 100%; justify-content: center; }
+        .header-bar { flex-direction: column; align-items: stretch; }
+        .brand-row { grid-template-columns: 1fr; text-align: center; }
+        .brand-logo { margin: 0 auto; }
+        .session-trigger { width: 100%; justify-content: space-between; }
+        .session-menu { position: static; margin-top: 0.6rem; }
       }
     `,
   ],
@@ -956,6 +1048,8 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   passwordError = '';
   showIntroSplash = false;
   uiRevealPulse = false;
+  isLogoutSplash = false;
+  showSessionMenu = false;
   private introTimer: ReturnType<typeof setTimeout> | null = null;
   private revealStartTimer: ReturnType<typeof setTimeout> | null = null;
   private revealEndTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1300,6 +1394,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
+    this.isLogoutSplash = false;
     if (this.introTimer) {
       clearTimeout(this.introTimer);
       this.introTimer = null;
@@ -1326,6 +1421,23 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       this.uiRevealPulse = false;
       this.cdr.detectChanges();
     }, 1900);
+  }
+
+  private playLogoutOutro(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    this.isLogoutSplash = true;
+    if (this.introTimer) {
+      clearTimeout(this.introTimer);
+      this.introTimer = null;
+    }
+    this.showIntroSplash = true;
+    this.uiRevealPulse = false;
+    this.introTimer = setTimeout(() => {
+      this.showIntroSplash = false;
+      this.cdr.detectChanges();
+    }, 900);
   }
 
   private focusLoginInput(): void {
@@ -1453,6 +1565,10 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
   }
 
+  toggleSessionMenu(): void {
+    this.showSessionMenu = !this.showSessionMenu;
+  }
+
   canUpdatePassword(): boolean {
     const current = this.currentPasswordInput.trim();
     const next = this.newPasswordInput.trim();
@@ -1535,15 +1651,23 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     if (!this.isLoggedIn) {
       return;
     }
+    if (isPlatformBrowser(this.platformId)) {
+      const confirmed = window.confirm('¿Seguro que deseas cerrar sesion?');
+      if (!confirmed) {
+        return;
+      }
+    }
+    // Cierre inmediato en UI
+    this.playLogoutOutro();
+    this.backToHome();
+    this.clearAuthState();
+    this.authStatus = 'Sesion cerrada.';
+    this.showSessionMenu = false;
+    this.focusLoginInput();
     try {
       await firstValueFrom(this.attendanceService.logout());
     } catch {
       // ignore backend logout errors
-    } finally {
-      this.backToHome();
-      this.clearAuthState();
-      this.authStatus = 'Sesion cerrada.';
-      this.focusLoginInput();
     }
   }
 
@@ -1644,6 +1768,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.passwordStatus = '';
     this.passwordError = '';
     this.authInfo = '';
+    this.showSessionMenu = false;
     try {
       window.sessionStorage.removeItem(this.authTokenStorageKey);
       window.sessionStorage.removeItem(this.authRoleStorageKey);
