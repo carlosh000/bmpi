@@ -139,7 +139,7 @@ ROJO:
 
 ### 5.3 Seguridad
 
-- [ ] API keys obligatorias en producción (`BMPI_OPERATOR_API_KEY`, `BMPI_ADMIN_API_KEY`)
+- [ ] Autenticacion por login activa (`BMPI_BOOTSTRAP_ADMIN_USER`, `BMPI_BOOTSTRAP_ADMIN_PASS`)
 - [ ] TLS activo para gRPC entre backend e IA donde aplique
 - [ ] política de acceso a DB y respaldos validada
 

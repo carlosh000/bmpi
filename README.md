@@ -211,9 +211,12 @@ scripts/verificar_proto_sync.sh
 ### Backend Go
 
 - `BMPI_ALLOWED_ORIGINS`: lista separada por coma para CORS.
-- `BMPI_OPERATOR_API_KEY`: clave para operaciones de asistencia y registro.
-- `BMPI_ADMIN_API_KEY`: clave para operaciones administrativas (incluye fotos en storage).
-- `BMPI_FRONTEND_API_KEY`: opcional para SSR; si se define se inyecta a frontend como `window.__BMPI_API_KEY__` (si no, usa `BMPI_OPERATOR_API_KEY`).
+- `BMPI_BOOTSTRAP_ADMIN_USER`: usuario admin inicial (se crea si no existe).
+- `BMPI_BOOTSTRAP_ADMIN_PASS`: password del admin inicial.
+- `BMPI_AUTH_TOKEN_TTL_HOURS`: duracion del token en horas (default 12).
+- `BMPI_AUTH_MAX_ATTEMPTS`: intentos maximos de login antes de bloqueo (default 5).
+- `BMPI_AUTH_WINDOW_MINUTES`: ventana de intentos (default 10).
+- `BMPI_AUTH_LOCK_MINUTES`: minutos de bloqueo (default 5).
 - `BMPI_FACE_GRPC_ADDR`: direcciÃ³n del servicio IA (default `localhost:50051`).
 - `BMPI_FACE_GRPC_TLS`: `true/false` para dial gRPC con TLS.
 - `BMPI_FACE_GRPC_CA_CERT`: ruta a CA PEM (si TLS habilitado).
@@ -236,12 +239,6 @@ scripts/verificar_proto_sync.sh
 - `BMPI_RECOGNIZE_BURST_MIN_VOTES`: votos mínimos para aceptar identidad en `recognize-burst` (default `2`).
 - `BMPI_RECOGNIZE_BURST_MIN_CONFIDENCE`: confianza mínima por frame para entrar a votación (default `0.35`).
 - `BMPI_RECOGNIZE_BURST_RPC_TIMEOUT_MS`: timeout por frame hacia IA en ms para `recognize-burst` (default `7000`).
-
-Nota operativa API key (frontend):
-
-- El frontend envía `X-API-Key` si encuentra valor en:
-  - `window.__BMPI_API_KEY__`, o
-  - `localStorage['bmpi_api_key']` (configurable desde UI).
 
 ### Recomendación de producción (benchmark final)
 

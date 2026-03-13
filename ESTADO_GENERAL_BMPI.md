@@ -639,3 +639,23 @@ Durante la jornada del 5-mar-2026 se cerraron mejoras de produccion para operaci
 - Auditoria de cambios en tabla `auth_audit`.
 - Sesion persiste en recarga (sessionStorage) y cierra tras 60 minutos de inactividad.
 - Inicio DEV actualizado para recompilar backend y evitar binario viejo (login 404).
+## Actualizacion 2026-03-13 (Auth y limpieza API key)
+
+### Cambios clave
+- Login obligatorio con roles; sin API key en frontend ni backend.
+- Refresh de token automatico + heartbeat para logout inmediato si se desactiva usuario.
+- "Mi cuenta" separada para cambio de password.
+- Rate limit por intentos fallidos en login.
+- Splash de inicio con logo BMPI y animacion.
+
+### Limpieza tecnica
+- Eliminado soporte de API key en frontend y servidor SSR.
+- Scripts y docs actualizados a login/token.
+- Smoke tests usan login y token.
+
+### Scripts nuevos
+- scripts/auth_login_token.ps1: obtiene token con usuario/password.
+
+### Pendientes opcionales
+- Ajustar heartbeat a 30s si se quiere logout casi inmediato.
+- Agregar script de revocacion masiva si se requiere.

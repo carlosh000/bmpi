@@ -9,7 +9,7 @@ import {
   RecognizeBurstResponse,
   RegisterPhotosResponse,
 } from './attendance.service';
-import { finalize, firstValueFrom } from 'rxjs';
+import { finalize, firstValueFrom, timeout } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 
 interface EmbeddingAssignment {
@@ -32,7 +32,14 @@ interface UserEditState {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="attendance-container">
+    <div class="intro-splash" *ngIf="showIntroSplash" aria-hidden="true">
+      <div class="intro-logo">
+        <img src="bmpi-logo.png" alt="BMPI" />
+      </div>
+      <div class="intro-line"></div>
+      <div class="intro-flash"></div>
+    </div>
+    <section class="attendance-container" [class.reveal]="uiRevealPulse">
       <header>
         <h2>Registro de Asistencia de la empresa BMPI</h2>
         <p class="description">
@@ -42,30 +49,44 @@ interface UserEditState {
 
       <section class="panel" *ngIf="!isLoggedIn">
         <h3>Acceso</h3>
-        <div class="form-grid">
-          <label>
-            Usuario
-            <input type="text" [value]="loginUsername" (input)="loginUsername = readInputValue($event)" />
-          </label>
-          <label>
-            Password
-            <div class="password-field">
+        <form class="login-form" (submit)="$event.preventDefault(); submitLogin()">
+          <div class="form-grid">
+            <label>
+              Usuario
               <input
-                [type]="showLoginPassword ? 'text' : 'password'"
-                [value]="loginPassword"
-                (input)="loginPassword = readInputValue($event)"
+                #loginUsernameField
+                type="text"
+                [value]="loginUsername"
+                (input)="loginUsername = readInputValue($event)"
               />
-              <button type="button" class="small" (click)="showLoginPassword = !showLoginPassword">
-                {{ showLoginPassword ? 'Ocultar' : 'Ver' }}
-              </button>
-            </div>
-          </label>
-        </div>
-        <div class="toolbar compact">
-          <button type="button" [disabled]="isLoggingIn || !canSubmitLogin()" (click)="submitLogin()">
-            {{ isLoggingIn ? 'Ingresando...' : 'Entrar' }}
-          </button>
-        </div>
+            </label>
+            <label>
+              Password
+              <div class="password-field">
+                <input
+                  [type]="showLoginPassword ? 'text' : 'password'"
+                  [value]="loginPassword"
+                  (input)="loginPassword = readInputValue($event)"
+                  (keydown)="onPasswordKeydown($event)"
+                  (keyup)="onPasswordKeydown($event)"
+                />
+                <button type="button" class="small" (click)="showLoginPassword = !showLoginPassword">
+                  {{ showLoginPassword ? 'Ocultar' : 'Ver' }}
+                </button>
+              </div>
+              <small *ngIf="isCapsLockOn" class="hint-invalid">Caps Lock activado.</small>
+            </label>
+          </div>
+          <div class="toolbar compact">
+            <label class="inline-toggle">
+              <input type="checkbox" [checked]="rememberLogin" (change)="rememberLogin = readInputBool($event)" />
+              Recordar sesion en este equipo
+            </label>
+            <button type="submit" [disabled]="isLoggingIn || !canSubmitLogin()">
+              {{ isLoggingIn ? 'Ingresando...' : 'Entrar' }}
+            </button>
+          </div>
+        </form>
         <p class="status" *ngIf="authStatus">{{ authStatus }}</p>
         <p class="status" *ngIf="authInfo">{{ authInfo }}</p>
         <p class="error" *ngIf="authError">{{ authError }}</p>
@@ -74,8 +95,63 @@ interface UserEditState {
       <section class="panel" *ngIf="isLoggedIn">
         <h3>Sesion activa</h3>
         <p class="status">Usuario: {{ authUsername }} · Rol: {{ authRole }}</p>
+        <p class="status">Sesion expira: {{ formatAuthExpiry(authExpiresAt) }}</p>
+        <p class="status" *ngIf="authInfo">{{ authInfo }}</p>
         <div class="toolbar compact">
+          <button type="button" class="small" (click)="openAccountView()">Mi cuenta</button>
           <button type="button" class="danger" (click)="logout()">Cerrar sesion</button>
+        </div>
+      </section>
+
+      <section class="panel" *ngIf="activeView === 'account' && isLoggedIn">
+        <h3>Mi cuenta</h3>
+        <p class="status">Gestiona tu password y revisa el estado de tu sesion.</p>
+        <div class="toolbar compact">
+          <button type="button" class="section-toggle" (click)="backToHome()">Volver</button>
+        </div>
+        <div class="panel mini-panel">
+          <div class="form-grid">
+            <label>
+              Password actual
+              <input
+                [type]="showCurrentPassword ? 'text' : 'password'"
+                [value]="currentPasswordInput"
+                (input)="currentPasswordInput = readInputValue($event)"
+              />
+            </label>
+            <label>
+              Nuevo password
+              <input
+                [type]="showNewPassword ? 'text' : 'password'"
+                [value]="newPasswordInput"
+                (input)="newPasswordInput = readInputValue($event)"
+              />
+            </label>
+            <label>
+              Confirmar nuevo password
+              <input
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                [value]="confirmPasswordInput"
+                (input)="confirmPasswordInput = readInputValue($event)"
+              />
+            </label>
+          </div>
+          <div class="toolbar compact">
+            <button type="button" class="small" (click)="togglePasswordVisibility('current')">
+              {{ showCurrentPassword ? 'Ocultar' : 'Ver' }} actual
+            </button>
+            <button type="button" class="small" (click)="togglePasswordVisibility('new')">
+              {{ showNewPassword ? 'Ocultar' : 'Ver' }} nuevo
+            </button>
+            <button type="button" class="small" (click)="togglePasswordVisibility('confirm')">
+              {{ showConfirmPassword ? 'Ocultar' : 'Ver' }} confirmar
+            </button>
+            <button type="button" [disabled]="isUpdatingPassword || !canUpdatePassword()" (click)="updateOwnPassword()">
+              {{ isUpdatingPassword ? 'Actualizando...' : 'Actualizar password' }}
+            </button>
+          </div>
+          <p class="status" *ngIf="passwordStatus">{{ passwordStatus }}</p>
+          <p class="error" *ngIf="passwordError">{{ passwordError }}</p>
         </div>
       </section>
 
@@ -86,29 +162,6 @@ interface UserEditState {
           <button type="button" class="section-toggle" [disabled]="!canAccessEmbedding()" (click)="openEmbeddingView()">Extraer embeddings</button>
           <button type="button" class="section-toggle" [disabled]="!canAccessRecognition()" (click)="openRecognitionView()">Reconocimiento entrada</button>
           <button type="button" class="section-toggle" *ngIf="canAccessUserAdmin()" (click)="openAdminView()">Usuarios y roles</button>
-          <button type="button" class="section-toggle" (click)="toggleApiKeyPanel()">
-            {{ showApiKeyPanel ? 'Ocultar API key' : 'Config API key' }}
-          </button>
-        </div>
-
-        <div class="panel" *ngIf="showApiKeyPanel">
-          <h4>Configuración de API key</h4>
-          <div class="form-grid">
-            <label>
-              API key operador/admin
-              <input
-                type="password"
-                [value]="apiKeyInput"
-                (input)="apiKeyInput = readInputValue($event)"
-                placeholder="Pega la API key de backend"
-              />
-            </label>
-            <div class="toolbar compact">
-              <button type="button" (click)="saveApiKey()">Guardar key</button>
-              <button type="button" class="danger" (click)="clearApiKey()">Limpiar key</button>
-            </div>
-          </div>
-          <p class="status">{{ apiKeyStatus }}</p>
         </div>
 
         <div class="toolbar compact">
@@ -490,52 +543,357 @@ interface UserEditState {
   `,
   styles: [
     `
-      .attendance-container { margin: 2rem auto; max-width: 1040px; font-family: Arial, sans-serif; display: grid; gap: 1.5rem; }
-      .description { color: #4b5563; margin-top: 0.25rem; }
-      .panel { border: 1px solid #dbeafe; border-radius: 10px; padding: 1rem; background: #f8fbff; }
-      .admin-panel { background: #fff5f5; border-color: #fecaca; }
-      .toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1rem 0; }
-      .toolbar.compact { margin: 0.75rem 0; }
+      @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap');
+
+      :host {
+        --bg-base: #0f172a;
+        --bg-muted: #111827;
+        --surface: #f8fafc;
+        --surface-strong: #ffffff;
+        --text-main: #0f172a;
+        --text-muted: #475569;
+        --accent: #2563eb;
+        --accent-soft: #93c5fd;
+        --accent-warm: #f59e0b;
+        --danger: #dc2626;
+        --success: #16a34a;
+        display: block;
+        min-height: 100vh;
+        position: relative;
+        color: var(--text-main);
+      }
+
+      :host::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.18), transparent 50%),
+          radial-gradient(circle at 85% 15%, rgba(245, 158, 11, 0.15), transparent 45%),
+          linear-gradient(160deg, #f8fafc 0%, #eef2ff 50%, #e2e8f0 100%);
+        z-index: -1;
+      }
+
+      .attendance-container {
+        margin: 2.5rem auto 3rem;
+        max-width: 1100px;
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+        display: grid;
+        gap: 1.6rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .attendance-container.reveal {
+        opacity: 0;
+        transform: translateY(18px) scale(0.98);
+        animation: container-in 720ms ease 0.85s forwards;
+      }
+
+      header h2 {
+        font-family: 'Unbounded', 'Space Grotesk', sans-serif;
+        font-size: clamp(1.6rem, 2.2vw, 2.2rem);
+        margin-bottom: 0.35rem;
+        letter-spacing: -0.02em;
+      }
+
+      .description {
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+        max-width: 700px;
+      }
+
+      .intro-splash {
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(circle at 18% 22%, rgba(59, 130, 246, 0.18), transparent 45%),
+          radial-gradient(circle at 82% 18%, rgba(245, 158, 11, 0.16), transparent 40%),
+          linear-gradient(160deg, #f8fafc 0%, #eef2ff 50%, #e2e8f0 100%);
+        display: grid;
+        place-items: center;
+        align-items: center;
+        justify-items: center;
+        gap: 1rem;
+        z-index: 20;
+        animation: splash-out 900ms ease 1.35s forwards;
+        pointer-events: none;
+        overflow: hidden;
+        padding: 0;
+      }
+
+      .intro-splash::before {
+        content: '';
+        position: absolute;
+        inset: -10%;
+        background:
+          radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.22), transparent 55%),
+          radial-gradient(circle at 78% 20%, rgba(245, 158, 11, 0.2), transparent 50%);
+        opacity: 0.9;
+        animation: splash-zoom 1.6s ease forwards;
+      }
+
+      .intro-logo {
+        display: grid;
+        place-items: center;
+        width: 100vw;
+        height: 100vh;
+        justify-items: center;
+        align-items: center;
+        filter: drop-shadow(0 28px 50px rgba(15, 23, 42, 0.4));
+        transform: translateZ(0) scale(0.9);
+        animation: letters-in 520ms ease forwards, letters-out 820ms ease 0.85s forwards;
+      }
+
+      .intro-logo img {
+        display: block;
+        margin: 0 auto;
+        max-width: min(90vw, 900px);
+        max-height: 80vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: translateZ(0);
+        will-change: transform, opacity, filter;
+        image-rendering: auto;
+        filter: none;
+        opacity: 1;
+      }
+
+      .intro-flash {
+        position: absolute;
+        inset: 0;
+        background: #ffffff;
+        opacity: 0;
+        animation: flash-pop 1.2s ease 0.95s forwards;
+        pointer-events: none;
+      }
+
+      .intro-line {
+        width: min(60vw, 360px);
+        height: 3px;
+        background: linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.9), transparent);
+        opacity: 0;
+        animation: line-scan 650ms ease 0.28s forwards;
+      }
+
+      .panel {
+        border-radius: 18px;
+        padding: 1.2rem 1.4rem;
+        background: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+        animation: panel-in 520ms ease;
+      }
+
+      .mini-panel {
+        margin-top: 0.9rem;
+        background: #f1f5f9;
+        border: 1px dashed rgba(148, 163, 184, 0.55);
+        box-shadow: none;
+      }
+
+      .admin-panel {
+        background: linear-gradient(145deg, #fff5f5 0%, #ffffff 100%);
+        border-color: rgba(248, 113, 113, 0.35);
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 1rem 0;
+      }
+
+      .toolbar.compact { margin: 0.8rem 0; }
       .section-toolbar { margin-bottom: 0.35rem; }
-      button { background: #2563eb; border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 0.92rem; padding: 0.55rem 0.85rem; }
-      button.small { padding: 0.35rem 0.6rem; font-size: 0.84rem; }
-      button.section-toggle { font-size: 1rem; font-weight: 600; padding: 0.75rem 1.1rem; }
-      button.danger { background: #dc2626; }
-      button:disabled { background: #94a3b8; cursor: not-allowed; }
+      .login-form { display: grid; gap: 0.8rem; }
+      .inline-toggle { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.86rem; color: #475569; }
+      .inline-toggle input { width: auto; }
+
+      button {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        border: none;
+        border-radius: 10px;
+        color: #fff;
+        cursor: pointer;
+        font-size: 0.95rem;
+        padding: 0.6rem 1rem;
+        transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+      }
+
+      button:hover { transform: translateY(-1px); }
+      button:active { transform: translateY(0); }
+      button.small { padding: 0.4rem 0.65rem; font-size: 0.85rem; }
+
+      button.section-toggle {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 0.75rem 1.1rem;
+        background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%);
+        box-shadow: 0 12px 18px rgba(15, 23, 42, 0.2);
+      }
+
+      button.danger {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        box-shadow: 0 10px 18px rgba(185, 28, 28, 0.22);
+      }
+
+      button:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
       .hidden-input { display: none; }
       .status { margin: 0.35rem 0; color: #0f172a; }
+
       .progress-wrap { display: flex; align-items: center; gap: 0.6rem; margin: 0.4rem 0 0.7rem; }
-      .progress-track { flex: 1; height: 10px; border-radius: 999px; background: #dbeafe; overflow: hidden; }
+      .progress-track { flex: 1; height: 10px; border-radius: 999px; background: rgba(148, 163, 184, 0.35); overflow: hidden; }
       .progress-fill { height: 100%; background: #2563eb; transition: width 180ms ease; }
       .progress-fill.complete { background: #16a34a; }
       .progress-fill.error { background: #dc2626; }
+
       .error { margin: 0.35rem 0; color: #b91c1c; }
-      .toast { border-radius: 8px; font-size: 0.9rem; margin: 0.55rem 0; padding: 0.6rem 0.75rem; }
+
+      .toast {
+        border-radius: 12px;
+        font-size: 0.9rem;
+        margin: 0.55rem 0;
+        padding: 0.65rem 0.9rem;
+        box-shadow: 0 10px 18px rgba(15, 23, 42, 0.1);
+      }
+
       .toast-success { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
       .toast-error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
       .toast-warning { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; }
-      .form-grid { display: grid; gap: 0.75rem; grid-template-columns: 2fr auto; align-items: end; }
+
+      .form-grid {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        align-items: end;
+      }
+
       .form-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      label { display: grid; gap: 0.35rem; font-size: 0.88rem; color: #334155; }
+
+      label {
+        display: grid;
+        gap: 0.35rem;
+        font-size: 0.9rem;
+        color: #334155;
+      }
+
       .password-field { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; align-items: center; }
       small { font-size: 0.78rem; }
       .hint-valid { color: #166534; }
       .hint-invalid { color: #b91c1c; }
-      input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; }
-      select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; background: #fff; }
+
+      input, select {
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        border-radius: 10px;
+        padding: 0.55rem 0.7rem;
+        font-family: inherit;
+        background: #fff;
+        transition: border-color 150ms ease, box-shadow 150ms ease;
+      }
+
+      input:focus, select:focus {
+        outline: none;
+        border-color: rgba(37, 99, 235, 0.8);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      }
+
       table { border-collapse: collapse; width: 100%; margin-top: 0.75rem; }
-      th, td { border: 1px solid #d1d5db; padding: 0.65rem; }
-      th { background: #eff6ff; text-align: left; }
+      th, td { border: 1px solid rgba(148, 163, 184, 0.4); padding: 0.65rem; }
+      th { background: #eff6ff; text-align: left; font-weight: 600; }
+      tbody tr { transition: background 160ms ease; }
+      tbody tr:hover { background: rgba(59, 130, 246, 0.05); }
+
       .actions { display: flex; gap: 0.5rem; }
       .row-lock-note { align-self: center; color: #6b7280; font-size: 0.75rem; }
       .empty { color: #6b7280; text-align: center; }
-      .embedding-results { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 1rem; padding: 0.75rem; }
+
+      .embedding-results {
+        background: #fff;
+        border: 1px solid rgba(226, 232, 240, 0.85);
+        border-radius: 12px;
+        margin-top: 1rem;
+        padding: 0.85rem;
+      }
+
       .embedding-results ul { list-style: none; margin: 0; padding: 0; }
       .embedding-results li { align-items: baseline; display: flex; gap: 0.75rem; padding: 0.25rem 0; }
       .embedding-results span { color: #475569; font-family: 'Courier New', monospace; }
+
       .mini-table { margin-top: 1rem; }
-      .recognition-stage { margin-top: 0.8rem; border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden; max-width: 560px; background: #0f172a; }
+
+      .recognition-stage {
+        margin-top: 0.8rem;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        border-radius: 14px;
+        overflow: hidden;
+        max-width: 560px;
+        background: #0f172a;
+        box-shadow: 0 16px 30px rgba(15, 23, 42, 0.2);
+      }
+
       .recognition-stage video { display: block; width: 100%; height: auto; }
+
+      @keyframes container-in {
+        from { opacity: 0; transform: translateY(18px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      @keyframes panel-in {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes splash-out {
+        0% { opacity: 1; }
+        70% { opacity: 1; }
+        100% { opacity: 0; visibility: hidden; }
+      }
+
+      @keyframes splash-zoom {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.08); }
+      }
+
+      @keyframes letters-in {
+        0% { opacity: 0; transform: scale(0.82) translateY(6px); filter: none; }
+        100% { opacity: 1; transform: scale(1) translateY(0); filter: none; }
+      }
+
+      @keyframes letters-out {
+        0% { opacity: 1; transform: scale(1) translateY(0); filter: none; }
+        40% { opacity: 1; transform: scale(1.35) translateY(-6px); filter: blur(1px); }
+        100% { opacity: 0; transform: scale(2.6) translateY(-12px); filter: blur(8px); }
+      }
+
+      @keyframes flash-pop {
+        0% { opacity: 0; }
+        20% { opacity: 0.55; }
+        100% { opacity: 0; }
+      }
+
+      @keyframes line-scan {
+        0% { opacity: 0; transform: scaleX(0.4); }
+        100% { opacity: 1; transform: scaleX(1); }
+      }
+
+      @media (max-width: 900px) {
+        .attendance-container { margin: 1.5rem 1rem 2.5rem; }
+        .form-grid { grid-template-columns: 1fr; }
+        .form-grid.three { grid-template-columns: 1fr; }
+        .actions { flex-direction: column; }
+        button.section-toggle { width: 100%; justify-content: center; }
+      }
     `,
   ],
 })
@@ -545,6 +903,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   @ViewChild('photoFolderInput') photoFolderInput?: ElementRef<HTMLInputElement>;
   @ViewChild('excelImportInput') excelImportInput?: ElementRef<HTMLInputElement>;
   @ViewChild('attendanceDateInput') attendanceDateInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('loginUsernameField') loginUsernameField?: ElementRef<HTMLInputElement>;
   @ViewChild('recognitionVideo') recognitionVideo?: ElementRef<HTMLVideoElement>;
   @ViewChild('recognitionCanvas') recognitionCanvas?: ElementRef<HTMLCanvasElement>;
 
@@ -575,11 +934,10 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   autoRecognitionEnabled = true;
   isCameraRunning = false;
   isRecognizingBurst = false;
-  showApiKeyPanel = false;
-  apiKeyInput = '';
-  apiKeyStatus = 'API key no configurada.';
   loginUsername = '';
   loginPassword = '';
+  rememberLogin = true;
+  isCapsLockOn = false;
   authRole = '';
   authUsername = '';
   authStatus = '';
@@ -587,14 +945,32 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   authExpiresAt = '';
   isLoggingIn = false;
   showLoginPassword = false;
+  currentPasswordInput = '';
+  newPasswordInput = '';
+  confirmPasswordInput = '';
+  showCurrentPassword = false;
+  showNewPassword = false;
+  showConfirmPassword = false;
+  isUpdatingPassword = false;
+  passwordStatus = '';
+  passwordError = '';
+  showIntroSplash = false;
+  uiRevealPulse = false;
+  private introTimer: ReturnType<typeof setTimeout> | null = null;
+  private revealStartTimer: ReturnType<typeof setTimeout> | null = null;
+  private revealEndTimer: ReturnType<typeof setTimeout> | null = null;
   private inactivityTimer: ReturnType<typeof setInterval> | null = null;
+  private authRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+  private authHeartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private readonly inactivityLimitMs = 60 * 60 * 1000;
   private readonly lastActivityKey = 'bmpi_last_activity';
   private readonly selectedDateKey = 'bmpi_selected_date';
+  private readonly rememberLoginKey = 'bmpi_auth_remember';
   private readonly activityHandler = () => this.recordActivity();
   authView: 'login' = 'login';
   authInfo = '';
   authError = '';
+  private authInfoTimer: ReturnType<typeof setTimeout> | null = null;
   authUsers: AuthUser[] = [];
   userAdminStatus = '';
   userAdminError = '';
@@ -610,6 +986,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   private readonly authRoleStorageKey = 'bmpi_auth_role';
   private readonly authUsernameStorageKey = 'bmpi_auth_username';
   private readonly authExpiresStorageKey = 'bmpi_auth_expires';
+  private authStorage: Storage | null = null;
   private recognitionStream: MediaStream | null = null;
   private autoRecognitionTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -650,7 +1027,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
 
   isEditing = false;
   isCreating = false;
-  activeView: 'home' | 'manual' | 'embedding' | 'recognition' | 'admin' = 'home';
+  activeView: 'home' | 'manual' | 'embedding' | 'recognition' | 'admin' | 'account' = 'home';
   editingRecord: AttendanceRecord = this.emptyRecord();
   editingOriginalRowId: number | null = null;
 
@@ -678,6 +1055,34 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       clearInterval(this.inactivityTimer);
       this.inactivityTimer = null;
     }
+    if (this.authRefreshTimer) {
+      clearTimeout(this.authRefreshTimer);
+      this.authRefreshTimer = null;
+    }
+    if (this.authHeartbeatTimer) {
+      clearInterval(this.authHeartbeatTimer);
+      this.authHeartbeatTimer = null;
+    }
+    if (this.authInfoTimer) {
+      clearTimeout(this.authInfoTimer);
+      this.authInfoTimer = null;
+    }
+    if (this.authInfoTimer) {
+      clearTimeout(this.authInfoTimer);
+      this.authInfoTimer = null;
+    }
+    if (this.introTimer) {
+      clearTimeout(this.introTimer);
+      this.introTimer = null;
+    }
+    if (this.revealStartTimer) {
+      clearTimeout(this.revealStartTimer);
+      this.revealStartTimer = null;
+    }
+    if (this.revealEndTimer) {
+      clearTimeout(this.revealEndTimer);
+      this.revealEndTimer = null;
+    }
     this.removeActivityListeners();
     this.stopRecognitionCamera();
   }
@@ -685,16 +1090,11 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.selectedAttendanceDate = this.loadSelectedDate() || this.getTodayDate();
-      this.refreshApiKeyStatus();
       this.setupActivityListeners();
       this.setupInactivityWatcher();
       void this.loadAuth().then(() => {
-        if (this.canAccessAttendanceRead()) {
-          this.loadAttendance();
-        }
-        if (this.canAccessEmbedding()) {
-          this.loadEmployeesFromDb();
-          this.loadEmployeeStorage();
+        if (!this.isLoggedIn) {
+          this.focusLoginInput();
         }
       });
     }
@@ -835,61 +1235,6 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.loadUsers();
   }
 
-  toggleApiKeyPanel(): void {
-    this.showApiKeyPanel = !this.showApiKeyPanel;
-    if (this.showApiKeyPanel) {
-      this.refreshApiKeyStatus();
-    }
-  }
-
-  saveApiKey(): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-    const key = this.apiKeyInput.trim();
-    if (!key) {
-      this.errorMessage = 'Ingresa una API key válida.';
-      return;
-    }
-    try {
-      window.localStorage.setItem('bmpi_api_key', key);
-      this.apiKeyInput = '';
-      this.errorMessage = '';
-      this.message = 'API key guardada.';
-      this.refreshApiKeyStatus();
-    } catch {
-      this.errorMessage = 'No se pudo guardar API key en el navegador.';
-    }
-  }
-
-  clearApiKey(): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-    try {
-      window.localStorage.removeItem('bmpi_api_key');
-      this.apiKeyInput = '';
-      this.message = 'API key eliminada.';
-      this.refreshApiKeyStatus();
-    } catch {
-      this.errorMessage = 'No se pudo limpiar API key.';
-    }
-  }
-
-  private refreshApiKeyStatus(): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      this.apiKeyStatus = 'API key no disponible en este entorno.';
-      return;
-    }
-    const key = window.localStorage.getItem('bmpi_api_key')?.trim() ?? '';
-    if (!key) {
-      this.apiKeyStatus = 'API key no configurada.';
-      return;
-    }
-    const tail = key.length >= 4 ? key.slice(-4) : key;
-    this.apiKeyStatus = `API key configurada (termina en ${tail}).`;
-  }
-
   canSubmitLogin(): boolean {
     return Boolean(this.loginUsername.trim() && this.loginPassword.trim());
   }
@@ -906,7 +1251,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
         this.attendanceService.login({
           username: this.loginUsername.trim(),
           password: this.loginPassword,
-        }),
+        }).pipe(timeout(12000)),
       );
       this.persistAuth(response.token, response.role, response.username, response.expiresAt);
       this.recordActivity();
@@ -915,7 +1260,13 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       this.authUsername = response.username;
       this.authExpiresAt = response.expiresAt;
       this.loginPassword = '';
+      this.isCapsLockOn = false;
       this.authStatus = 'Sesion iniciada correctamente.';
+      this.authInfo = '';
+      this.activeView = ['rh', 'jefe'].includes(response.role) ? 'account' : 'home';
+      this.scheduleTokenRefresh();
+      this.startAuthHeartbeat();
+      this.playLoginIntro();
       if (this.canAccessAttendanceRead()) {
         this.loadAttendance();
       }
@@ -925,9 +1276,217 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       }
     } catch (err) {
       this.clearAuthState();
-      this.authError = this.extractBackendErrorMessage(err) || 'No se pudo iniciar sesion.';
+      if (err instanceof HttpErrorResponse) {
+        if (err.status === 401 || err.status === 403) {
+          this.authError = 'Usuario o password incorrectos, o cuenta inactiva.';
+        } else if (err.status === 429) {
+          this.authError = 'Demasiados intentos. Espera unos minutos e intenta de nuevo.';
+        } else {
+          this.authError = this.extractBackendErrorMessage(err) || 'No se pudo iniciar sesion.';
+        }
+      } else if (err && typeof err === 'object' && 'name' in err && (err as { name?: string }).name === 'TimeoutError') {
+        this.authError = 'Tiempo de espera agotado. Revisa que el backend este en linea.';
+      } else {
+        this.authError = this.extractBackendErrorMessage(err) || 'No se pudo iniciar sesion.';
+      }
+      this.focusLoginInput();
     } finally {
       this.isLoggingIn = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private playLoginIntro(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    if (this.introTimer) {
+      clearTimeout(this.introTimer);
+      this.introTimer = null;
+    }
+    if (this.revealStartTimer) {
+      clearTimeout(this.revealStartTimer);
+      this.revealStartTimer = null;
+    }
+    if (this.revealEndTimer) {
+      clearTimeout(this.revealEndTimer);
+      this.revealEndTimer = null;
+    }
+    this.showIntroSplash = true;
+    this.uiRevealPulse = false;
+    this.revealStartTimer = setTimeout(() => {
+      this.uiRevealPulse = true;
+      this.cdr.detectChanges();
+    }, 40);
+    this.introTimer = setTimeout(() => {
+      this.showIntroSplash = false;
+      this.cdr.detectChanges();
+    }, 1650);
+    this.revealEndTimer = setTimeout(() => {
+      this.uiRevealPulse = false;
+      this.cdr.detectChanges();
+    }, 1900);
+  }
+
+  private focusLoginInput(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    if (this.isLoggedIn) {
+      return;
+    }
+    setTimeout(() => {
+      this.loginUsernameField?.nativeElement.focus();
+    }, 50);
+  }
+
+  onPasswordKeydown(event: KeyboardEvent): void {
+    this.isCapsLockOn = event.getModifierState ? event.getModifierState('CapsLock') : false;
+  }
+
+  private scheduleTokenRefresh(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    if (this.authRefreshTimer) {
+      clearTimeout(this.authRefreshTimer);
+      this.authRefreshTimer = null;
+    }
+    if (!this.authExpiresAt) {
+      return;
+    }
+    const expiryMs = new Date(this.authExpiresAt).getTime();
+    if (!Number.isFinite(expiryMs)) {
+      return;
+    }
+    const msUntilExpiry = expiryMs - Date.now();
+    if (msUntilExpiry <= 0) {
+      return;
+    }
+    const refreshInMs = Math.max(60_000, msUntilExpiry - 2 * 60_000);
+    this.authRefreshTimer = setTimeout(() => {
+      this.refreshAuthToken();
+    }, refreshInMs);
+  }
+
+  private startAuthHeartbeat(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    if (this.authHeartbeatTimer) {
+      clearInterval(this.authHeartbeatTimer);
+    }
+    this.authHeartbeatTimer = setInterval(() => {
+      void this.checkAuthHeartbeat();
+    }, 2 * 60 * 1000);
+  }
+
+  private async checkAuthHeartbeat(): Promise<void> {
+    if (!this.isLoggedIn) {
+      return;
+    }
+    try {
+      await firstValueFrom(this.attendanceService.getMe().pipe(timeout(8000)));
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403)) {
+        this.authStatus = 'Sesion cerrada por administrador.';
+        this.clearAuthState();
+        this.focusLoginInput();
+      }
+    }
+  }
+
+  private async refreshAuthToken(): Promise<void> {
+    if (!this.isLoggedIn) {
+      return;
+    }
+    try {
+      const response = await firstValueFrom(this.attendanceService.refreshToken().pipe(timeout(12000)));
+      this.authToken = response.token;
+      this.authRole = response.role;
+      this.authUsername = response.username;
+      this.authExpiresAt = response.expiresAt;
+      this.persistAuth(response.token, response.role, response.username, response.expiresAt);
+      this.recordActivity();
+      this.scheduleTokenRefresh();
+      this.authInfo = 'Sesion renovada automaticamente.';
+      if (this.authInfoTimer) {
+        clearTimeout(this.authInfoTimer);
+      }
+      this.authInfoTimer = setTimeout(() => {
+        this.authInfo = '';
+        this.cdr.detectChanges();
+      }, 6000);
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403)) {
+        this.authStatus = 'Sesion expirada. Inicia sesion de nuevo.';
+        this.clearAuthState();
+        this.focusLoginInput();
+      }
+    }
+  }
+
+  formatAuthExpiry(expiresAt: string): string {
+    if (!expiresAt) {
+      return 'No disponible';
+    }
+    const parsed = new Date(expiresAt);
+    if (Number.isNaN(parsed.getTime())) {
+      return expiresAt;
+    }
+    return parsed.toLocaleString('es-MX', { hour12: false });
+  }
+
+  togglePasswordVisibility(kind: 'current' | 'new' | 'confirm'): void {
+    if (kind === 'current') {
+      this.showCurrentPassword = !this.showCurrentPassword;
+    } else if (kind === 'new') {
+      this.showNewPassword = !this.showNewPassword;
+    } else {
+      this.showConfirmPassword = !this.showConfirmPassword;
+    }
+  }
+
+  openAccountView(): void {
+    this.activeView = 'account';
+    this.message = '';
+    this.errorMessage = '';
+  }
+
+  canUpdatePassword(): boolean {
+    const current = this.currentPasswordInput.trim();
+    const next = this.newPasswordInput.trim();
+    const confirm = this.confirmPasswordInput.trim();
+    return Boolean(current && next && confirm && next === confirm && next.length >= 8);
+  }
+
+  async updateOwnPassword(): Promise<void> {
+    if (!this.canUpdatePassword() || this.isUpdatingPassword) {
+      return;
+    }
+    this.isUpdatingPassword = true;
+    this.passwordStatus = '';
+    this.passwordError = '';
+    try {
+      await firstValueFrom(
+        this.attendanceService.changePassword({
+          currentPassword: this.currentPasswordInput,
+          newPassword: this.newPasswordInput,
+        }).pipe(timeout(12000)),
+      );
+      this.currentPasswordInput = '';
+      this.newPasswordInput = '';
+      this.confirmPasswordInput = '';
+      this.passwordStatus = 'Password actualizado.';
+      this.authInfo = '';
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 401) {
+        this.passwordError = 'Password actual incorrecto.';
+      } else {
+        this.passwordError = this.extractBackendErrorMessage(err) || 'No se pudo actualizar el password.';
+      }
+    } finally {
+      this.isUpdatingPassword = false;
       this.cdr.detectChanges();
     }
   }
@@ -937,12 +1496,14 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
-    if (this.isInactiveSession()) {
-      this.clearAuthState();
-      return;
-    }
     this.loadAuthFromStorage();
     if (!this.authToken) {
+      this.focusLoginInput();
+      return;
+    }
+    if (this.isInactiveSession()) {
+      this.clearAuthState();
+      this.focusLoginInput();
       return;
     }
     try {
@@ -952,12 +1513,19 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       this.authStatus = 'Sesion activa.';
       this.persistAuth(this.authToken, me.role, me.username, this.authExpiresAt);
       this.recordActivity();
+      this.startAuthHeartbeat();
+      this.scheduleTokenRefresh();
       if (this.canAccessAttendanceRead()) {
         this.loadAttendance();
+      }
+      if (this.canAccessEmbedding()) {
+        this.loadEmployeesFromDb();
+        this.loadEmployeeStorage();
       }
     } catch {
       this.authStatus = 'Sesion no valida. Inicia sesion de nuevo.';
       this.clearAuthState();
+      this.focusLoginInput();
     } finally {
       this.cdr.detectChanges();
     }
@@ -975,30 +1543,72 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       this.backToHome();
       this.clearAuthState();
       this.authStatus = 'Sesion cerrada.';
+      this.focusLoginInput();
     }
   }
 
   private loadAuthFromStorage(): void {
     try {
-      this.authToken = window.sessionStorage.getItem(this.authTokenStorageKey)?.trim() ?? '';
-      this.authRole = window.sessionStorage.getItem(this.authRoleStorageKey)?.trim() ?? '';
-      this.authUsername = window.sessionStorage.getItem(this.authUsernameStorageKey)?.trim() ?? '';
-      this.authExpiresAt = window.sessionStorage.getItem(this.authExpiresStorageKey)?.trim() ?? '';
+      const rememberFlag = window.localStorage.getItem(this.rememberLoginKey);
+      if (rememberFlag === '1') {
+        this.rememberLogin = true;
+      }
+      const localToken = window.localStorage.getItem(this.authTokenStorageKey)?.trim() ?? '';
+      if (localToken) {
+        this.authStorage = window.localStorage;
+        this.rememberLogin = true;
+        this.authToken = localToken;
+        this.authRole = window.localStorage.getItem(this.authRoleStorageKey)?.trim() ?? '';
+        this.authUsername = window.localStorage.getItem(this.authUsernameStorageKey)?.trim() ?? '';
+        this.authExpiresAt = window.localStorage.getItem(this.authExpiresStorageKey)?.trim() ?? '';
+        return;
+      }
+      const sessionToken = window.sessionStorage.getItem(this.authTokenStorageKey)?.trim() ?? '';
+      if (sessionToken) {
+        this.authStorage = window.sessionStorage;
+        this.rememberLogin = false;
+        this.authToken = sessionToken;
+        this.authRole = window.sessionStorage.getItem(this.authRoleStorageKey)?.trim() ?? '';
+        this.authUsername = window.sessionStorage.getItem(this.authUsernameStorageKey)?.trim() ?? '';
+        this.authExpiresAt = window.sessionStorage.getItem(this.authExpiresStorageKey)?.trim() ?? '';
+        return;
+      }
+      this.authToken = '';
+      this.authRole = '';
+      this.authUsername = '';
+      this.authExpiresAt = '';
+      this.authStorage = null;
     } catch {
       this.authToken = '';
       this.authRole = '';
       this.authUsername = '';
       this.authExpiresAt = '';
+      this.authStorage = null;
     }
   }
 
   private persistAuth(token: string, role: string, username: string, expiresAt: string): void {
     try {
-      window.sessionStorage.setItem(this.authTokenStorageKey, token);
-      window.sessionStorage.setItem(this.authRoleStorageKey, role);
-      window.sessionStorage.setItem(this.authUsernameStorageKey, username);
+      const storage = this.rememberLogin ? window.localStorage : window.sessionStorage;
+      this.authStorage = storage;
+      if (this.rememberLogin) {
+        window.localStorage.setItem(this.rememberLoginKey, '1');
+        window.sessionStorage.removeItem(this.authTokenStorageKey);
+        window.sessionStorage.removeItem(this.authRoleStorageKey);
+        window.sessionStorage.removeItem(this.authUsernameStorageKey);
+        window.sessionStorage.removeItem(this.authExpiresStorageKey);
+      } else {
+        window.localStorage.removeItem(this.rememberLoginKey);
+        window.localStorage.removeItem(this.authTokenStorageKey);
+        window.localStorage.removeItem(this.authRoleStorageKey);
+        window.localStorage.removeItem(this.authUsernameStorageKey);
+        window.localStorage.removeItem(this.authExpiresStorageKey);
+      }
+      storage.setItem(this.authTokenStorageKey, token);
+      storage.setItem(this.authRoleStorageKey, role);
+      storage.setItem(this.authUsernameStorageKey, username);
       if (expiresAt) {
-        window.sessionStorage.setItem(this.authExpiresStorageKey, expiresAt);
+        storage.setItem(this.authExpiresStorageKey, expiresAt);
       }
     } catch {
       // ignore storage errors
@@ -1010,6 +1620,15 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.authRole = '';
     this.authUsername = '';
     this.authExpiresAt = '';
+    this.authStorage = null;
+    if (this.authRefreshTimer) {
+      clearTimeout(this.authRefreshTimer);
+      this.authRefreshTimer = null;
+    }
+    if (this.authHeartbeatTimer) {
+      clearInterval(this.authHeartbeatTimer);
+      this.authHeartbeatTimer = null;
+    }
     this.attendance = [];
     this.embeddingAssignments = [];
     this.employeeStorageRecords = [];
@@ -1019,15 +1638,36 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.userEdits = {};
     this.authView = 'login';
     this.loginPassword = '';
+    this.currentPasswordInput = '';
+    this.newPasswordInput = '';
+    this.confirmPasswordInput = '';
+    this.passwordStatus = '';
+    this.passwordError = '';
+    this.authInfo = '';
     try {
       window.sessionStorage.removeItem(this.authTokenStorageKey);
       window.sessionStorage.removeItem(this.authRoleStorageKey);
       window.sessionStorage.removeItem(this.authUsernameStorageKey);
       window.sessionStorage.removeItem(this.authExpiresStorageKey);
       window.sessionStorage.removeItem(this.lastActivityKey);
+      window.localStorage.removeItem(this.authTokenStorageKey);
+      window.localStorage.removeItem(this.authRoleStorageKey);
+      window.localStorage.removeItem(this.authUsernameStorageKey);
+      window.localStorage.removeItem(this.authExpiresStorageKey);
+      window.localStorage.removeItem(this.lastActivityKey);
     } catch {
       // ignore storage errors
     }
+  }
+
+  private resolveActivityStorage(): Storage | null {
+    if (!isPlatformBrowser(this.platformId)) {
+      return null;
+    }
+    if (this.authStorage) {
+      return this.authStorage;
+    }
+    return this.rememberLogin ? window.localStorage : window.sessionStorage;
   }
 
   private recordActivity(): void {
@@ -1035,7 +1675,8 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       return;
     }
     try {
-      window.sessionStorage.setItem(this.lastActivityKey, String(Date.now()));
+      const storage = this.resolveActivityStorage();
+      storage?.setItem(this.lastActivityKey, String(Date.now()));
     } catch {
       // ignore storage errors
     }
@@ -1046,7 +1687,8 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       return false;
     }
     try {
-      const raw = window.sessionStorage.getItem(this.lastActivityKey);
+      const storage = this.resolveActivityStorage();
+      const raw = storage?.getItem(this.lastActivityKey);
       if (!raw) {
         return false;
       }
@@ -1099,7 +1741,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       return;
     }
     try {
-      window.sessionStorage.setItem(this.selectedDateKey, value);
+      window.localStorage.setItem(this.selectedDateKey, value);
     } catch {
       // ignore storage errors
     }
@@ -1110,7 +1752,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       return '';
     }
     try {
-      return window.sessionStorage.getItem(this.selectedDateKey) ?? '';
+      return window.localStorage.getItem(this.selectedDateKey) ?? '';
     } catch {
       return '';
     }

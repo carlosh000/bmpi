@@ -1,8 +1,9 @@
 # Checklist Go-Live Rápido BMPI (5 pasos)
 
 1. Completar secretos en `scripts/.env.production`
-   - `BMPI_OPERATOR_API_KEY`
-   - `BMPI_ADMIN_API_KEY`
+   - `BMPI_BOOTSTRAP_ADMIN_USER`
+   - `BMPI_BOOTSTRAP_ADMIN_PASS`
+   - (opcional) `BMPI_SMOKE_USER`, `BMPI_SMOKE_PASS`
    - `DB_PASSWORD`
 
 2. Validar conectividad antes de arrancar

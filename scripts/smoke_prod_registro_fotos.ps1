@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$EmployeeId = "9500",
     [string]$EmployeeName = "Prod Smoke",
     [string]$PhotoDir = "datasets/empresa_eval_20260220/known/200",
@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-function Load-ProdOperatorKey {
+function Load-ProdAuthCredentials {
     param([string]$RepoRoot)
 
     $envFile = Join-Path $RepoRoot "scripts/.env.production"
@@ -25,17 +25,24 @@ function Load-ProdOperatorKey {
         }
     }
 
-    $key = [string]$envMap["BMPI_OPERATOR_API_KEY"]
-    if ([string]::IsNullOrWhiteSpace($key)) {
-        throw "BMPI_OPERATOR_API_KEY no está definido en scripts/.env.production"
+    $user = [string]$envMap["BMPI_SMOKE_USER"]
+    $pass = [string]$envMap["BMPI_SMOKE_PASS"]
+    if ([string]::IsNullOrWhiteSpace($user)) {
+        $user = [string]$envMap["BMPI_BOOTSTRAP_ADMIN_USER"]
+    }
+    if ([string]::IsNullOrWhiteSpace($pass)) {
+        $pass = [string]$envMap["BMPI_BOOTSTRAP_ADMIN_PASS"]
+    }
+    if ([string]::IsNullOrWhiteSpace($user) -or [string]::IsNullOrWhiteSpace($pass)) {
+        throw "Define BMPI_SMOKE_USER y BMPI_SMOKE_PASS (o BMPI_BOOTSTRAP_ADMIN_USER/PASS) en scripts/.env.production"
     }
 
-    return $key
+    return @{ user = $user; pass = $pass }
 }
 
 try {
     $repoRoot = Split-Path -Parent $PSScriptRoot
-    $opKey = Load-ProdOperatorKey -RepoRoot $repoRoot
+    $creds = Load-ProdAuthCredentials -RepoRoot $repoRoot
 
     $resolvedPhotoDir = if ([System.IO.Path]::IsPathRooted($PhotoDir)) { $PhotoDir } else { Join-Path $repoRoot $PhotoDir }
     if (-not (Test-Path $resolvedPhotoDir)) {
@@ -58,7 +65,12 @@ try {
         })
     } | ConvertTo-Json -Depth 8 -Compress
 
-    $headers = @{ "X-API-Key" = $opKey }
+    $loginPayload = @{ username = $creds.user; password = $creds.pass } | ConvertTo-Json -Depth 4 -Compress
+    $login = Invoke-RestMethod -Method Post -Uri "$BackendUrl/api/auth/login" -ContentType "application/json" -Body $loginPayload -TimeoutSec 20
+    if (-not $login.token) {
+        throw "No se obtuvo token de login."
+    }
+    $headers = @{ "Authorization" = "Bearer $($login.token)" }
 
     $register = Invoke-RestMethod -Method Post -Uri "$BackendUrl/api/employees/register-photos" -Headers $headers -ContentType "application/json" -Body $payload -TimeoutSec 180
     $storage = Invoke-RestMethod -Method Get -Uri "$BackendUrl/api/employees/storage" -Headers $headers

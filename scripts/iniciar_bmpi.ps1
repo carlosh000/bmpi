@@ -512,12 +512,6 @@ try {
             $devEnvMap = Import-DotEnv -Path $DevEnvFile
             Set-EnvironmentVariables -Vars $devEnvMap
 
-            if (-not $devEnvMap.ContainsKey("BMPI_OPERATOR_API_KEY")) {
-                [Environment]::SetEnvironmentVariable("BMPI_OPERATOR_API_KEY", $null, "Process")
-            }
-            if (-not $devEnvMap.ContainsKey("BMPI_ADMIN_API_KEY")) {
-                [Environment]::SetEnvironmentVariable("BMPI_ADMIN_API_KEY", $null, "Process")
-            }
         }
         else {
             Write-Warn "No existe $DevEnvFile (opcional para desarrollo)."
@@ -646,8 +640,8 @@ try {
         "DB_NAME",
         "DB_USER",
         "DB_PASSWORD",
-        "BMPI_OPERATOR_API_KEY",
-        "BMPI_ADMIN_API_KEY"
+        "BMPI_BOOTSTRAP_ADMIN_USER",
+        "BMPI_BOOTSTRAP_ADMIN_PASS"
     )
 
     $missingVars = @()
@@ -739,11 +733,7 @@ try {
             Write-Pass "Frontend SSR ya activo en :$ProdPort"
         }
         else {
-            $frontendApiKey = $envMap["BMPI_FRONTEND_API_KEY"]
-            if ([string]::IsNullOrWhiteSpace($frontendApiKey)) {
-                $frontendApiKey = $envMap["BMPI_OPERATOR_API_KEY"]
-            }
-            $frontendCommand = "`$env:PORT=$ProdPort; `$env:BMPI_API_BASE_URL='$($envMap['BMPI_API_BASE_URL'])'; `$env:BMPI_FRONTEND_API_KEY='$frontendApiKey'; node 'dist/attendance-web/server/server.mjs'"
+            $frontendCommand = "`$env:PORT=$ProdPort; `$env:BMPI_API_BASE_URL='$($envMap['BMPI_API_BASE_URL'])'; node 'dist/attendance-web/server/server.mjs'"
             Start-ComponentTerminal -Name "Frontend SSR" -WorkingDirectory $attendancePath -Command $frontendCommand
             if (-not $NoHealthCheck) {
                 Write-Info "Esperando frontend SSR en :$ProdPort"

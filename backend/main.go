@@ -48,6 +48,8 @@ type ctxKey string
 
 const ctxKeyDB ctxKey = "bmpi_db"
 
+var loginAttempts = newLoginAttemptTracker()
+
 type photoQualityMetrics struct {
 	Width      int
 	Height     int
@@ -60,6 +62,17 @@ type attendanceRecord struct {
 	ID        int64  `json:"id"`
 	Name      string `json:"name"`
 	Timestamp string `json:"timestamp"`
+}
+
+type loginAttempt struct {
+	count       int
+	firstSeen   time.Time
+	lockedUntil time.Time
+}
+
+type loginAttemptTracker struct {
+	mu       sync.Mutex
+	attempts map[string]*loginAttempt
 }
 
 type attendanceStore struct {
@@ -105,6 +118,10 @@ func boolFromEnv(name string) bool {
 
 func newAttendanceStore() *attendanceStore {
 	return &attendanceStore{nextID: 1, records: []attendanceRecord{}}
+}
+
+func newLoginAttemptTracker() *loginAttemptTracker {
+	return &loginAttemptTracker{attempts: make(map[string]*loginAttempt)}
 }
 
 func (s *attendanceStore) list() []attendanceRecord {
@@ -682,13 +699,29 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 			http.Error(w, "username y password son obligatorios", http.StatusBadRequest)
 			return
 		}
+		attemptKey := loginAttempts.keyFor(r, username)
+		if locked, remaining := loginAttempts.isLocked(attemptKey); locked {
+			w.Header().Set("Retry-After", strconv.Itoa(int(remaining.Seconds())))
+			http.Error(w, "demasiados intentos. intenta de nuevo mas tarde", http.StatusTooManyRequests)
+			return
+		}
 
 		user, err := readUserByUsername(r.Context(), db, username)
 		if err != nil || user == nil || !user.Active {
+			if locked, remaining := loginAttempts.registerFailure(attemptKey); locked {
+				w.Header().Set("Retry-After", strconv.Itoa(int(remaining.Seconds())))
+				http.Error(w, "demasiados intentos. intenta de nuevo mas tarde", http.StatusTooManyRequests)
+				return
+			}
 			http.Error(w, "credenciales invalidas", http.StatusUnauthorized)
 			return
 		}
 		if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
+			if locked, remaining := loginAttempts.registerFailure(attemptKey); locked {
+				w.Header().Set("Retry-After", strconv.Itoa(int(remaining.Seconds())))
+				http.Error(w, "demasiados intentos. intenta de nuevo mas tarde", http.StatusTooManyRequests)
+				return
+			}
 			http.Error(w, "credenciales invalidas", http.StatusUnauthorized)
 			return
 		}
@@ -699,6 +732,8 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 			return
 		}
 
+		loginAttempts.reset(attemptKey)
+		writeAuthAudit(r.Context(), db, user, "auth.login", user, fmt.Sprintf("ip=%s", resolveClientIP(r)))
 		_ = json.NewEncoder(w).Encode(map[string]any{
 			"token":     token,
 			"role":      user.Role,
@@ -734,6 +769,93 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 		})
 	})
 
+	mux.HandleFunc("/api/auth/refresh", func(w http.ResponseWriter, r *http.Request) {
+		setJSONHeaders(w, r)
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		if r.Method != http.MethodPost {
+			http.Error(w, "metodo no permitido", http.StatusMethodNotAllowed)
+			return
+		}
+		if db == nil {
+			http.Error(w, "base de datos no disponible", http.StatusBadGateway)
+			return
+		}
+		token := resolveBearerToken(r)
+		user, err := readUserByToken(r.Context(), db, token)
+		if err != nil || user == nil {
+			http.Error(w, "no autorizado", http.StatusUnauthorized)
+			return
+		}
+		session, newToken, err := createSession(r.Context(), db, user.ID)
+		if err != nil {
+			http.Error(w, "no se pudo refrescar sesion", http.StatusBadGateway)
+			return
+		}
+		if token != "" {
+			hash := sha256.Sum256([]byte(token))
+			hashStr := hex.EncodeToString(hash[:])
+			_, _ = db.ExecContext(r.Context(), `DELETE FROM auth_sessions WHERE token_hash = $1`, hashStr)
+		}
+		writeAuthAudit(r.Context(), db, user, "auth.refresh", user, fmt.Sprintf("ip=%s", resolveClientIP(r)))
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"token":     newToken,
+			"role":      user.Role,
+			"username":  user.Username,
+			"expiresAt": session.ExpiresAt.Format(time.RFC3339),
+		})
+	})
+
+	mux.HandleFunc("/api/auth/password", func(w http.ResponseWriter, r *http.Request) {
+		setJSONHeaders(w, r)
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		if r.Method != http.MethodPost {
+			http.Error(w, "metodo no permitido", http.StatusMethodNotAllowed)
+			return
+		}
+		if db == nil {
+			http.Error(w, "base de datos no disponible", http.StatusBadGateway)
+			return
+		}
+		token := resolveBearerToken(r)
+		user, err := readUserByToken(r.Context(), db, token)
+		if err != nil || user == nil {
+			http.Error(w, "no autorizado", http.StatusUnauthorized)
+			return
+		}
+		var payload struct {
+			CurrentPassword string `json:"currentPassword"`
+			NewPassword     string `json:"newPassword"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			http.Error(w, "JSON invalido", http.StatusBadRequest)
+			return
+		}
+		if strings.TrimSpace(payload.CurrentPassword) == "" || strings.TrimSpace(payload.NewPassword) == "" {
+			http.Error(w, "password actual y nuevo password son obligatorios", http.StatusBadRequest)
+			return
+		}
+		if len(payload.NewPassword) < 8 {
+			http.Error(w, "nuevo password demasiado corto", http.StatusBadRequest)
+			return
+		}
+		if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(payload.CurrentPassword)) != nil {
+			http.Error(w, "password actual incorrecto", http.StatusUnauthorized)
+			return
+		}
+		if err := updateUserPasswordByID(r.Context(), db, user.ID, payload.NewPassword); err != nil {
+			http.Error(w, "no se pudo actualizar password", http.StatusBadGateway)
+			return
+		}
+		writeAuthAudit(r.Context(), db, user, "auth.password_change", user, fmt.Sprintf("ip=%s", resolveClientIP(r)))
+		w.WriteHeader(http.StatusNoContent)
+	})
+
 	mux.HandleFunc("/api/auth/logout", func(w http.ResponseWriter, r *http.Request) {
 		setJSONHeaders(w, r)
 		if r.Method == http.MethodOptions {
@@ -753,9 +875,13 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
+		actor := resolveActorFromRequest(r.Context(), db, r)
 		hash := sha256.Sum256([]byte(token))
 		hashStr := hex.EncodeToString(hash[:])
 		_, _ = db.ExecContext(r.Context(), `DELETE FROM auth_sessions WHERE token_hash = $1`, hashStr)
+		if actor != nil {
+			writeAuthAudit(r.Context(), db, actor, "auth.logout", actor, fmt.Sprintf("ip=%s", resolveClientIP(r)))
+		}
 		w.WriteHeader(http.StatusNoContent)
 	})
 
@@ -853,6 +979,15 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 				}
 				http.Error(w, fmt.Sprintf("no se pudo actualizar usuario: %v", err), http.StatusBadRequest)
 				return
+			}
+			if payload.Active != nil && !*payload.Active {
+				targetID := payload.ID
+				if targetID == 0 && before != nil {
+					targetID = before.ID
+				}
+				if targetID > 0 {
+					_, _ = db.ExecContext(r.Context(), `DELETE FROM auth_sessions WHERE user_id = $1`, targetID)
+				}
 			}
 			if actor := resolveActorFromRequest(r.Context(), db, r); actor != nil {
 				var after *authUser
@@ -1572,6 +1707,95 @@ func resolveAuthTokenTTL() time.Duration {
 	return time.Duration(hours) * time.Hour
 }
 
+func resolveLoginLimits() (int, time.Duration, time.Duration) {
+	maxAttempts := 5
+	window := 10 * time.Minute
+	lock := 5 * time.Minute
+	if raw := strings.TrimSpace(os.Getenv("BMPI_AUTH_MAX_ATTEMPTS")); raw != "" {
+		if val, err := strconv.Atoi(raw); err == nil && val > 0 {
+			maxAttempts = val
+		}
+	}
+	if raw := strings.TrimSpace(os.Getenv("BMPI_AUTH_WINDOW_MINUTES")); raw != "" {
+		if val, err := strconv.Atoi(raw); err == nil && val > 0 {
+			window = time.Duration(val) * time.Minute
+		}
+	}
+	if raw := strings.TrimSpace(os.Getenv("BMPI_AUTH_LOCK_MINUTES")); raw != "" {
+		if val, err := strconv.Atoi(raw); err == nil && val > 0 {
+			lock = time.Duration(val) * time.Minute
+		}
+	}
+	return maxAttempts, window, lock
+}
+
+func resolveClientIP(r *http.Request) string {
+	if forwarded := strings.TrimSpace(r.Header.Get("X-Forwarded-For")); forwarded != "" {
+		parts := strings.Split(forwarded, ",")
+		if len(parts) > 0 {
+			return strings.TrimSpace(parts[0])
+		}
+	}
+	if realIP := strings.TrimSpace(r.Header.Get("X-Real-IP")); realIP != "" {
+		return realIP
+	}
+	host, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr))
+	if err != nil {
+		return strings.TrimSpace(r.RemoteAddr)
+	}
+	return host
+}
+
+func (t *loginAttemptTracker) keyFor(r *http.Request, username string) string {
+	return strings.ToLower(strings.TrimSpace(username)) + "|" + resolveClientIP(r)
+}
+
+func (t *loginAttemptTracker) isLocked(key string) (bool, time.Duration) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	entry := t.attempts[key]
+	if entry == nil {
+		return false, 0
+	}
+	now := time.Now()
+	if entry.lockedUntil.After(now) {
+		return true, entry.lockedUntil.Sub(now)
+	}
+	if !entry.lockedUntil.IsZero() && entry.lockedUntil.Before(now) {
+		delete(t.attempts, key)
+		return false, 0
+	}
+	return false, 0
+}
+
+func (t *loginAttemptTracker) registerFailure(key string) (bool, time.Duration) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	maxAttempts, window, lock := resolveLoginLimits()
+	now := time.Now()
+	entry := t.attempts[key]
+	if entry == nil {
+		entry = &loginAttempt{count: 0, firstSeen: now}
+		t.attempts[key] = entry
+	}
+	if now.Sub(entry.firstSeen) > window {
+		entry.count = 0
+		entry.firstSeen = now
+	}
+	entry.count++
+	if entry.count >= maxAttempts {
+		entry.lockedUntil = now.Add(lock)
+		return true, lock
+	}
+	return false, 0
+}
+
+func (t *loginAttemptTracker) reset(key string) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	delete(t.attempts, key)
+}
+
 func nullIfEmpty(value string) any {
 	if strings.TrimSpace(value) == "" {
 		return nil
@@ -1807,6 +2031,23 @@ func updateUser(ctx context.Context, db *sql.DB, id int64, username string, role
 	return err
 }
 
+func updateUserPasswordByID(ctx context.Context, db *sql.DB, id int64, password string) error {
+	if id <= 0 {
+		return fmt.Errorf("id invalido")
+	}
+	if strings.TrimSpace(password) == "" {
+		return fmt.Errorf("password vacio")
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	_, err = db.ExecContext(queryCtx, `UPDATE users SET password_hash = $1 WHERE id = $2`, string(hash), id)
+	return err
+}
+
 func writeAuthAudit(ctx context.Context, db *sql.DB, actor *authUser, action string, target *authUser, details string) {
 	if db == nil || actor == nil || action == "" {
 		return
@@ -1909,8 +2150,6 @@ func readUserByToken(ctx context.Context, db *sql.DB, token string) (*authUser, 
 }
 
 func requireRole(w http.ResponseWriter, r *http.Request, role string) bool {
-	operatorKey := strings.TrimSpace(os.Getenv("BMPI_OPERATOR_API_KEY"))
-	adminKey := strings.TrimSpace(os.Getenv("BMPI_ADMIN_API_KEY"))
 	db := r.Context().Value(ctxKeyDB)
 	var sqlDB *sql.DB
 	if db != nil {
@@ -1918,52 +2157,18 @@ func requireRole(w http.ResponseWriter, r *http.Request, role string) bool {
 			sqlDB = casted
 		}
 	}
-	if sqlDB != nil {
-		if tokenRole, err := resolveAuthRole(r, sqlDB); err == nil && tokenRole != "" {
-			if roleAllows(role, tokenRole) {
-				return true
-			}
-			http.Error(w, "prohibido", http.StatusForbidden)
-			return false
-		}
-	}
-
-	if isProduction() {
-		if operatorKey == "" {
-			http.Error(w, "servidor mal configurado: BMPI_OPERATOR_API_KEY es obligatorio en producciÃ³n", http.StatusInternalServerError)
-			return false
-		}
-		if role == roleAdmin && adminKey == "" {
-			http.Error(w, "servidor mal configurado: BMPI_ADMIN_API_KEY es obligatorio para endpoints de administrador", http.StatusInternalServerError)
-			return false
-		}
-	}
-
-	if operatorKey == "" && adminKey == "" && !isProduction() {
-		return true
-	}
-
-	requestKey := strings.TrimSpace(r.Header.Get("X-API-Key"))
-	if requestKey == "" {
-		http.Error(w, "falta API key", http.StatusUnauthorized)
+	if sqlDB == nil {
+		http.Error(w, "base de datos no disponible", http.StatusBadGateway)
 		return false
 	}
-
-	if role == roleAdmin {
-		if adminKey == "" || requestKey != adminKey {
-			http.Error(w, "prohibido: se requiere clave de administrador", http.StatusForbidden)
-			return false
-		}
+	tokenRole, err := resolveAuthRole(r, sqlDB)
+	if err != nil || tokenRole == "" {
+		http.Error(w, "no autorizado", http.StatusUnauthorized)
+		return false
+	}
+	if roleAllows(role, tokenRole) {
 		return true
 	}
-
-	if adminKey != "" && requestKey == adminKey {
-		return true
-	}
-	if operatorKey != "" && requestKey == operatorKey {
-		return true
-	}
-
 	http.Error(w, "prohibido", http.StatusForbidden)
 	return false
 }
@@ -1996,7 +2201,7 @@ func setJSONHeaders(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-API-Key, Authorization")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 	w.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
 }
 

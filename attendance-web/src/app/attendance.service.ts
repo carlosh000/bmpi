@@ -91,6 +91,18 @@ export interface LoginResponse {
   expiresAt: string;
 }
 
+export interface RefreshResponse {
+  token: string;
+  role: string;
+  username: string;
+  expiresAt: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export interface AuthMeResponse {
   username: string;
   role: string;
@@ -125,33 +137,15 @@ export class AttendanceService {
 
   constructor(private http: HttpClient) {}
 
-  private resolveApiKey(): string {
-    if (typeof window === 'undefined') {
-      return '';
-    }
-
-    const globalKey = (window as any).__BMPI_API_KEY__;
-    if (typeof globalKey === 'string' && globalKey.trim() !== '') {
-      return globalKey.trim();
-    }
-
-    try {
-      const localKey = window.localStorage.getItem('bmpi_api_key');
-      if (localKey && localKey.trim() !== '') {
-        return localKey.trim();
-      }
-    } catch {
-      // ignore storage access errors
-    }
-
-    return '';
-  }
-
   private resolveAuthToken(): string {
     if (typeof window === 'undefined') {
       return '';
     }
     try {
+      const localToken = window.localStorage.getItem('bmpi_auth_token');
+      if (localToken && localToken.trim() !== '') {
+        return localToken.trim();
+      }
       const token = window.sessionStorage.getItem('bmpi_auth_token');
       return token?.trim() ?? '';
     } catch {
@@ -160,15 +154,11 @@ export class AttendanceService {
   }
 
   private authOptions(): { headers?: HttpHeaders } {
-    const apiKey = this.resolveApiKey();
     const token = this.resolveAuthToken();
-    if (!apiKey && !token) {
+    if (!token) {
       return {};
     }
     const headers: Record<string, string> = {};
-    if (apiKey) {
-      headers['X-API-Key'] = apiKey;
-    }
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -221,12 +211,20 @@ export class AttendanceService {
     return this.http.post<LoginResponse>(`${this.apiBaseUrl}/auth/login`, payload, this.authOptions());
   }
 
+  refreshToken(): Observable<RefreshResponse> {
+    return this.http.post<RefreshResponse>(`${this.apiBaseUrl}/auth/refresh`, {}, this.authOptions());
+  }
+
   getMe(): Observable<AuthMeResponse> {
     return this.http.get<AuthMeResponse>(`${this.apiBaseUrl}/auth/me`, this.authOptions());
   }
 
   logout(): Observable<void> {
     return this.http.post<void>(`${this.apiBaseUrl}/auth/logout`, {}, this.authOptions());
+  }
+
+  changePassword(payload: ChangePasswordRequest): Observable<void> {
+    return this.http.post<void>(`${this.apiBaseUrl}/auth/password`, payload, this.authOptions());
   }
 
   getUsers(): Observable<AuthUser[]> {

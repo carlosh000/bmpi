@@ -3,7 +3,7 @@
 ## 1) Pre-condiciones
 
 - [ ] `scripts/.env.production` completado y validado.
-- [ ] API keys definidas (`BMPI_OPERATOR_API_KEY`, `BMPI_ADMIN_API_KEY`).
+- [ ] Usuario admin inicial definido (`BMPI_BOOTSTRAP_ADMIN_USER`, `BMPI_BOOTSTRAP_ADMIN_PASS`).
 - [ ] Cámara de acceso fija y con luz frontal estable.
 - [ ] Dataset de empleados actualizado y sin fotos bloqueadas por calidad.
 
@@ -17,7 +17,8 @@ powershell.exe -ExecutionPolicy Bypass -File .\scripts\iniciar_bmpi.ps1 -Mode pr
 ## 3) Smoke técnico mínimo
 
 ```powershell
-Invoke-WebRequest -UseBasicParsing http://localhost:8080/api/attendance -Headers @{ 'X-API-Key'='<OPERATOR_KEY>' }
+$login = Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/auth/login -ContentType "application/json" -Body '{\"username\":\"admin\",\"password\":\"TU_PASSWORD\"}'
+Invoke-WebRequest -UseBasicParsing http://localhost:8080/api/attendance -Headers @{ 'Authorization'=\"Bearer $($login.token)\" }
 ```
 
 ```powershell
