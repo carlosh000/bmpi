@@ -510,7 +510,7 @@ interface UserEditState {
                 <td>{{ user.id }}</td>
                 <td>{{ user.username }}</td>
                 <td>
-                  <select [value]="getUserEdit(user.id).role" (change)="onUserRoleChange(user.id, $event)">
+                  <select [value]="getUserEdit(user.id).role" [disabled]="isCurrentAuthUser(user)" (change)="onUserRoleChange(user.id, $event)">
                     <option value="admin">admin</option>
                     <option value="rh">rh</option>
                     <option value="operator">operator</option>
@@ -519,7 +519,7 @@ interface UserEditState {
                   </select>
                 </td>
                 <td>
-                  <input type="checkbox" [checked]="getUserEdit(user.id).active" (change)="onUserActiveChange(user.id, $event)" />
+                  <input type="checkbox" [checked]="getUserEdit(user.id).active" [disabled]="isCurrentAuthUser(user)" (change)="onUserActiveChange(user.id, $event)" />
                 </td>
                 <td>
                   <input
@@ -530,6 +530,7 @@ interface UserEditState {
                   />
                 </td>
                 <td>
+                  <small *ngIf="isCurrentAuthUser(user)" class="row-lock-note">Tu rol/activo se protege desde este panel.</small>
                   <button type="button" class="small" [disabled]="isUpdatingUserId === user.id" (click)="updateUser(user)">
                     {{ isUpdatingUserId === user.id ? 'Actualizando...' : 'Actualizar' }}
                   </button>
@@ -2696,6 +2697,14 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       return;
     }
     const edit = this.getUserEdit(user.id);
+    if (this.isCurrentAuthUser(user) && edit.role !== user.role) {
+      this.userAdminError = 'No puedes cambiar tu propio rol desde este panel.';
+      return;
+    }
+    if (this.isCurrentAuthUser(user) && edit.active !== user.active) {
+      this.userAdminError = 'No puedes desactivarte a ti mismo.';
+      return;
+    }
     if (edit.password.trim()) {
       const confirmed = window.confirm('Confirmar cambio de password para este usuario?');
       if (!confirmed) {
@@ -2741,6 +2750,10 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       this.isUpdatingUserId = null;
       this.cdr.detectChanges();
     }
+  }
+
+  isCurrentAuthUser(user: AuthUser): boolean {
+    return this.isLoggedIn && !!this.authUsername && user.username === this.authUsername;
   }
 
   startCreateRecord(): void {

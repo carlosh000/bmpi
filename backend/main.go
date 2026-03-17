@@ -946,23 +946,49 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 				http.Error(w, "no hay cambios para aplicar", http.StatusBadRequest)
 				return
 			}
+			actor := (*authUser)(nil)
+			if token := resolveBearerToken(r); token != "" {
+				if user, err := readUserByToken(r.Context(), db, token); err == nil && user != nil {
+					actor = user
+				}
+			}
 			var before *authUser
 			if payload.ID > 0 {
 				before, _ = readUserByID(r.Context(), db, payload.ID)
 			} else {
 				before, _ = readUserByUsername(r.Context(), db, strings.TrimSpace(payload.Username))
 			}
-			if payload.Active != nil && !*payload.Active {
-				if token := resolveBearerToken(r); token != "" {
-					if user, err := readUserByToken(r.Context(), db, token); err == nil && user != nil {
-						if payload.ID > 0 && user.ID == payload.ID {
-							http.Error(w, "no se puede desactivar el usuario en sesion", http.StatusBadRequest)
-							return
-						}
-						if payload.ID == 0 && strings.EqualFold(strings.TrimSpace(payload.Username), user.Username) {
-							http.Error(w, "no se puede desactivar el usuario en sesion", http.StatusBadRequest)
-							return
-						}
+			if actor != nil && before != nil && actor.ID == before.ID {
+				if payload.Active != nil && !*payload.Active {
+					http.Error(w, "no se puede desactivar el usuario en sesion", http.StatusBadRequest)
+					return
+				}
+				if payload.Role != "" && normalizeRole(payload.Role) != roleAdmin {
+					http.Error(w, "no te puedes quitar el rol admin a ti mismo", http.StatusBadRequest)
+					return
+				}
+			}
+			if before != nil && before.Role == roleAdmin && before.Active {
+				effectiveRole := before.Role
+				if payload.Role != "" {
+					normalized := normalizeRole(payload.Role)
+					if normalized != "" {
+						effectiveRole = normalized
+					}
+				}
+				effectiveActive := before.Active
+				if payload.Active != nil {
+					effectiveActive = *payload.Active
+				}
+				if effectiveRole != roleAdmin || !effectiveActive {
+					activeAdmins, countErr := countActiveAdmins(r.Context(), db)
+					if countErr != nil {
+						http.Error(w, "no se pudo validar administradores activos", http.StatusBadGateway)
+						return
+					}
+					if activeAdmins <= 1 {
+						http.Error(w, "no se puede quitar o desactivar el ultimo admin activo", http.StatusBadRequest)
+						return
 					}
 				}
 			}
@@ -1317,6 +1343,20 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 	if err := http.ListenAndServe(httpAddr, withDB(db, mux)); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func countActiveAdmins(ctx context.Context, db *sql.DB) (int, error) {
+	if db == nil {
+		return 0, fmt.Errorf("db nil")
+	}
+	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	var total int
+	err := db.QueryRowContext(queryCtx, `SELECT COUNT(*) FROM users WHERE role = $1 AND active = TRUE`, roleAdmin).Scan(&total)
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
 }
 
 func resolveExtractionWorkerCount(fileCount int) int {
