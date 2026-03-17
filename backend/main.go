@@ -223,6 +223,10 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 			if !requireRole(w, r, roleOperator) {
 				return
 			}
+			if db == nil {
+				http.Error(w, "se requiere conexiÃ³n a base de datos", http.StatusBadGateway)
+				return
+			}
 			var payload struct {
 				EmployeeID string `json:"employee_id"`
 				Name       string `json:"name"`
@@ -245,11 +249,16 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 				return
 			}
 
-			payload.Name = strings.TrimSpace(payload.Name)
-			if payload.Name == "" {
-				http.Error(w, "name es obligatorio", http.StatusBadRequest)
+			resolvedName, hasEmbedding, resolveErr := resolveEmployeeNameWithEmbedding(r.Context(), db, payload.EmployeeID)
+			if resolveErr != nil {
+				http.Error(w, "no se pudo validar empleado en base de datos", http.StatusBadGateway)
 				return
 			}
+			if !hasEmbedding {
+				http.Error(w, fmt.Sprintf("El ID %s no tiene ningun empleado asignado o no tiene embedding registrado.", payload.EmployeeID), http.StatusBadRequest)
+				return
+			}
+			payload.Name = resolvedName
 
 			manualTimestamp, err := parseManualAttendanceTimestamp(payload.Timestamp)
 			if err != nil {
@@ -262,36 +271,16 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 			}
 
 			loggedAt := time.Now()
-			if db != nil {
-				insertedAt, success, message, fallbackErr := logAttendanceInDB(r.Context(), db, payload.EmployeeID, payload.Name, manualTimestamp)
-				if fallbackErr != nil {
-					http.Error(w, "no se pudo registrar asistencia", http.StatusBadGateway)
-					return
-				}
-				if !success {
-					http.Error(w, message, http.StatusBadRequest)
-					return
-				}
-				loggedAt = insertedAt
-			} else {
-				ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
-				defer cancel()
-
-				if manualTimestamp != nil {
-					loggedAt = *manualTimestamp
-				}
-
-				resp, grpcErr := grpcClient.LogAttendance(ctx, &pb.AttendanceRequest{EmployeeId: payload.EmployeeID})
-				if grpcErr != nil {
-					http.Error(w, "no se pudo registrar asistencia en el servicio gRPC", http.StatusBadGateway)
-					return
-				}
-
-				if !resp.GetSuccess() {
-					http.Error(w, resp.GetMessage(), http.StatusBadRequest)
-					return
-				}
+			insertedAt, success, message, fallbackErr := logAttendanceInDB(r.Context(), db, payload.EmployeeID, payload.Name, manualTimestamp)
+			if fallbackErr != nil {
+				http.Error(w, "no se pudo registrar asistencia", http.StatusBadGateway)
+				return
 			}
+			if !success {
+				http.Error(w, message, http.StatusBadRequest)
+				return
+			}
+			loggedAt = insertedAt
 
 			record := attendanceRecord{
 				ID:        employeeIDNumber,
@@ -533,11 +522,16 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 				return
 			}
 
-			payload.Name = strings.TrimSpace(payload.Name)
-			if payload.Name == "" {
-				http.Error(w, "name es obligatorio", http.StatusBadRequest)
+			resolvedName, hasEmbedding, resolveErr := resolveEmployeeNameWithEmbedding(r.Context(), db, payload.EmployeeID)
+			if resolveErr != nil {
+				http.Error(w, "no se pudo validar empleado en base de datos", http.StatusBadGateway)
 				return
 			}
+			if !hasEmbedding {
+				http.Error(w, fmt.Sprintf("El ID %s no tiene ningun empleado asignado o no tiene embedding registrado.", payload.EmployeeID), http.StatusBadRequest)
+				return
+			}
+			payload.Name = resolvedName
 
 			manualTimestamp, err := parseManualAttendanceTimestamp(payload.Timestamp)
 			if err != nil {
@@ -2823,6 +2817,35 @@ func employeeExistsByID(ctx context.Context, db *sql.DB, employeeID string) (boo
 	return exists, nil
 }
 
+func resolveEmployeeNameWithEmbedding(ctx context.Context, db *sql.DB, employeeID string) (string, bool, error) {
+	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	trimmedID := strings.TrimSpace(employeeID)
+	if trimmedID == "" {
+		return "", false, nil
+	}
+
+	var resolvedName string
+	err := db.QueryRowContext(
+		queryCtx,
+		`SELECT COALESCE(NULLIF(TRIM(name), ''), employee_id)
+		 FROM employees
+		 WHERE employee_id = $1
+		   AND COALESCE(OCTET_LENGTH(embedding), 0) > 0
+		 LIMIT 1`,
+		trimmedID,
+	).Scan(&resolvedName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", false, nil
+		}
+		return "", false, err
+	}
+
+	return strings.TrimSpace(resolvedName), true, nil
+}
+
 func parseManualAttendanceTimestamp(raw string) (*time.Time, error) {
 	value := strings.TrimSpace(raw)
 	if value == "" {
@@ -2971,30 +2994,29 @@ func logAttendanceInDB(ctx context.Context, db *sql.DB, employeeID string, emplo
 	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	var lastTimestamp time.Time
-	err := db.QueryRowContext(
-		queryCtx,
-		`SELECT timestamp FROM attendance WHERE employee_id = $1 ORDER BY timestamp DESC LIMIT 1`,
-		employeeID,
-	).Scan(&lastTimestamp)
-	if err != nil && err != sql.ErrNoRows {
-		return time.Time{}, false, "", err
-	}
-
-	if err == nil {
-		baseTime := time.Now()
-		if attendanceAt != nil {
-			baseTime = *attendanceAt
-		}
-
-		if baseTime.After(lastTimestamp) && baseTime.Sub(lastTimestamp) < 5*time.Minute {
-			return time.Time{}, false, "Duplicate prevented", nil
-		}
-	}
-
 	insertedAt := time.Now()
 	if attendanceAt != nil {
 		insertedAt = *attendanceAt
+	}
+
+	var alreadyExists bool
+	err := db.QueryRowContext(
+		queryCtx,
+		`SELECT EXISTS (
+			SELECT 1
+			FROM attendance
+			WHERE employee_id = $1
+			  AND (timestamp AT TIME ZONE 'America/Mexico_City')::date =
+			      ($2::timestamptz AT TIME ZONE 'America/Mexico_City')::date
+		)`,
+		employeeID,
+		insertedAt,
+	).Scan(&alreadyExists)
+	if err != nil {
+		return time.Time{}, false, "", err
+	}
+	if alreadyExists {
+		return time.Time{}, false, "Este empleado ya tiene asistencia registrada hoy.", nil
 	}
 
 	if attendanceAt != nil {
@@ -3087,10 +3109,43 @@ func openPostgres() *sql.DB {
 	if _, err := db.Exec(`ALTER TABLE attendance ADD COLUMN IF NOT EXISTS name TEXT`); err != nil {
 		log.Printf("could not ensure attendance.name column: %v", err)
 	}
+	ensureAttendanceDailyUniqueness(db)
 	ensureAuthSchema(db)
 	bootstrapAdminUser(db)
 
 	return db
+}
+
+func ensureAttendanceDailyUniqueness(db *sql.DB) {
+	if db == nil {
+		return
+	}
+
+	// Keep only the first attendance per employee/day before creating the unique index.
+	if _, err := db.Exec(`
+		WITH ranked AS (
+			SELECT
+				id,
+				ROW_NUMBER() OVER (
+					PARTITION BY employee_id, (timestamp AT TIME ZONE 'America/Mexico_City')::date
+					ORDER BY timestamp ASC, id ASC
+				) AS rn
+			FROM attendance
+		)
+		DELETE FROM attendance a
+		USING ranked r
+		WHERE a.id = r.id
+		  AND r.rn > 1
+	`); err != nil {
+		log.Printf("could not cleanup duplicated attendance rows: %v", err)
+	}
+
+	if _, err := db.Exec(`
+		CREATE UNIQUE INDEX IF NOT EXISTS ux_attendance_employee_day_mx
+		ON attendance (employee_id, ((timestamp AT TIME ZONE 'America/Mexico_City')::date))
+	`); err != nil {
+		log.Printf("could not ensure unique attendance index by employee/day: %v", err)
+	}
 }
 
 func listEmployeeStorage(ctx context.Context, db *sql.DB, includePhoto bool) ([]map[string]any, error) {

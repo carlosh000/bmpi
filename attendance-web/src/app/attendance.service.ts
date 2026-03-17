@@ -17,7 +17,7 @@ export interface CreateAttendanceRequest {
 
 export interface UpdateAttendanceRequest {
   employee_id: string;
-  name: string;
+  name?: string;
   timestamp: string;
 }
 

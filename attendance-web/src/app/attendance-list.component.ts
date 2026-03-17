@@ -47,7 +47,7 @@ interface UserEditState {
             <div>
               <h2>Registro de Asistencia de la empresa BMPI</h2>
               <p class="description">
-                Administra registros de asistencia y prepara embeddings faciales por empleado desde carpetas de fotos.
+                Administra registros de asistencia y prepara embeddings faciales.
               </p>
             </div>
           </div>
@@ -249,7 +249,7 @@ interface UserEditState {
           <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
 
           <form *ngIf="isEditing || isCreating" class="record-form" (submit)="$event.preventDefault()">
-            <div class="form-grid three">
+            <div class="form-grid">
               <label>
                 ID Empleado
                 <input
@@ -260,17 +260,6 @@ interface UserEditState {
                   [value]="manualEmployeeIdInput"
                   (input)="onManualEmployeeIdInput($event)"
                   (change)="onManualEmployeeIdInput($event)"
-                />
-              </label>
-              <label>
-                Nombre
-                <input
-                  #manualEmployeeNameField
-                  type="text"
-                  [value]="manualEmployeeNameInput"
-                  (input)="onManualEmployeeNameInput($event)"
-                  (change)="onManualEmployeeNameInput($event)"
-                  placeholder="Nombre empleado"
                 />
               </label>
               <label>
@@ -991,7 +980,6 @@ interface UserEditState {
 })
 export class AttendanceListComponent implements OnInit, OnDestroy {
   @ViewChild('manualEmployeeIdField') manualEmployeeIdField?: ElementRef<HTMLInputElement>;
-  @ViewChild('manualEmployeeNameField') manualEmployeeNameField?: ElementRef<HTMLInputElement>;
   @ViewChild('photoFolderInput') photoFolderInput?: ElementRef<HTMLInputElement>;
   @ViewChild('excelImportInput') excelImportInput?: ElementRef<HTMLInputElement>;
   @ViewChild('attendanceDateInput') attendanceDateInput?: ElementRef<HTMLInputElement>;
@@ -1006,7 +994,6 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   embeddingAssignments: EmbeddingAssignment[] = [];
   employeeStorageRecords: EmployeeStorageRecord[] = [];
   manualEmployeeIdInput = '';
-  manualEmployeeNameInput = '';
   embeddingNameInput = '';
   employeeIdInput = 0;
   deleteEmployeeIdInput = 0;
@@ -2168,11 +2155,6 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.editingRecord.id = parsed ?? 0;
   }
 
-  onManualEmployeeNameInput(event: Event): void {
-    this.manualEmployeeNameInput = this.readInputValue(event);
-    this.editingRecord.name = this.manualEmployeeNameInput;
-  }
-
   async confirmEmbeddingExtraction(): Promise<void> {
     if (this.isExtracting) {
       return;
@@ -2766,7 +2748,6 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.editingOriginalRowId = null;
     this.manualEmployeeIdInput = '';
-    this.manualEmployeeNameInput = '';
     this.editingRecord = {
       id: 0,
       name: '',
@@ -2785,7 +2766,6 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.isCreating = false;
     this.editingOriginalRowId = record.row_id ?? null;
     this.manualEmployeeIdInput = String(record.id ?? '');
-    this.manualEmployeeNameInput = record.name ?? '';
     this.editingRecord = {
       row_id: record.row_id,
       id: record.id,
@@ -2813,29 +2793,6 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       }
       const employeeId = String(parsedEmployeeId);
 
-      const name = this.resolveManualEmployeeName();
-      if (!name) {
-        this.errorMessage = 'El nombre es obligatorio.';
-        return;
-      }
-
-      const normalizedName = this.normalizeName(name);
-      const conflictSameIdDifferentName = this.attendance.some(
-        (record) => record.id === parsedEmployeeId && this.normalizeName(record.name) !== normalizedName,
-      );
-      if (conflictSameIdDifferentName) {
-        this.errorMessage = `No se permite registrar el ID ${parsedEmployeeId} con un nombre diferente.`;
-        return;
-      }
-
-      const conflictDifferentIdSameName = this.attendance.some(
-        (record) => this.normalizeName(record.name) === normalizedName && record.id !== parsedEmployeeId,
-      );
-      if (conflictDifferentIdSameName) {
-        this.errorMessage = `No se permite registrar el nombre ${name} con un ID diferente.`;
-        return;
-      }
-
       const timestamp = this.normalizeManualTimestamp(this.editingRecord.timestamp);
       if (this.editingRecord.timestamp && !timestamp) {
         this.errorMessage = 'Fecha/Hora inválida. Usa un valor válido.';
@@ -2855,7 +2812,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       this.errorMessage = '';
 
       this.attendanceService
-        .createAttendance({ employee_id: employeeId, name, timestamp })
+        .createAttendance({ employee_id: employeeId, timestamp })
         .pipe(
           finalize(() => {
             this.ngZone.run(() => {
@@ -2891,40 +2848,12 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     const parsedEmployeeId = this.resolveManualEmployeeId();
     const normalized: AttendanceRecord = {
       id: parsedEmployeeId ?? 0,
-      name: this.resolveManualEmployeeName(),
+      name: '',
       timestamp: this.editingRecord.timestamp || this.toDateTimeLocal(new Date().toISOString()),
     };
 
     if (parsedEmployeeId === null) {
       this.errorMessage = 'El ID de empleado es obligatorio y debe ser un número entero mayor a 0.';
-      return;
-    }
-
-    if (!normalized.name) {
-      this.errorMessage = 'El nombre es obligatorio.';
-      return;
-    }
-
-    const normalizedName = this.normalizeName(normalized.name);
-    const conflictSameIdDifferentName = this.attendance.some(
-      (record) =>
-        record.id === normalized.id &&
-        record.row_id !== this.editingOriginalRowId &&
-        this.normalizeName(record.name) !== normalizedName,
-    );
-    if (conflictSameIdDifferentName) {
-      this.errorMessage = `No se permite usar el mismo ID ${normalized.id} con un nombre diferente.`;
-      return;
-    }
-
-    const conflictDifferentIdSameName = this.attendance.some(
-      (record) =>
-        this.normalizeName(record.name) === normalizedName &&
-        record.id !== normalized.id &&
-        record.row_id !== this.editingOriginalRowId,
-    );
-    if (conflictDifferentIdSameName) {
-      this.errorMessage = `No se permite usar el nombre ${normalized.name} con un ID diferente.`;
       return;
     }
 
@@ -2951,7 +2880,6 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.attendanceService
       .updateAttendance(editingRowId, {
         employee_id: String(normalized.id),
-        name: normalized.name,
         timestamp,
       })
       .pipe(
@@ -3026,7 +2954,6 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.editingOriginalRowId = null;
     this.manualEmployeeIdInput = '';
-    this.manualEmployeeNameInput = '';
     this.editingRecord = this.emptyRecord();
   }
 
@@ -3213,29 +3140,8 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     return this.toPositiveEmployeeId(this.editingRecord.id);
   }
 
-  private resolveManualEmployeeName(): string {
-    const fromInput = this.manualEmployeeNameInput.trim();
-    if (fromInput) {
-      this.editingRecord.name = fromInput;
-      return fromInput;
-    }
-
-    const fromVisibleField = this.manualEmployeeNameField?.nativeElement?.value?.trim() ?? '';
-    if (fromVisibleField) {
-      this.manualEmployeeNameInput = fromVisibleField;
-      this.editingRecord.name = fromVisibleField;
-      return fromVisibleField;
-    }
-
-    return (this.editingRecord.name ?? '').trim();
-  }
-
   isManualEmployeeIdValid(): boolean {
     return this.toPositiveEmployeeId(this.manualEmployeeIdInput) !== null;
-  }
-
-  private normalizeName(value: string): string {
-    return value.trim().toLocaleLowerCase();
   }
 
   private filterNonBlockingDuplicateErrors(errors: string[]): string[] {

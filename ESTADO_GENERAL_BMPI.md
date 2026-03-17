@@ -677,3 +677,21 @@ Durante la jornada del 5-mar-2026 se cerraron mejoras de produccion para operaci
 
 
 
+
+## Actualizacion 2026-03-17 (bloqueo diario + cierre tecnico)
+
+### Cambios aplicados
+- Registro manual de asistencia ahora opera por ID y valida empleado existente con embedding en BD.
+- Se bloqueo registro duplicado de asistencia del mismo empleado en el mismo dia (zona America/Mexico_City).
+- Se agrego blindaje en BD con indice unico diario por empleado y limpieza automatica de duplicados historicos antes de crear el indice.
+- Frontend SSR actualizado con `provideHttpClient(withFetch())` para recomendacion Angular.
+- Build de produccion ajustado para no fallar por budget de estilos/fuentes.
+
+### Validacion ejecutada hoy
+- Backend: `go test ./...` en verde.
+- Frontend tests: `npm run test -- --watch=false` en verde.
+- Frontend build produccion: `npm run build` en verde.
+- Smoke autenticado con `admin`:
+  - login OK,
+  - primer registro del dia OK,
+  - segundo registro del mismo empleado bloqueado con `400`.
