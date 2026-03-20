@@ -16,7 +16,7 @@
     {
       "label": "BMPI: Iniciar DEV",
       "type": "shell",
-      "command": "& '${workspaceFolder}/scripts/iniciar_bmpi.ps1' -Mode dev -WindowStyle Minimized",
+      "command": "& '${workspaceFolder}/scripts/iniciar_bmpi.ps1' -Mode dev -WindowStyle Hidden",
       "args": [
       ],
       "group": "build",
@@ -25,7 +25,7 @@
     {
       "label": "BMPI: Iniciar PROD",
       "type": "shell",
-      "command": "& '${workspaceFolder}/scripts/iniciar_bmpi.ps1' -Mode prod -WindowStyle Minimized",
+      "command": "& '${workspaceFolder}/scripts/iniciar_bmpi.ps1' -Mode prod -WindowStyle Hidden",
       "args": [
       ],
       "problemMatcher": []

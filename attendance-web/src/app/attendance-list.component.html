@@ -1,0 +1,518 @@
+﻿    <div class="intro-splash" *ngIf="showIntroSplash" [class.is-logout]="isLogoutSplash" aria-hidden="true">
+      <div class="intro-logo" *ngIf="!isLogoutSplash">
+        <img src="bmpi-logo.png" alt="BMPI" />
+      </div>
+      <div class="intro-line" *ngIf="!isLogoutSplash"></div>
+      <div class="intro-flash" *ngIf="!isLogoutSplash"></div>
+    </div>
+    <section class="attendance-container" [class.reveal]="uiRevealPulse">
+      <header>
+        <div class="header-bar">
+          <div class="brand-row">
+            <img class="brand-logo" src="bmpi-logo.png" alt="BMPI" />
+            <div>
+              <h2>Registro de Asistencia de la empresa BMPI</h2>
+              <p class="description">
+                Administra registros de asistencia y prepara embeddings faciales.
+              </p>
+            </div>
+          </div>
+          <div class="session-compact" *ngIf="isLoggedIn">
+            <ui-button [sessionTrigger]="true" (pressed)="toggleSessionMenu()">
+              <span class="session-avatar">BMPI</span>
+              <span class="session-text">{{ authUsername }}  -  {{ authRole }}</span>
+              <span class="session-caret">v</span>
+            </ui-button>
+            <div class="session-menu" *ngIf="showSessionMenu">
+              <p class="status">Usuario: {{ authUsername }}</p>
+              <p class="status">Rol: {{ authRole }}</p>
+              <p class="status">Sesion expira: {{ formatAuthExpiry(authExpiresAt) }}</p>
+              <p class="status" *ngIf="authInfo">{{ authInfo }}</p>
+              <div class="toolbar compact">
+                <ui-button [small]="true" (pressed)="openAccountView()">Mi cuenta</ui-button>
+                <ui-button [small]="true" [danger]="true" (pressed)="logout()">Cerrar sesion</ui-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="panel" *ngIf="!isLoggedIn">
+        <h3>Acceso</h3>
+        <form class="login-form" (submit)="$event.preventDefault(); submitLogin()">
+          <div class="form-grid">
+            <label>
+              Usuario
+              <input
+                #loginUsernameField
+                type="text"
+                [value]="loginUsername"
+                (input)="loginUsername = readInputValue($event)"
+              />
+            </label>
+            <label>
+              Password
+              <div class="password-field">
+                <input
+                  [type]="showLoginPassword ? 'text' : 'password'"
+                  [value]="loginPassword"
+                  (input)="loginPassword = readInputValue($event)"
+                  (keydown)="onPasswordKeydown($event)"
+                  (keyup)="onPasswordKeydown($event)"
+                />
+                <ui-button [small]="true" (pressed)="showLoginPassword = !showLoginPassword">
+                  {{ showLoginPassword ? 'Ocultar' : 'Ver' }}
+                </ui-button>
+              </div>
+              <small *ngIf="isCapsLockOn" class="hint-invalid">Caps Lock activado.</small>
+            </label>
+          </div>
+          <div class="toolbar compact">
+            <label class="inline-toggle">
+              <input type="checkbox" [checked]="rememberLogin" (change)="rememberLogin = readInputBool($event)" />
+              Recordar sesion en este equipo
+            </label>
+            <ui-button [type]="'submit'" [disabled]="isLoggingIn || !canSubmitLogin()">
+              {{ isLoggingIn ? 'Ingresando...' : 'Entrar' }}
+            </ui-button>
+          </div>
+        </form>
+        <div class="toast toast-success" *ngIf="authStatus">{{ authStatus }}</div>
+        <p class="status" *ngIf="authInfo">{{ authInfo }}</p>
+        <p class="error" *ngIf="authError">{{ authError }}</p>
+      </section>
+
+
+      <section class="panel" *ngIf="activeView === 'account' && isLoggedIn">
+        <h3>Mi cuenta</h3>
+        <p class="status">Gestiona tu password y revisa el estado de tu sesion.</p>
+        <div class="toolbar compact">
+          <ui-button [sectionToggle]="true" (pressed)="backToHome()">Volver</ui-button>
+        </div>
+        <div class="panel mini-panel">
+          <div class="form-grid">
+            <label>
+              Password actual
+              <input
+                [type]="showCurrentPassword ? 'text' : 'password'"
+                [value]="currentPasswordInput"
+                (input)="currentPasswordInput = readInputValue($event)"
+              />
+            </label>
+            <label>
+              Nuevo password
+              <input
+                [type]="showNewPassword ? 'text' : 'password'"
+                [value]="newPasswordInput"
+                (input)="newPasswordInput = readInputValue($event)"
+              />
+            </label>
+            <label>
+              Confirmar nuevo password
+              <input
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                [value]="confirmPasswordInput"
+                (input)="confirmPasswordInput = readInputValue($event)"
+              />
+            </label>
+          </div>
+          <div class="toolbar compact">
+            <ui-button [small]="true" (pressed)="togglePasswordVisibility('current')">
+              {{ showCurrentPassword ? 'Ocultar' : 'Ver' }} actual
+            </ui-button>
+            <ui-button [small]="true" (pressed)="togglePasswordVisibility('new')">
+              {{ showNewPassword ? 'Ocultar' : 'Ver' }} nuevo
+            </ui-button>
+            <ui-button [small]="true" (pressed)="togglePasswordVisibility('confirm')">
+              {{ showConfirmPassword ? 'Ocultar' : 'Ver' }} confirmar
+            </ui-button>
+            <ui-button [disabled]="isUpdatingPassword || !canUpdatePassword()" (pressed)="updateOwnPassword()">
+              {{ isUpdatingPassword ? 'Actualizando...' : 'Actualizar password' }}
+            </ui-button>
+          </div>
+          <p class="status" *ngIf="passwordStatus">{{ passwordStatus }}</p>
+          <p class="error" *ngIf="passwordError">{{ passwordError }}</p>
+        </div>
+      </section>
+
+      <section class="panel" *ngIf="activeView === 'home' && isLoggedIn">
+        <h3>Tabla de asistencias</h3>
+        <div class="toolbar section-toolbar">
+          <ui-button [sectionToggle]="true" [disabled]="!canAccessAttendanceWrite()" (pressed)="openManualView()">Registro manual</ui-button>
+          <ui-button [sectionToggle]="true" [disabled]="!canAccessEmbedding()" (pressed)="openEmbeddingView()">Extraer embeddings</ui-button>
+          <ui-button [sectionToggle]="true" [disabled]="!canAccessRecognition()" (pressed)="openRecognitionView()">Reconocimiento entrada</ui-button>
+          <ui-button [sectionToggle]="true" *ngIf="canAccessUserPanel()" (pressed)="openAdminView()">Usuarios y roles</ui-button>
+        </div>
+
+        <div class="toolbar compact">
+          <ui-button [disabled]="attendance.length === 0 || !canAccessExports()" (pressed)="exportAsExcel()">Exportar Excel (CSV)</ui-button>
+          <ui-button [disabled]="!canAccessAttendanceWrite()" (pressed)="openExcelImportPicker()">Importar Excel (CSV)</ui-button>
+          <ui-button [disabled]="attendance.length === 0 || !canAccessExports()" (pressed)="exportAsPdf()">Exportar PDF</ui-button>
+        </div>
+
+        <div class="toolbar compact">
+          <label>
+            Filtrar por fecha
+            <input
+              #attendanceDateInput
+              type="date"
+              [value]="selectedAttendanceDate"
+              (input)="selectedAttendanceDate = readInputValue($event)"
+            />
+          </label>
+          <ui-button (mouseDown)="$event.preventDefault(); applyAttendanceDateFilter()" (pressed)="$event.preventDefault()">Aplicar filtro</ui-button>
+          <ui-button (mouseDown)="$event.preventDefault(); setTodayAttendanceDate()" (pressed)="$event.preventDefault()">Hoy</ui-button>
+        </div>
+
+        <input
+          #excelImportInput
+          class="hidden-input"
+          type="file"
+          accept=".csv,text/csv"
+          (change)="onListImported($event)"
+        />
+
+        <div *ngIf="message" class="toast toast-success">{{ message }}</div>
+        <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Fecha/Hora</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of attendance">
+              <td>{{ record.id }}</td>
+              <td>{{ record.name }}</td>
+              <td>{{ formatAttendanceTimestamp(record.timestamp) }}</td>
+              <td class="actions">
+                <ui-button [small]="true" [disabled]="!isRecordFromToday(record) || !canAccessAttendanceWrite()" [title]="isRecordFromToday(record) ? '' : 'Solo se permite editar registros de hoy'" (pressed)="editRecord(record)">Editar</ui-button>
+                <ui-button [small]="true" [danger]="true" [disabled]="!isRecordFromToday(record) || !canAccessAttendanceWrite()" [title]="isRecordFromToday(record) ? '' : 'Solo se permite eliminar registros de hoy'" (pressed)="deleteRecord(record)">Eliminar</ui-button>
+                <small *ngIf="!isRecordFromToday(record)" class="row-lock-note">No editable (dia anterior)</small>
+              </td>
+            </tr>
+            <tr *ngIf="attendance.length === 0">
+              <td colspan="4" class="empty">No hay registros para la fecha {{ selectedAttendanceDate }}.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="panel" *ngIf="activeView === 'manual'">
+        <h3>Registro manual</h3>
+        <p *ngIf="!canAccessAttendanceWrite()" class="status">No tienes permisos para registrar asistencia manual.</p>
+        <ng-container *ngIf="canAccessAttendanceWrite()">
+          <div class="toolbar compact">
+            <ui-button [sectionToggle]="true" (pressed)="backToHome()">Volver</ui-button>
+            <ui-button (pressed)="startCreateRecord()">Anadir registro</ui-button>
+          </div>
+
+          <div *ngIf="message" class="toast toast-success">{{ message }}</div>
+          <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
+
+          <form *ngIf="isEditing || isCreating" class="record-form" (submit)="$event.preventDefault()">
+            <div class="form-grid">
+              <label>
+                ID Empleado
+                <input
+                  #manualEmployeeIdField
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  [value]="manualEmployeeIdInput"
+                  (input)="onManualEmployeeIdInput($event)"
+                  (change)="onManualEmployeeIdInput($event)"
+                />
+              </label>
+              <label>
+                Fecha/Hora
+                <input
+                  type="datetime-local"
+                  [value]="editingRecord.timestamp"
+                  [max]="getCurrentDateTimeLocal()"
+                  (input)="editingRecord.timestamp = readInputValue($event)"
+                />
+              </label>
+            </div>
+            <div class="toolbar compact">
+              <ui-button [disabled]="isSavingRecord" (pressed)="saveRecord()">Guardar</ui-button>
+              <ui-button [danger]="true" (pressed)="cancelRecordEditor()">Cancelar</ui-button>
+            </div>
+          </form>
+        </ng-container>
+      </section>
+
+      <section class="panel" *ngIf="activeView === 'embedding'">
+        <h3>Extraer embeddings</h3>
+        <p *ngIf="!canAccessEmbedding()" class="status">No tienes permisos para gestionar embeddings.</p>
+        <ng-container *ngIf="canAccessEmbedding()">
+        <form class="assign-form" (submit)="$event.preventDefault()">
+          <h4>Datos del empleado (obligatorios)</h4>
+          <div class="form-grid">
+            <label>
+              Nombre del empleado
+              <input
+                type="text"
+                [value]="embeddingNameInput"
+                (input)="embeddingNameInput = readInputValue($event)"
+                placeholder="Ej: Juan Perez"
+              />
+            </label>
+            <label>
+              ID de empleado
+              <input
+                type="number"
+                min="1"
+                [value]="employeeIdInput"
+                (input)="employeeIdInput = readInputNumber($event)"
+                placeholder="Ej: 1001"
+              />
+            </label>
+          </div>
+        </form>
+
+        <div class="toolbar">
+          <ui-button [sectionToggle]="true" [disabled]="isExtracting || isSavingEmbeddings" (pressed)="backToHome()">Volver</ui-button>
+          <ui-button (pressed)="openFolderPicker()">Cargar carpeta de fotos</ui-button>
+          <ui-button [danger]="true" [disabled]="isExtracting || isSavingEmbeddings" (pressed)="clearEmbeddingState()">Limpiar estado</ui-button>
+          <ui-button [disabled]="!canRetryFailedPhotos()" (pressed)="retryFailedPhotos()">
+            Reintentar fallidas ({{ retryFailedPhotosQueue.length }})
+          </ui-button>
+          <ui-button [disabled]="!canRunEmbeddingExtraction()" (pressed)="confirmEmbeddingExtraction()">
+            {{ isExtracting ? 'Procesando...' : 'Extraer y guardar embeddings' }}
+          </ui-button>
+          <ui-button [danger]="true" [disabled]="!canAccessEmployeeDelete()" (pressed)="toggleDeleteEmployeePanel()">
+            {{ showDeleteEmployeePanel ? 'Ocultar eliminar' : 'Eliminar empleado' }}
+          </ui-button>
+        </div>
+
+        <div class="panel admin-panel" *ngIf="showDeleteEmployeePanel && canAccessEmployeeDelete()">
+          <h4>Eliminar empleado (admin)</h4>
+          <div class="form-grid">
+            <label>
+              ID de empleado a eliminar
+              <input
+                type="number"
+                min="1"
+                [value]="deleteEmployeeIdInput"
+                (input)="deleteEmployeeIdInput = readInputNumber($event)"
+                placeholder="Ej: 1001"
+              />
+            </label>
+            <div class="toolbar compact">
+              <ui-button [danger]="true" [disabled]="!canDeleteEmployee()" (pressed)="deleteEmployeeById()">
+                {{ isDeletingEmployee ? 'Eliminando...' : 'Eliminar empleado' }}
+              </ui-button>
+              <ui-button (pressed)="toggleDeleteEmployeePanel()">Volver</ui-button>
+            </div>
+          </div>
+          <small class="row-lock-note">Esta accion borra embeddings, foto y asistencias del empleado.</small>
+        </div>
+
+        <input
+          #photoFolderInput
+          class="hidden-input"
+          type="file"
+          multiple
+          accept="image/*"
+          (change)="onPhotoFolderSelected($event)"
+          webkitdirectory
+          directory
+        />
+
+        <p *ngIf="selectedPhotos.length > 0" class="status">
+          {{ selectedPhotos.length }} foto(s) listas para procesar.
+        </p>
+        <p *ngIf="retryFailedPhotosQueue.length > 0" class="status">
+          Fallidas detectadas: {{ retryFailedPhotosQueue.length }} (usa "Reintentar fallidas").
+        </p>
+        <p *ngIf="selectedPhotos.length > 0 && !embeddingsReadyToSave" class="status">
+          Completa nombre + ID y luego usa "Extraer y guardar embeddings" para terminar en un solo paso.
+        </p>
+
+        <div *ngIf="message" class="toast toast-success">{{ message }}</div>
+        <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
+        <div *ngIf="qualityWarningsMessage" class="toast toast-warning">{{ qualityWarningsMessage }}</div>
+        <p *ngIf="embeddingProgressTotal > 0" class="status">
+          Progreso: {{ embeddingProgressCurrent }}/{{ embeddingProgressTotal }}  -  {{ embeddingProgressStage }}
+        </p>
+        <p *ngIf="embeddingFinalStatus" class="status">
+          Estado final: <strong>{{ embeddingFinalStatus }}</strong>
+        </p>
+        <div *ngIf="embeddingProgressTotal > 0" class="progress-wrap" aria-live="polite">
+          <div class="progress-track">
+            <div
+              class="progress-fill"
+              [class.complete]="isEmbeddingProgressComplete()"
+              [class.error]="isEmbeddingProgressError()"
+              [style.width.%]="getEmbeddingProgressPercent()"
+            ></div>
+          </div>
+          <small>{{ getEmbeddingProgressPercent() }}%</small>
+        </div>
+
+        <div *ngIf="processedEmbeddings.length > 0" class="embedding-results">
+          <h4>Resultado de extraccion</h4>
+          <ul>
+            <li *ngFor="let embedding of processedEmbeddings">
+              <strong>{{ embedding.fileName }}</strong>
+              <span>dim={{ embedding.dimensions }}  -  listo para guardar</span>
+            </li>
+          </ul>
+        </div>
+        </ng-container>
+      </section>
+
+      <section class="panel" *ngIf="activeView === 'recognition'">
+        <h3>Reconocimiento en entrada (rafaga)</h3>
+        <p *ngIf="!canAccessRecognition()" class="status">No tienes permisos para reconocimiento en entrada.</p>
+        <ng-container *ngIf="canAccessRecognition()">
+        <div class="toolbar compact">
+          <ui-button [sectionToggle]="true" (pressed)="backToHome()">Volver</ui-button>
+          <ui-button [disabled]="isCameraRunning" (pressed)="startRecognitionCamera()">Iniciar camara</ui-button>
+          <ui-button [danger]="true" [disabled]="!isCameraRunning" (pressed)="stopRecognitionCamera()">Detener camara</ui-button>
+          <ui-button [disabled]="!canCaptureBurstNow()" (pressed)="captureBurstNow()">Capturar ahora</ui-button>
+        </div>
+
+        <div class="toolbar compact">
+          <label>
+            Frames por rafaga
+            <input type="number" min="3" max="7" [value]="burstFrameCount" (input)="burstFrameCount = clampBurstFrameCount(readInputNumber($event))" />
+          </label>
+          <label>
+            Intervalo entre frames (ms)
+            <input type="number" min="120" max="600" [value]="burstFrameDelayMs" (input)="burstFrameDelayMs = clampBurstFrameDelayMs(readInputNumber($event))" />
+          </label>
+          <label>
+            Votos minimos
+            <input type="number" min="1" max="5" [value]="burstMinVotes" (input)="burstMinVotes = clampBurstMinVotes(readInputNumber($event))" />
+          </label>
+          <label>
+            Confianza minima
+            <input type="number" min="0.20" max="0.95" step="0.01" [value]="burstMinConfidence" (input)="burstMinConfidence = clampBurstMinConfidence(readInputNumber($event))" />
+          </label>
+          <label>
+            <input type="checkbox" [checked]="autoRecognitionEnabled" (change)="onToggleAutoRecognition($event)" />
+            Auto (escaneo continuo)
+          </label>
+        </div>
+
+        <div *ngIf="message" class="toast toast-success">{{ message }}</div>
+        <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
+        <p *ngIf="recognitionStatus" class="status">{{ recognitionStatus }}</p>
+
+        <div class="recognition-stage">
+          <video #recognitionVideo autoplay muted playsinline></video>
+          <canvas #recognitionCanvas class="hidden-input"></canvas>
+        </div>
+        </ng-container>
+      </section>
+
+      <section class="panel" *ngIf="activeView === 'admin'">
+        <h3>Usuarios y roles</h3>
+        <p *ngIf="!canAccessUserPanel()" class="status">No tienes permisos para gestionar usuarios.</p>
+        <ng-container *ngIf="canAccessUserPanel()">
+          <div class="toolbar compact">
+            <ui-button [sectionToggle]="true" (pressed)="backToHome()">Volver</ui-button>
+            <ui-button [disabled]="isLoadingUsers" (pressed)="loadUsers()">
+              {{ isLoadingUsers ? 'Cargando...' : 'Recargar usuarios' }}
+            </ui-button>
+            <ui-button [disabled]="authUsers.length === 0" (pressed)="exportUsersCsv()">Exportar usuarios (CSV)</ui-button>
+          </div>
+
+          <form class="assign-form" (submit)="$event.preventDefault()">
+            <h4>Crear usuario</h4>
+            <div class="form-grid three">
+              <label>
+                Usuario
+                <input type="text" [value]="newUserUsername" (input)="newUserUsername = readInputValue($event)" />
+              </label>
+              <label>
+                Password
+                <input type="password" [value]="newUserPassword" (input)="newUserPassword = readInputValue($event)" />
+              </label>
+              <label>
+                Rol
+                <select [value]="newUserRole" (change)="newUserRole = readInputValue($event)">
+                  <option value="admin">admin</option>
+                  <option value="rh">rh</option>
+                  <option value="operator">operator</option>
+                  <option value="vigilante">vigilante</option>
+                  <option value="jefe">jefe</option>
+                </select>
+              </label>
+            </div>
+            <div class="toolbar compact">
+              <label>
+                <input type="checkbox" [checked]="newUserActive" (change)="newUserActive = readInputBool($event)" />
+                Activo
+              </label>
+              <ui-button [disabled]="!canAccessUserAdmin() || isCreatingUser || !canCreateUser()" (pressed)="createUser()">
+                {{ isCreatingUser ? 'Creando...' : 'Crear usuario' }}
+              </ui-button>
+            </div>
+          </form>
+
+          <div *ngIf="userAdminStatus" class="toast toast-success">{{ userAdminStatus }}</div>
+          <div *ngIf="userAdminError" class="toast toast-error">{{ userAdminError }}</div>
+
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Activo</th>
+                <th>Password nuevo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of authUsers">
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>
+                  <select [value]="getUserEdit(user.id).role" [disabled]="isCurrentAuthUser(user)" (change)="onUserRoleChange(user.id, $event)">
+                    <option value="admin">admin</option>
+                    <option value="rh">rh</option>
+                    <option value="operator">operator</option>
+                    <option value="vigilante">vigilante</option>
+                    <option value="jefe">jefe</option>
+                  </select>
+                </td>
+                <td>
+                  <input type="checkbox" [checked]="getUserEdit(user.id).active" [disabled]="isCurrentAuthUser(user)" (change)="onUserActiveChange(user.id, $event)" />
+                </td>
+                <td>
+                  <input
+                    type="password"
+                    [value]="getUserEdit(user.id).password"
+                    (input)="onUserPasswordChange(user.id, $event)"
+                    placeholder="Opcional"
+                  />
+                </td>
+                <td>
+                  <small *ngIf="isCurrentAuthUser(user)" class="row-lock-note">Tu rol/activo se protege desde este panel.</small>
+                  <ui-button [small]="true" [disabled]="!canAccessUserAdmin() || isUpdatingUserId === user.id || isDeletingUserId === user.id" (pressed)="updateUser(user)">
+                    {{ isUpdatingUserId === user.id ? 'Actualizando...' : 'Actualizar' }}
+                  </ui-button>
+                  <ui-button [small]="true" [danger]="true" [disabled]="!canDeleteUser(user)" (pressed)="deleteUser(user)">
+                    {{ isDeletingUserId === user.id ? 'Eliminando...' : 'Eliminar' }}
+                  </ui-button>
+                </td>
+              </tr>
+              <tr *ngIf="authUsers.length === 0">
+                <td colspan="6" class="empty">No hay usuarios registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
+      </section>
+    </section>
+  
+
+

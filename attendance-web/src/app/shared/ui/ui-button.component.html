@@ -1,0 +1,14 @@
+<button
+  [attr.type]="type"
+  class="ui-button"
+  [class.small]="small"
+  [class.danger]="danger"
+  [class.section-toggle]="sectionToggle"
+  [class.session-trigger]="sessionTrigger"
+  [disabled]="disabled"
+  [title]="title || null"
+  (mousedown)="onMouseDown($event)"
+  (click)="onClick($event)"
+>
+  <ng-content></ng-content>
+</button>

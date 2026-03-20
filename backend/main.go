@@ -889,11 +889,11 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 			http.Error(w, "base de datos no disponible", http.StatusBadGateway)
 			return
 		}
-		if !requireRole(w, r, roleAdmin) {
-			return
-		}
 		switch r.Method {
 		case http.MethodGet:
+			if !requireRole(w, r, roleRH) {
+				return
+			}
 			rows, err := listUsers(r.Context(), db)
 			if err != nil {
 				http.Error(w, "no se pudieron listar usuarios", http.StatusBadGateway)
@@ -901,6 +901,9 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 			}
 			_ = json.NewEncoder(w).Encode(rows)
 		case http.MethodPost:
+			if !requireRole(w, r, roleAdmin) {
+				return
+			}
 			var payload struct {
 				Username string `json:"username"`
 				Password string `json:"password"`
@@ -927,6 +930,9 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 			}
 			w.WriteHeader(http.StatusCreated)
 		case http.MethodPut:
+			if !requireRole(w, r, roleAdmin) {
+				return
+			}
 			var payload struct {
 				ID       int64  `json:"id"`
 				Username string `json:"username"`
@@ -1036,6 +1042,63 @@ func startHTTPServer(grpcClient pb.FaceRecognitionServiceClient, store *attendan
 					parts = append(parts, "password:changed")
 				}
 				writeAuthAudit(r.Context(), db, actor, "user.update", after, strings.Join(parts, "; "))
+			}
+			w.WriteHeader(http.StatusNoContent)
+		case http.MethodDelete:
+			if !requireRole(w, r, roleRH) {
+				return
+			}
+			targetIDRaw := strings.TrimSpace(r.URL.Query().Get("id"))
+			if targetIDRaw == "" {
+				http.Error(w, "id es obligatorio", http.StatusBadRequest)
+				return
+			}
+			targetID, err := strconv.ParseInt(targetIDRaw, 10, 64)
+			if err != nil || targetID <= 0 {
+				http.Error(w, "id invalido", http.StatusBadRequest)
+				return
+			}
+
+			actor := resolveActorFromRequest(r.Context(), db, r)
+			if actor != nil && actor.ID == targetID {
+				http.Error(w, "no puedes eliminar tu propio usuario", http.StatusBadRequest)
+				return
+			}
+
+			target, err := readUserByID(r.Context(), db, targetID)
+			if err != nil {
+				if err == sql.ErrNoRows {
+					http.Error(w, "usuario no encontrado", http.StatusNotFound)
+					return
+				}
+				http.Error(w, "no se pudo leer usuario", http.StatusBadGateway)
+				return
+			}
+
+			if target.Role == roleAdmin && target.Active {
+				activeAdmins, countErr := countActiveAdmins(r.Context(), db)
+				if countErr != nil {
+					http.Error(w, "no se pudo validar administradores activos", http.StatusBadGateway)
+					return
+				}
+				if activeAdmins <= 1 {
+					http.Error(w, "no se puede eliminar el ultimo admin activo", http.StatusBadRequest)
+					return
+				}
+			}
+
+			if err := deleteUser(r.Context(), db, targetID); err != nil {
+				if strings.Contains(err.Error(), "not found") {
+					http.Error(w, "usuario no encontrado", http.StatusNotFound)
+					return
+				}
+				http.Error(w, fmt.Sprintf("no se pudo eliminar usuario: %v", err), http.StatusBadRequest)
+				return
+			}
+
+			if actor != nil {
+				details := fmt.Sprintf("role=%s; active=%t", target.Role, target.Active)
+				writeAuthAudit(r.Context(), db, actor, "user.delete", target, details)
 			}
 			w.WriteHeader(http.StatusNoContent)
 		default:
@@ -2082,6 +2145,23 @@ func updateUserPasswordByID(ctx context.Context, db *sql.DB, id int64, password 
 	return err
 }
 
+func deleteUser(ctx context.Context, db *sql.DB, id int64) error {
+	if id <= 0 {
+		return fmt.Errorf("id invalido")
+	}
+	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	res, err := db.ExecContext(queryCtx, `DELETE FROM users WHERE id = $1`, id)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err == nil && rows == 0 {
+		return fmt.Errorf("not found")
+	}
+	return err
+}
+
 func writeAuthAudit(ctx context.Context, db *sql.DB, actor *authUser, action string, target *authUser, details string) {
 	if db == nil || actor == nil || action == "" {
 		return
@@ -2236,7 +2316,9 @@ func setJSONHeaders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-	w.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+	// Keep CORS methods aligned with the REST handlers used by Angular.
+	// Without DELETE/PUT here, browser preflight can block user-management actions.
+	w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 }
 
 func extractEmbedding(fileName string, base64Data string) ([]float64, error) {

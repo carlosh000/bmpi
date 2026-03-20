@@ -1,135 +1,28 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export interface AttendanceRecord {
-  row_id?: number;
-  id: number;
-  name: string;
-  timestamp: string;
-}
-
-export interface CreateAttendanceRequest {
-  employee_id: string;
-  name?: string;
-  timestamp?: string;
-}
-
-export interface UpdateAttendanceRequest {
-  employee_id: string;
-  name?: string;
-  timestamp: string;
-}
-
-export interface EmbeddingResult {
-  fileName: string;
-  embedding: number[];
-  dimensions: number;
-}
-
-export interface EmbeddingExtractResponse {
-  results: EmbeddingResult[];
-  errors: string[];
-}
-
-export interface EmployeeRecord {
-  employee_id: string;
-  name: string;
-}
-
-export interface RegisterPhotosRequest {
-  employeeName: string;
-  employeeId: string;
-  files: { name: string; data: string }[];
-}
-
-export interface RegisterPhotosResponse {
-  saved: { employeeId: string; employeeName: string; photosProcessed: number; failedPhotos: number }[];
-  errors: string[];
-  qualityWarnings?: string[];
-}
-
-export interface EmployeeStorageRecord {
-  employee_id: string;
-  name: string;
-  embedding_bytes: number;
-  photo_bytes: number;
-  photo_data_url: string;
-}
-
-export interface RecognizeBurstRequest {
-  frames: { name: string; data: string }[];
-  minVotes?: number;
-  minConfidence?: number;
-  registerAttendance: boolean;
-}
-
-export interface RecognizeBurstResponse {
-  recognized: boolean;
-  employee_id: string;
-  name: string;
-  confidence: number;
-  bestFrameConfidence?: number;
-  votes: number;
-  minVotes: number;
-  framesProcessed: number;
-  recognizedFrames: number;
-  attendanceLogged?: boolean;
-  attendanceMessage?: string;
-  errors?: string[];
-}
-
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  role: string;
-  username: string;
-  expiresAt: string;
-}
-
-export interface RefreshResponse {
-  token: string;
-  role: string;
-  username: string;
-  expiresAt: string;
-}
-
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-}
-
-export interface AuthMeResponse {
-  username: string;
-  role: string;
-}
-
-export interface AuthUser {
-  id: number;
-  username: string;
-  role: string;
-  active: boolean;
-  created_at: string;
-}
-
-export interface CreateUserRequest {
-  username: string;
-  password: string;
-  role: string;
-  active?: boolean;
-}
-
-export interface UpdateUserRequest {
-  id: number;
-  username?: string;
-  role?: string;
-  active?: boolean;
-  password?: string;
-}
+import { resolveStoredAuthToken } from './core/helpers';
+import {
+  AttendanceRecord,
+  CreateAttendanceRequest,
+  UpdateAttendanceRequest,
+  EmployeeRecord,
+  RegisterPhotoFile,
+  RegisterPhotosRequest,
+  RegisterPhotosResponse,
+  EmployeeStorageRecord,
+  EmbeddingExtractResponse,
+  RecognizeBurstRequest,
+  RecognizeBurstResponse,
+  AuthMeResponse,
+  AuthUser,
+  ChangePasswordRequest,
+  CreateUserRequest,
+  LoginRequest,
+  LoginResponse,
+  RefreshResponse,
+  UpdateUserRequest,
+} from './core/dto';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
@@ -138,19 +31,7 @@ export class AttendanceService {
   constructor(private http: HttpClient) {}
 
   private resolveAuthToken(): string {
-    if (typeof window === 'undefined') {
-      return '';
-    }
-    try {
-      const localToken = window.localStorage.getItem('bmpi_auth_token');
-      if (localToken && localToken.trim() !== '') {
-        return localToken.trim();
-      }
-      const token = window.sessionStorage.getItem('bmpi_auth_token');
-      return token?.trim() ?? '';
-    } catch {
-      return '';
-    }
+    return resolveStoredAuthToken();
   }
 
   private authOptions(): { headers?: HttpHeaders } {
@@ -191,7 +72,7 @@ export class AttendanceService {
     return this.http.delete<void>(`${this.apiBaseUrl}/employees${query}`, this.authOptions());
   }
 
-  extractEmbeddings(files: { name: string; data: string }[]): Observable<EmbeddingExtractResponse> {
+  extractEmbeddings(files: RegisterPhotoFile[]): Observable<EmbeddingExtractResponse> {
     return this.http.post<EmbeddingExtractResponse>(`${this.apiBaseUrl}/embeddings/extract`, { files }, this.authOptions());
   }
 
@@ -237,5 +118,10 @@ export class AttendanceService {
 
   updateUser(payload: UpdateUserRequest): Observable<void> {
     return this.http.put<void>(`${this.apiBaseUrl}/auth/users`, payload, this.authOptions());
+  }
+
+  deleteUser(userID: number): Observable<void> {
+    const query = `?id=${encodeURIComponent(String(userID))}`;
+    return this.http.delete<void>(`${this.apiBaseUrl}/auth/users${query}`, this.authOptions());
   }
 }

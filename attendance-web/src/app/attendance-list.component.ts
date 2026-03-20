@@ -1,16 +1,18 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+﻿import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
-import {
-  AttendanceService,
-  AttendanceRecord,
-  EmbeddingResult,
-  EmployeeStorageRecord,
-  AuthUser,
-  RecognizeBurstResponse,
-  RegisterPhotosResponse,
-} from './attendance.service';
+import { AttendanceService } from './attendance.service';
 import { finalize, firstValueFrom, timeout } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
+import {
+  AttendanceRecord,
+  AuthUser,
+  EmployeeStorageRecord,
+  RegisterPhotosResponse,
+  EmbeddingResult,
+  RecognizeBurstResponse,
+} from './core/dto';
+import { extractHttpErrorMessage } from './core/helpers';
+import { UiButtonComponent } from './shared/ui';
 
 interface EmbeddingAssignment {
   employeeId: number;
@@ -30,954 +32,9 @@ interface UserEditState {
 @Component({
   selector: 'app-attendance-list',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="intro-splash" *ngIf="showIntroSplash" [class.is-logout]="isLogoutSplash" aria-hidden="true">
-      <div class="intro-logo" *ngIf="!isLogoutSplash">
-        <img src="bmpi-logo.png" alt="BMPI" />
-      </div>
-      <div class="intro-line" *ngIf="!isLogoutSplash"></div>
-      <div class="intro-flash" *ngIf="!isLogoutSplash"></div>
-    </div>
-    <section class="attendance-container" [class.reveal]="uiRevealPulse">
-      <header>
-        <div class="header-bar">
-          <div class="brand-row">
-            <img class="brand-logo" src="bmpi-logo.png" alt="BMPI" />
-            <div>
-              <h2>Registro de Asistencia de la empresa BMPI</h2>
-              <p class="description">
-                Administra registros de asistencia y prepara embeddings faciales.
-              </p>
-            </div>
-          </div>
-          <div class="session-compact" *ngIf="isLoggedIn">
-            <button type="button" class="session-trigger" (click)="toggleSessionMenu()">
-              <span class="session-avatar">BMPI</span>
-              <span class="session-text">{{ authUsername }} · {{ authRole }}</span>
-              <span class="session-caret">▾</span>
-            </button>
-            <div class="session-menu" *ngIf="showSessionMenu">
-              <p class="status">Usuario: {{ authUsername }}</p>
-              <p class="status">Rol: {{ authRole }}</p>
-              <p class="status">Sesion expira: {{ formatAuthExpiry(authExpiresAt) }}</p>
-              <p class="status" *ngIf="authInfo">{{ authInfo }}</p>
-              <div class="toolbar compact">
-                <button type="button" class="small" (click)="openAccountView()">Mi cuenta</button>
-                <button type="button" class="small danger" (click)="logout()">Cerrar sesion</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <section class="panel" *ngIf="!isLoggedIn">
-        <h3>Acceso</h3>
-        <form class="login-form" (submit)="$event.preventDefault(); submitLogin()">
-          <div class="form-grid">
-            <label>
-              Usuario
-              <input
-                #loginUsernameField
-                type="text"
-                [value]="loginUsername"
-                (input)="loginUsername = readInputValue($event)"
-              />
-            </label>
-            <label>
-              Password
-              <div class="password-field">
-                <input
-                  [type]="showLoginPassword ? 'text' : 'password'"
-                  [value]="loginPassword"
-                  (input)="loginPassword = readInputValue($event)"
-                  (keydown)="onPasswordKeydown($event)"
-                  (keyup)="onPasswordKeydown($event)"
-                />
-                <button type="button" class="small" (click)="showLoginPassword = !showLoginPassword">
-                  {{ showLoginPassword ? 'Ocultar' : 'Ver' }}
-                </button>
-              </div>
-              <small *ngIf="isCapsLockOn" class="hint-invalid">Caps Lock activado.</small>
-            </label>
-          </div>
-          <div class="toolbar compact">
-            <label class="inline-toggle">
-              <input type="checkbox" [checked]="rememberLogin" (change)="rememberLogin = readInputBool($event)" />
-              Recordar sesion en este equipo
-            </label>
-            <button type="submit" [disabled]="isLoggingIn || !canSubmitLogin()">
-              {{ isLoggingIn ? 'Ingresando...' : 'Entrar' }}
-            </button>
-          </div>
-        </form>
-        <div class="toast toast-success" *ngIf="authStatus">{{ authStatus }}</div>
-        <p class="status" *ngIf="authInfo">{{ authInfo }}</p>
-        <p class="error" *ngIf="authError">{{ authError }}</p>
-      </section>
-
-
-      <section class="panel" *ngIf="activeView === 'account' && isLoggedIn">
-        <h3>Mi cuenta</h3>
-        <p class="status">Gestiona tu password y revisa el estado de tu sesion.</p>
-        <div class="toolbar compact">
-          <button type="button" class="section-toggle" (click)="backToHome()">Volver</button>
-        </div>
-        <div class="panel mini-panel">
-          <div class="form-grid">
-            <label>
-              Password actual
-              <input
-                [type]="showCurrentPassword ? 'text' : 'password'"
-                [value]="currentPasswordInput"
-                (input)="currentPasswordInput = readInputValue($event)"
-              />
-            </label>
-            <label>
-              Nuevo password
-              <input
-                [type]="showNewPassword ? 'text' : 'password'"
-                [value]="newPasswordInput"
-                (input)="newPasswordInput = readInputValue($event)"
-              />
-            </label>
-            <label>
-              Confirmar nuevo password
-              <input
-                [type]="showConfirmPassword ? 'text' : 'password'"
-                [value]="confirmPasswordInput"
-                (input)="confirmPasswordInput = readInputValue($event)"
-              />
-            </label>
-          </div>
-          <div class="toolbar compact">
-            <button type="button" class="small" (click)="togglePasswordVisibility('current')">
-              {{ showCurrentPassword ? 'Ocultar' : 'Ver' }} actual
-            </button>
-            <button type="button" class="small" (click)="togglePasswordVisibility('new')">
-              {{ showNewPassword ? 'Ocultar' : 'Ver' }} nuevo
-            </button>
-            <button type="button" class="small" (click)="togglePasswordVisibility('confirm')">
-              {{ showConfirmPassword ? 'Ocultar' : 'Ver' }} confirmar
-            </button>
-            <button type="button" [disabled]="isUpdatingPassword || !canUpdatePassword()" (click)="updateOwnPassword()">
-              {{ isUpdatingPassword ? 'Actualizando...' : 'Actualizar password' }}
-            </button>
-          </div>
-          <p class="status" *ngIf="passwordStatus">{{ passwordStatus }}</p>
-          <p class="error" *ngIf="passwordError">{{ passwordError }}</p>
-        </div>
-      </section>
-
-      <section class="panel" *ngIf="activeView === 'home' && isLoggedIn">
-        <h3>Tabla de asistencias</h3>
-        <div class="toolbar section-toolbar">
-          <button type="button" class="section-toggle" [disabled]="!canAccessAttendanceWrite()" (click)="openManualView()">Registro manual</button>
-          <button type="button" class="section-toggle" [disabled]="!canAccessEmbedding()" (click)="openEmbeddingView()">Extraer embeddings</button>
-          <button type="button" class="section-toggle" [disabled]="!canAccessRecognition()" (click)="openRecognitionView()">Reconocimiento entrada</button>
-          <button type="button" class="section-toggle" *ngIf="canAccessUserAdmin()" (click)="openAdminView()">Usuarios y roles</button>
-        </div>
-
-        <div class="toolbar compact">
-          <button type="button" [disabled]="attendance.length === 0 || !canAccessExports()" (click)="exportAsExcel()">Exportar Excel (CSV)</button>
-          <button type="button" [disabled]="!canAccessAttendanceWrite()" (click)="openExcelImportPicker()">Importar Excel (CSV)</button>
-          <button type="button" [disabled]="attendance.length === 0 || !canAccessExports()" (click)="exportAsPdf()">Exportar PDF</button>
-        </div>
-
-        <div class="toolbar compact">
-          <label>
-            Filtrar por fecha
-            <input
-              #attendanceDateInput
-              type="date"
-              [value]="selectedAttendanceDate"
-              (input)="selectedAttendanceDate = readInputValue($event)"
-            />
-          </label>
-          <button type="button" (mousedown)="$event.preventDefault(); applyAttendanceDateFilter()" (click)="$event.preventDefault()">Aplicar filtro</button>
-          <button type="button" (mousedown)="$event.preventDefault(); setTodayAttendanceDate()" (click)="$event.preventDefault()">Hoy</button>
-        </div>
-
-        <input
-          #excelImportInput
-          class="hidden-input"
-          type="file"
-          accept=".csv,text/csv"
-          (change)="onListImported($event)"
-        />
-
-        <div *ngIf="message" class="toast toast-success">{{ message }}</div>
-        <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Fecha/Hora</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let record of attendance">
-              <td>{{ record.id }}</td>
-              <td>{{ record.name }}</td>
-              <td>{{ formatAttendanceTimestamp(record.timestamp) }}</td>
-              <td class="actions">
-                <button type="button" class="small" [disabled]="!isRecordFromToday(record) || !canAccessAttendanceWrite()" [title]="isRecordFromToday(record) ? '' : 'Solo se permite editar registros de hoy'" (click)="editRecord(record)">Editar</button>
-                <button type="button" class="small danger" [disabled]="!isRecordFromToday(record) || !canAccessAttendanceWrite()" [title]="isRecordFromToday(record) ? '' : 'Solo se permite eliminar registros de hoy'" (click)="deleteRecord(record)">Eliminar</button>
-                <small *ngIf="!isRecordFromToday(record)" class="row-lock-note">No editable (día anterior)</small>
-              </td>
-            </tr>
-            <tr *ngIf="attendance.length === 0">
-              <td colspan="4" class="empty">No hay registros para la fecha {{ selectedAttendanceDate }}.</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section class="panel" *ngIf="activeView === 'manual'">
-        <h3>Registro manual</h3>
-        <p *ngIf="!canAccessAttendanceWrite()" class="status">No tienes permisos para registrar asistencia manual.</p>
-        <ng-container *ngIf="canAccessAttendanceWrite()">
-          <div class="toolbar compact">
-            <button type="button" class="section-toggle" (click)="backToHome()">Volver</button>
-            <button type="button" (click)="startCreateRecord()">Añadir registro</button>
-          </div>
-
-          <div *ngIf="message" class="toast toast-success">{{ message }}</div>
-          <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
-
-          <form *ngIf="isEditing || isCreating" class="record-form" (submit)="$event.preventDefault()">
-            <div class="form-grid">
-              <label>
-                ID Empleado
-                <input
-                  #manualEmployeeIdField
-                  type="text"
-                  inputmode="numeric"
-                  pattern="[0-9]*"
-                  [value]="manualEmployeeIdInput"
-                  (input)="onManualEmployeeIdInput($event)"
-                  (change)="onManualEmployeeIdInput($event)"
-                />
-              </label>
-              <label>
-                Fecha/Hora
-                <input
-                  type="datetime-local"
-                  [value]="editingRecord.timestamp"
-                  [max]="getCurrentDateTimeLocal()"
-                  (input)="editingRecord.timestamp = readInputValue($event)"
-                />
-              </label>
-            </div>
-            <div class="toolbar compact">
-              <button type="button" [disabled]="isSavingRecord" (click)="saveRecord()">Guardar</button>
-              <button type="button" class="danger" (click)="cancelRecordEditor()">Cancelar</button>
-            </div>
-          </form>
-        </ng-container>
-      </section>
-
-      <section class="panel" *ngIf="activeView === 'embedding'">
-        <h3>Extraer embeddings</h3>
-        <p *ngIf="!canAccessEmbedding()" class="status">No tienes permisos para gestionar embeddings.</p>
-        <ng-container *ngIf="canAccessEmbedding()">
-        <form class="assign-form" (submit)="$event.preventDefault()">
-          <h4>Datos del empleado (obligatorios)</h4>
-          <div class="form-grid">
-            <label>
-              Nombre del empleado
-              <input
-                type="text"
-                [value]="embeddingNameInput"
-                (input)="embeddingNameInput = readInputValue($event)"
-                placeholder="Ej: Juan Pérez"
-              />
-            </label>
-            <label>
-              ID de empleado
-              <input
-                type="number"
-                min="1"
-                [value]="employeeIdInput"
-                (input)="employeeIdInput = readInputNumber($event)"
-                placeholder="Ej: 1001"
-              />
-            </label>
-          </div>
-        </form>
-
-        <div class="toolbar">
-          <button type="button" class="section-toggle" [disabled]="isExtracting || isSavingEmbeddings" (click)="backToHome()">Volver</button>
-          <button type="button" (click)="openFolderPicker()">Cargar carpeta de fotos</button>
-          <button type="button" class="danger" [disabled]="isExtracting || isSavingEmbeddings" (click)="clearEmbeddingState()">Limpiar estado</button>
-          <button type="button" [disabled]="!canRetryFailedPhotos()" (click)="retryFailedPhotos()">
-            Reintentar fallidas ({{ retryFailedPhotosQueue.length }})
-          </button>
-          <button type="button" [disabled]="!canRunEmbeddingExtraction()" (click)="confirmEmbeddingExtraction()">
-            {{ isExtracting ? 'Procesando...' : 'Extraer y guardar embeddings' }}
-          </button>
-          <button type="button" class="danger" [disabled]="!canAccessEmployeeDelete()" (click)="toggleDeleteEmployeePanel()">
-            {{ showDeleteEmployeePanel ? 'Ocultar eliminar' : 'Eliminar empleado' }}
-          </button>
-        </div>
-
-        <div class="panel admin-panel" *ngIf="showDeleteEmployeePanel && canAccessEmployeeDelete()">
-          <h4>Eliminar empleado (admin)</h4>
-          <div class="form-grid">
-            <label>
-              ID de empleado a eliminar
-              <input
-                type="number"
-                min="1"
-                [value]="deleteEmployeeIdInput"
-                (input)="deleteEmployeeIdInput = readInputNumber($event)"
-                placeholder="Ej: 1001"
-              />
-            </label>
-            <div class="toolbar compact">
-              <button type="button" class="danger" [disabled]="!canDeleteEmployee()" (click)="deleteEmployeeById()">
-                {{ isDeletingEmployee ? 'Eliminando...' : 'Eliminar empleado' }}
-              </button>
-              <button type="button" (click)="toggleDeleteEmployeePanel()">Volver</button>
-            </div>
-          </div>
-          <small class="row-lock-note">Esta accion borra embeddings, foto y asistencias del empleado.</small>
-        </div>
-
-        <input
-          #photoFolderInput
-          class="hidden-input"
-          type="file"
-          multiple
-          accept="image/*"
-          (change)="onPhotoFolderSelected($event)"
-          webkitdirectory
-          directory
-        />
-
-        <p *ngIf="selectedPhotos.length > 0" class="status">
-          {{ selectedPhotos.length }} foto(s) listas para procesar.
-        </p>
-        <p *ngIf="retryFailedPhotosQueue.length > 0" class="status">
-          Fallidas detectadas: {{ retryFailedPhotosQueue.length }} (usa "Reintentar fallidas").
-        </p>
-        <p *ngIf="selectedPhotos.length > 0 && !embeddingsReadyToSave" class="status">
-          Completa nombre + ID y luego usa "Extraer y guardar embeddings" para terminar en un solo paso.
-        </p>
-
-        <div *ngIf="message" class="toast toast-success">{{ message }}</div>
-        <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
-        <div *ngIf="qualityWarningsMessage" class="toast toast-warning">{{ qualityWarningsMessage }}</div>
-        <p *ngIf="embeddingProgressTotal > 0" class="status">
-          Progreso: {{ embeddingProgressCurrent }}/{{ embeddingProgressTotal }} · {{ embeddingProgressStage }}
-        </p>
-        <p *ngIf="embeddingFinalStatus" class="status">
-          Estado final: <strong>{{ embeddingFinalStatus }}</strong>
-        </p>
-        <div *ngIf="embeddingProgressTotal > 0" class="progress-wrap" aria-live="polite">
-          <div class="progress-track">
-            <div
-              class="progress-fill"
-              [class.complete]="isEmbeddingProgressComplete()"
-              [class.error]="isEmbeddingProgressError()"
-              [style.width.%]="getEmbeddingProgressPercent()"
-            ></div>
-          </div>
-          <small>{{ getEmbeddingProgressPercent() }}%</small>
-        </div>
-
-        <div *ngIf="processedEmbeddings.length > 0" class="embedding-results">
-          <h4>Resultado de extracción</h4>
-          <ul>
-            <li *ngFor="let embedding of processedEmbeddings">
-              <strong>{{ embedding.fileName }}</strong>
-              <span>dim={{ embedding.dimensions }} · listo para guardar</span>
-            </li>
-          </ul>
-        </div>
-        </ng-container>
-      </section>
-
-      <section class="panel" *ngIf="activeView === 'recognition'">
-        <h3>Reconocimiento en entrada (ráfaga)</h3>
-        <p *ngIf="!canAccessRecognition()" class="status">No tienes permisos para reconocimiento en entrada.</p>
-        <ng-container *ngIf="canAccessRecognition()">
-        <div class="toolbar compact">
-          <button type="button" class="section-toggle" (click)="backToHome()">Volver</button>
-          <button type="button" [disabled]="isCameraRunning" (click)="startRecognitionCamera()">Iniciar cámara</button>
-          <button type="button" class="danger" [disabled]="!isCameraRunning" (click)="stopRecognitionCamera()">Detener cámara</button>
-          <button type="button" [disabled]="!canCaptureBurstNow()" (click)="captureBurstNow()">Capturar ahora</button>
-        </div>
-
-        <div class="toolbar compact">
-          <label>
-            Frames por ráfaga
-            <input type="number" min="3" max="7" [value]="burstFrameCount" (input)="burstFrameCount = clampBurstFrameCount(readInputNumber($event))" />
-          </label>
-          <label>
-            Intervalo entre frames (ms)
-            <input type="number" min="120" max="600" [value]="burstFrameDelayMs" (input)="burstFrameDelayMs = clampBurstFrameDelayMs(readInputNumber($event))" />
-          </label>
-          <label>
-            Votos mínimos
-            <input type="number" min="1" max="5" [value]="burstMinVotes" (input)="burstMinVotes = clampBurstMinVotes(readInputNumber($event))" />
-          </label>
-          <label>
-            Confianza mínima
-            <input type="number" min="0.20" max="0.95" step="0.01" [value]="burstMinConfidence" (input)="burstMinConfidence = clampBurstMinConfidence(readInputNumber($event))" />
-          </label>
-          <label>
-            <input type="checkbox" [checked]="autoRecognitionEnabled" (change)="onToggleAutoRecognition($event)" />
-            Auto (escaneo continuo)
-          </label>
-        </div>
-
-        <div *ngIf="message" class="toast toast-success">{{ message }}</div>
-        <div *ngIf="errorMessage" class="toast toast-error">{{ errorMessage }}</div>
-        <p *ngIf="recognitionStatus" class="status">{{ recognitionStatus }}</p>
-
-        <div class="recognition-stage">
-          <video #recognitionVideo autoplay muted playsinline></video>
-          <canvas #recognitionCanvas class="hidden-input"></canvas>
-        </div>
-        </ng-container>
-      </section>
-
-      <section class="panel" *ngIf="activeView === 'admin'">
-        <h3>Usuarios y roles</h3>
-        <p *ngIf="!canAccessUserAdmin()" class="status">No tienes permisos para administrar usuarios.</p>
-        <ng-container *ngIf="canAccessUserAdmin()">
-          <div class="toolbar compact">
-            <button type="button" class="section-toggle" (click)="backToHome()">Volver</button>
-            <button type="button" [disabled]="isLoadingUsers" (click)="loadUsers()">
-              {{ isLoadingUsers ? 'Cargando...' : 'Recargar usuarios' }}
-            </button>
-            <button type="button" [disabled]="authUsers.length === 0" (click)="exportUsersCsv()">Exportar usuarios (CSV)</button>
-          </div>
-
-          <form class="assign-form" (submit)="$event.preventDefault()">
-            <h4>Crear usuario</h4>
-            <div class="form-grid three">
-              <label>
-                Usuario
-                <input type="text" [value]="newUserUsername" (input)="newUserUsername = readInputValue($event)" />
-              </label>
-              <label>
-                Password
-                <input type="password" [value]="newUserPassword" (input)="newUserPassword = readInputValue($event)" />
-              </label>
-              <label>
-                Rol
-                <select [value]="newUserRole" (change)="newUserRole = readInputValue($event)">
-                  <option value="admin">admin</option>
-                  <option value="rh">rh</option>
-                  <option value="operator">operator</option>
-                  <option value="vigilante">vigilante</option>
-                  <option value="jefe">jefe</option>
-                </select>
-              </label>
-            </div>
-            <div class="toolbar compact">
-              <label>
-                <input type="checkbox" [checked]="newUserActive" (change)="newUserActive = readInputBool($event)" />
-                Activo
-              </label>
-              <button type="button" [disabled]="isCreatingUser || !canCreateUser()" (click)="createUser()">
-                {{ isCreatingUser ? 'Creando...' : 'Crear usuario' }}
-              </button>
-            </div>
-          </form>
-
-          <div *ngIf="userAdminStatus" class="toast toast-success">{{ userAdminStatus }}</div>
-          <div *ngIf="userAdminError" class="toast toast-error">{{ userAdminError }}</div>
-
-          <table class="mini-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Usuario</th>
-                <th>Rol</th>
-                <th>Activo</th>
-                <th>Password nuevo</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let user of authUsers">
-                <td>{{ user.id }}</td>
-                <td>{{ user.username }}</td>
-                <td>
-                  <select [value]="getUserEdit(user.id).role" [disabled]="isCurrentAuthUser(user)" (change)="onUserRoleChange(user.id, $event)">
-                    <option value="admin">admin</option>
-                    <option value="rh">rh</option>
-                    <option value="operator">operator</option>
-                    <option value="vigilante">vigilante</option>
-                    <option value="jefe">jefe</option>
-                  </select>
-                </td>
-                <td>
-                  <input type="checkbox" [checked]="getUserEdit(user.id).active" [disabled]="isCurrentAuthUser(user)" (change)="onUserActiveChange(user.id, $event)" />
-                </td>
-                <td>
-                  <input
-                    type="password"
-                    [value]="getUserEdit(user.id).password"
-                    (input)="onUserPasswordChange(user.id, $event)"
-                    placeholder="Opcional"
-                  />
-                </td>
-                <td>
-                  <small *ngIf="isCurrentAuthUser(user)" class="row-lock-note">Tu rol/activo se protege desde este panel.</small>
-                  <button type="button" class="small" [disabled]="isUpdatingUserId === user.id" (click)="updateUser(user)">
-                    {{ isUpdatingUserId === user.id ? 'Actualizando...' : 'Actualizar' }}
-                  </button>
-                </td>
-              </tr>
-              <tr *ngIf="authUsers.length === 0">
-                <td colspan="6" class="empty">No hay usuarios registrados.</td>
-              </tr>
-            </tbody>
-          </table>
-        </ng-container>
-      </section>
-    </section>
-  `,
-  styles: [
-    `
-      @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap');
-
-      :host {
-        --bg-base: #0f172a;
-        --bg-muted: #111827;
-        --surface: #f8fafc;
-        --surface-strong: #ffffff;
-        --text-main: #0f172a;
-        --text-muted: #475569;
-        --accent: #2563eb;
-        --accent-soft: #93c5fd;
-        --accent-warm: #f59e0b;
-        --danger: #dc2626;
-        --success: #16a34a;
-        display: block;
-        min-height: 100vh;
-        position: relative;
-        color: var(--text-main);
-      }
-
-      :host::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background:
-          radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.18), transparent 50%),
-          radial-gradient(circle at 85% 15%, rgba(245, 158, 11, 0.15), transparent 45%),
-          linear-gradient(160deg, #f8fafc 0%, #eef2ff 50%, #e2e8f0 100%);
-        z-index: -1;
-      }
-
-      .attendance-container {
-        margin: 2.5rem auto 3rem;
-        max-width: 1100px;
-        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
-        display: grid;
-        gap: 1.6rem;
-        position: relative;
-        z-index: 1;
-      }
-
-      .attendance-container.reveal {
-        opacity: 0;
-        transform: translateY(18px) scale(0.98);
-        animation: container-in 720ms ease 0.85s forwards;
-      }
-
-      header h2 {
-        font-family: 'Unbounded', 'Space Grotesk', sans-serif;
-        font-size: clamp(1.6rem, 2.2vw, 2.2rem);
-        margin-bottom: 0.35rem;
-        letter-spacing: -0.02em;
-      }
-
-      .header-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1.5rem;
-      }
-
-      .brand-row {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 1rem;
-        align-items: center;
-      }
-
-      .brand-logo {
-        width: 64px;
-        height: 64px;
-        object-fit: contain;
-        border-radius: 14px;
-        background: rgba(255, 255, 255, 0.7);
-        padding: 0.35rem;
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
-      }
-
-      .session-compact {
-        position: relative;
-      }
-
-      .session-trigger {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.6rem;
-        background: #0f172a;
-        color: #f8fafc;
-        border-radius: 999px;
-        padding: 0.45rem 0.8rem;
-        box-shadow: 0 10px 18px rgba(15, 23, 42, 0.2);
-      }
-
-      .session-avatar {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        font-size: 0.7rem;
-        font-weight: 700;
-        background: #2563eb;
-        letter-spacing: 0.08em;
-      }
-
-      .session-text {
-        font-size: 0.85rem;
-        font-weight: 600;
-      }
-
-      .session-caret {
-        font-size: 0.75rem;
-        opacity: 0.85;
-      }
-
-      .session-menu {
-        position: absolute;
-        right: 0;
-        top: calc(100% + 0.6rem);
-        background: #ffffff;
-        border: 1px solid rgba(148, 163, 184, 0.4);
-        border-radius: 14px;
-        padding: 0.8rem 0.9rem;
-        min-width: 240px;
-        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
-        z-index: 5;
-      }
-
-      .description {
-        color: var(--text-muted);
-        margin-top: 0.25rem;
-        max-width: 700px;
-      }
-
-      .intro-splash {
-        position: fixed;
-        inset: 0;
-        background: transparent;
-        display: grid;
-        place-items: center;
-        align-items: center;
-        justify-items: center;
-        gap: 1rem;
-        z-index: 20;
-        animation: splash-out 900ms ease 1.35s forwards;
-        pointer-events: none;
-        overflow: hidden;
-        padding: 0;
-      }
-
-      .intro-splash.is-logout {
-        animation: splash-logout 900ms ease forwards;
-      }
-
-      .intro-logo {
-        display: grid;
-        place-items: center;
-        width: 100vw;
-        height: 100vh;
-        justify-items: center;
-        align-items: center;
-        transform-origin: center center;
-        transform: translate3d(0, 0, 0) scale(0.9);
-        will-change: transform, opacity;
-        animation: letters-in 420ms cubic-bezier(0.16, 0.84, 0.44, 1) forwards,
-          letters-out 900ms cubic-bezier(0.16, 0.84, 0.44, 1) 0.8s forwards;
-      }
-
-      .intro-logo img {
-        display: block;
-        margin: 0 auto;
-        max-width: min(90vw, 900px);
-        max-height: 80vh;
-        width: auto;
-        height: auto;
-        object-fit: contain;
-        filter: drop-shadow(0 12px 24px rgba(15, 23, 42, 0.18));
-        backface-visibility: hidden;
-        -webkit-backface-visibility: hidden;
-        transform: translateZ(0);
-        will-change: transform;
-        image-rendering: auto;
-        filter: none;
-        opacity: 1;
-      }
-
-      .intro-flash {
-        position: absolute;
-        inset: 0;
-        background: #ffffff;
-        opacity: 0;
-        animation: flash-pop 1.2s ease 0.95s forwards;
-        pointer-events: none;
-      }
-
-      .intro-line {
-        width: min(60vw, 360px);
-        height: 3px;
-        background: linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.9), transparent);
-        opacity: 0;
-        animation: line-scan 650ms ease 0.28s forwards;
-      }
-
-      .panel {
-        border-radius: 18px;
-        padding: 1.2rem 1.4rem;
-        background: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%);
-        border: 1px solid rgba(148, 163, 184, 0.35);
-        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
-        animation: panel-in 520ms ease;
-      }
-
-      .mini-panel {
-        margin-top: 0.9rem;
-        background: #f1f5f9;
-        border: 1px dashed rgba(148, 163, 184, 0.55);
-        box-shadow: none;
-      }
-
-      .admin-panel {
-        background: linear-gradient(145deg, #fff5f5 0%, #ffffff 100%);
-        border-color: rgba(248, 113, 113, 0.35);
-      }
-
-      .toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin: 1rem 0;
-      }
-
-      .toolbar.compact { margin: 0.8rem 0; }
-      .section-toolbar { margin-bottom: 0.35rem; }
-      .login-form { display: grid; gap: 0.8rem; }
-      .inline-toggle { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.86rem; color: #475569; }
-      .inline-toggle input { width: auto; }
-
-      button {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        border: none;
-        border-radius: 10px;
-        color: #fff;
-        cursor: pointer;
-        font-size: 0.95rem;
-        padding: 0.6rem 1rem;
-        transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
-        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
-      }
-
-      button:hover { transform: translateY(-1px); }
-      button:active { transform: translateY(0); }
-      button.small { padding: 0.4rem 0.65rem; font-size: 0.85rem; }
-
-      button.section-toggle {
-        font-size: 1rem;
-        font-weight: 600;
-        padding: 0.75rem 1.1rem;
-        background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%);
-        box-shadow: 0 12px 18px rgba(15, 23, 42, 0.2);
-      }
-
-      button.danger {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        box-shadow: 0 10px 18px rgba(185, 28, 28, 0.22);
-      }
-
-      button:disabled {
-        background: #94a3b8;
-        cursor: not-allowed;
-        box-shadow: none;
-        transform: none;
-      }
-
-      .hidden-input { display: none; }
-      .status { margin: 0.35rem 0; color: #0f172a; }
-
-      .progress-wrap { display: flex; align-items: center; gap: 0.6rem; margin: 0.4rem 0 0.7rem; }
-      .progress-track { flex: 1; height: 10px; border-radius: 999px; background: rgba(148, 163, 184, 0.35); overflow: hidden; }
-      .progress-fill { height: 100%; background: #2563eb; transition: width 180ms ease; }
-      .progress-fill.complete { background: #16a34a; }
-      .progress-fill.error { background: #dc2626; }
-
-      .error { margin: 0.35rem 0; color: #b91c1c; }
-
-      .toast {
-        border-radius: 12px;
-        font-size: 0.9rem;
-        margin: 0.55rem 0;
-        padding: 0.65rem 0.9rem;
-        box-shadow: 0 10px 18px rgba(15, 23, 42, 0.1);
-      }
-
-      .toast-success { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
-      .toast-error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
-      .toast-warning { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; }
-
-      .form-grid {
-        display: grid;
-        gap: 0.75rem;
-        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-        align-items: end;
-      }
-
-      .form-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-
-      label {
-        display: grid;
-        gap: 0.35rem;
-        font-size: 0.9rem;
-        color: #334155;
-      }
-
-      .password-field { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; align-items: center; }
-      small { font-size: 0.78rem; }
-      .hint-valid { color: #166534; }
-      .hint-invalid { color: #b91c1c; }
-
-      input, select {
-        border: 1px solid rgba(148, 163, 184, 0.5);
-        border-radius: 10px;
-        padding: 0.55rem 0.7rem;
-        font-family: inherit;
-        background: #fff;
-        transition: border-color 150ms ease, box-shadow 150ms ease;
-      }
-
-      input:focus, select:focus {
-        outline: none;
-        border-color: rgba(37, 99, 235, 0.8);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-      }
-
-      table { border-collapse: collapse; width: 100%; margin-top: 0.75rem; }
-      th, td { border: 1px solid rgba(148, 163, 184, 0.4); padding: 0.65rem; }
-      th { background: #eff6ff; text-align: left; font-weight: 600; }
-      tbody tr { transition: background 160ms ease; }
-      tbody tr:hover { background: rgba(59, 130, 246, 0.05); }
-
-      .actions { display: flex; gap: 0.5rem; }
-      .row-lock-note { align-self: center; color: #6b7280; font-size: 0.75rem; }
-      .empty { color: #6b7280; text-align: center; }
-
-      .embedding-results {
-        background: #fff;
-        border: 1px solid rgba(226, 232, 240, 0.85);
-        border-radius: 12px;
-        margin-top: 1rem;
-        padding: 0.85rem;
-      }
-
-      .embedding-results ul { list-style: none; margin: 0; padding: 0; }
-      .embedding-results li { align-items: baseline; display: flex; gap: 0.75rem; padding: 0.25rem 0; }
-      .embedding-results span { color: #475569; font-family: 'Courier New', monospace; }
-
-      .mini-table { margin-top: 1rem; }
-
-      .recognition-stage {
-        margin-top: 0.8rem;
-        border: 1px solid rgba(148, 163, 184, 0.6);
-        border-radius: 14px;
-        overflow: hidden;
-        max-width: 560px;
-        background: #0f172a;
-        box-shadow: 0 16px 30px rgba(15, 23, 42, 0.2);
-      }
-
-      .recognition-stage video { display: block; width: 100%; height: auto; }
-
-      @keyframes container-in {
-        from { opacity: 0; transform: translateY(18px) scale(0.98); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
-      }
-
-      @keyframes panel-in {
-        from { opacity: 0; transform: translateY(12px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-
-      @keyframes splash-out {
-        0% { opacity: 1; }
-        70% { opacity: 1; }
-        100% { opacity: 0; visibility: hidden; }
-      }
-
-      @keyframes splash-logout {
-        0% { opacity: 0; }
-        40% { opacity: 1; }
-        100% { opacity: 0; }
-      }
-
-      @keyframes splash-zoom {
-        0% { transform: scale(1); }
-        100% { transform: scale(1.04); }
-      }
-
-      @keyframes letters-in {
-        0% { opacity: 0; transform: scale(0.9) translateY(4px); }
-        100% { opacity: 1; transform: scale(1) translateY(0); }
-      }
-
-      @keyframes letters-out {
-        0% { opacity: 1; transform: scale(1) translateY(0); }
-        100% { opacity: 0; transform: scale(2.4) translateY(-10px); }
-      }
-
-      @keyframes flash-pop {
-        0% { opacity: 0; }
-        20% { opacity: 0.55; }
-        100% { opacity: 0; }
-      }
-
-      @keyframes line-scan {
-        0% { opacity: 0; transform: scaleX(0.4); }
-        100% { opacity: 1; transform: scaleX(1); }
-      }
-
-      @media (max-width: 900px) {
-        .attendance-container { margin: 1.5rem 1rem 2.5rem; }
-        .form-grid { grid-template-columns: 1fr; }
-        .form-grid.three { grid-template-columns: 1fr; }
-        .actions { flex-direction: column; }
-        button.section-toggle { width: 100%; justify-content: center; }
-        .header-bar { flex-direction: column; align-items: stretch; }
-        .brand-row { grid-template-columns: 1fr; text-align: center; }
-        .brand-logo { margin: 0 auto; }
-        .session-trigger { width: 100%; justify-content: space-between; }
-        .session-menu { position: static; margin-top: 0.6rem; }
-      }
-    `,
-  ],
+  imports: [CommonModule, UiButtonComponent],
+  templateUrl: './attendance-list.component.html',
+  styleUrl: './attendance-list.component.scss',
 })
 export class AttendanceListComponent implements OnInit, OnDestroy {
   @ViewChild('manualEmployeeIdField') manualEmployeeIdField?: ElementRef<HTMLInputElement>;
@@ -1059,6 +116,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   isLoadingUsers = false;
   isCreatingUser = false;
   isUpdatingUserId: number | null = null;
+  isDeletingUserId: number | null = null;
   newUserUsername = '';
   newUserPassword = '';
   newUserRole = 'vigilante';
@@ -1306,8 +364,8 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   }
 
   openAdminView(): void {
-    if (!this.canAccessUserAdmin()) {
-      this.errorMessage = 'No tienes permisos para administrar usuarios.';
+    if (!this.canAccessUserPanel()) {
+      this.errorMessage = 'No tienes permisos para gestionar usuarios.';
       return;
     }
     this.errorMessage = '';
@@ -1640,7 +698,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       return;
     }
     if (isPlatformBrowser(this.platformId)) {
-      const confirmed = window.confirm('¿Seguro que deseas cerrar sesion?');
+      const confirmed = window.confirm('Seguro que deseas cerrar sesion?');
       if (!confirmed) {
         return;
       }
@@ -1906,6 +964,14 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     return this.hasRole(['admin']);
   }
 
+  canAccessUserPanel(): boolean {
+    return this.hasRole(['admin', 'rh']);
+  }
+
+  canAccessUserDelete(): boolean {
+    return this.hasRole(['admin', 'rh']);
+  }
+
   backToHome(): void {
     this.errorMessage = '';
     this.stopRecognitionCamera();
@@ -1918,7 +984,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     }
 
     if (!navigator.mediaDevices?.getUserMedia) {
-      this.errorMessage = 'Este navegador no soporta acceso a cámara.';
+      this.errorMessage = 'Este navegador no soporta acceso a camara.';
       return;
     }
 
@@ -1938,7 +1004,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       this.recognitionStream = stream;
       const video = this.recognitionVideo?.nativeElement;
       if (!video) {
-        this.errorMessage = 'No se pudo inicializar el visor de cámara.';
+        this.errorMessage = 'No se pudo inicializar el visor de camara.';
         this.stopRecognitionCamera();
         return;
       }
@@ -1946,10 +1012,10 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       video.srcObject = stream;
       await video.play();
       this.isCameraRunning = true;
-      this.recognitionStatus = 'Cámara activa. Esperando rostro...';
+      this.recognitionStatus = 'Camara activa. Esperando rostro...';
       this.configureAutoRecognitionLoop();
     } catch {
-      this.errorMessage = 'No se pudo abrir la cámara. Revisa permisos.';
+      this.errorMessage = 'No se pudo abrir la camara. Revisa permisos.';
       this.stopRecognitionCamera();
     }
   }
@@ -1974,7 +1040,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.isCameraRunning = false;
     this.isRecognizingBurst = false;
     if (this.activeView === 'recognition') {
-      this.recognitionStatus = 'Cámara detenida.';
+      this.recognitionStatus = 'Camara detenida.';
     }
   }
 
@@ -2022,7 +1088,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     }
 
     this.isRecognizingBurst = true;
-    this.recognitionStatus = 'Analizando ráfaga...';
+    this.recognitionStatus = 'Analizando rafaga...';
 
     try {
       const frames = await this.captureFramesFromVideo(video, canvas, this.burstFrameCount, this.burstFrameDelayMs);
@@ -2088,7 +1154,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     if (response.recognized) {
       const confidencePct = Math.round((response.confidence || 0) * 100);
       const attendanceText = response.attendanceLogged ? 'asistencia registrada' : response.attendanceMessage || 'sin registro';
-      this.recognitionStatus = `Reconocido: ${response.name || response.employee_id} · conf ${confidencePct}% · votos ${response.votes}/${response.minVotes} · ${attendanceText}`;
+      this.recognitionStatus = `Reconocido: ${response.name || response.employee_id}  -  conf ${confidencePct}%  -  votos ${response.votes}/${response.minVotes}  -  ${attendanceText}`;
       this.errorMessage = '';
       return;
     }
@@ -2165,7 +1231,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     if (this.selectedPhotos.length < minPhotosRequired || this.selectedPhotos.length > 10) {
       this.errorMessage = this.isRetryFailedFlow
         ? 'Para reintento se requiere entre 1 y 10 fotos fallidas.'
-        : 'Para precisión, cada empleado debe tener entre 5 y 10 fotos.';
+        : 'Para precision, cada empleado debe tener entre 5 y 10 fotos.';
       this.message = '';
       return;
     }
@@ -2173,7 +1239,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     const name = this.embeddingNameInput.trim();
     const employeeId = Number(this.employeeIdInput);
     if (!name || !Number.isFinite(employeeId) || employeeId <= 0) {
-      this.errorMessage = 'Debes completar nombre e ID válidos antes de extraer.';
+      this.errorMessage = 'Debes completar nombre e ID validos antes de extraer.';
       this.message = '';
       return;
     }
@@ -2202,7 +1268,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       this.isSavingEmbeddings = false;
       this.embeddingProgressStage = 'Error';
       this.embeddingFinalStatus = 'Error al guardar (tiempo excedido)';
-      this.errorMessage = 'La operación tardó demasiado y fue detenida. Intenta con fotos más ligeras o reintenta.';
+      this.errorMessage = 'La operacion tardo demasiado y fue detenida. Intenta con fotos mas ligeras o reintenta.';
       this.message = '';
       this.cdr.detectChanges();
     }, 50000);
@@ -2219,15 +1285,15 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
 
       if (filesPayload.length === 0) {
         this.embeddingProgressStage = 'Error';
-        this.embeddingFinalStatus = 'Error al guardar (ninguna foto válida)';
+        this.embeddingFinalStatus = 'Error al guardar (ninguna foto valida)';
         this.message = '';
         return;
       }
 
       if (!this.isRetryFailedFlow && filesPayload.length < 5) {
         this.embeddingProgressStage = 'Error';
-        this.embeddingFinalStatus = `Error al guardar (solo ${filesPayload.length} foto(s) válidas)`;
-        this.errorMessage = `Se requieren entre 5 y 10 fotos válidas por empleado. Solo quedaron ${filesPayload.length}.`;
+        this.embeddingFinalStatus = `Error al guardar (solo ${filesPayload.length} foto(s) validas)`;
+        this.errorMessage = `Se requieren entre 5 y 10 fotos validas por empleado. Solo quedaron ${filesPayload.length}.`;
         this.message = '';
         return;
       }
@@ -2284,7 +1350,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
 
       if (response.saved.length > 0 && failedPhotos === 0) {
         this.showMessageForDuration(
-          `✅ Datos faciales guardados con éxito: empleado ${response.saved[0].employeeId}, ${processedPhotos} foto(s), ${elapsedSeconds}s.`,
+          `OK Datos faciales guardados con exito: empleado ${response.saved[0].employeeId}, ${processedPhotos} foto(s), ${elapsedSeconds}s.`,
           5000,
         );
         this.embeddingProgressStage = 'Guardado exitoso';
@@ -2292,14 +1358,14 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
         this.retryFailedPhotosQueue = [];
       } else if (response.saved.length > 0) {
         this.showMessageForDuration(
-          `⚠ Guardado parcial: empleado ${response.saved[0].employeeId}, ${processedPhotos} procesadas, ${failedPhotos} fallidas, ${elapsedSeconds}s.`,
+          `ADVERTENCIA Guardado parcial: empleado ${response.saved[0].employeeId}, ${processedPhotos} procesadas, ${failedPhotos} fallidas, ${elapsedSeconds}s.`,
           5000,
         );
         this.embeddingProgressStage = 'Guardado parcial';
         this.embeddingFinalStatus = `Guardado parcial (${processedPhotos} OK / ${failedPhotos} fallidas, ${elapsedSeconds}s)`;
       } else {
         this.showMessageForDuration(
-          `❌ No se guardaron datos faciales. Revisa el error y vuelve a intentar. (${elapsedSeconds}s)`,
+          `ERROR No se guardaron datos faciales. Revisa el error y vuelve a intentar. (${elapsedSeconds}s)`,
           6000,
         );
         this.embeddingProgressStage = 'Error';
@@ -2331,7 +1397,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       } else {
         const backendMsg = this.extractBackendErrorMessage(err);
         this.errorMessage = backendMsg || 'No se pudo completar el guardado de datos faciales.';
-        this.embeddingFinalStatus = 'Error al guardar (falló conexión o backend)';
+        this.embeddingFinalStatus = 'Error al guardar (fallo conexion o backend)';
       }
       this.message = '';
       this.embeddingProgressStage = 'Error';
@@ -2436,7 +1502,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     }
 
     if (this.processedEmbeddings.length < 5 || this.processedEmbeddings.length > 10) {
-      this.errorMessage = `Se requieren entre 5 y 10 embeddings válidos por empleado. Actualmente: ${this.processedEmbeddings.length}.`;
+      this.errorMessage = `Se requieren entre 5 y 10 embeddings validos por empleado. Actualmente: ${this.processedEmbeddings.length}.`;
       this.message = '';
       return;
     }
@@ -2449,7 +1515,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
 
     this.isSavingEmbeddings = true;
     this.errorMessage = '';
-    this.message = 'Preparando imágenes para extracción...';
+    this.message = 'Preparando imagenes para extraccion...';
     const startedAt = Date.now();
 
     try {
@@ -2457,7 +1523,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
       const filesToPersist = this.selectedPhotos.filter((photo) => processedFileNames.has(photo.name));
 
       if (filesToPersist.length === 0) {
-        this.errorMessage = 'No hay fotos válidas para guardar en base de datos.';
+        this.errorMessage = 'No hay fotos validas para guardar en base de datos.';
         this.message = '';
         this.isSavingEmbeddings = false;
         return;
@@ -2511,9 +1577,9 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
 
       const processedPhotos = response.saved.reduce((sum, item) => sum + item.photosProcessed, 0);
       if (response.saved.length > 0 && confirmedCount === response.saved.length) {
-        this.message = `✅ Confirmación BD: empleado ${response.saved[0].employeeId} guardado con ${processedPhotos} foto(s) en ${elapsedSeconds}s.`;
+        this.message = `OK Confirmacion BD: empleado ${response.saved[0].employeeId} guardado con ${processedPhotos} foto(s) en ${elapsedSeconds}s.`;
       } else if (response.saved.length > 0) {
-        this.message = `⚠ Guardado parcial: empleado ${response.saved[0].employeeId}, confirmados en BD ${confirmedCount}/${response.saved.length} en ${elapsedSeconds}s.`;
+        this.message = `ADVERTENCIA Guardado parcial: empleado ${response.saved[0].employeeId}, confirmados en BD ${confirmedCount}/${response.saved.length} en ${elapsedSeconds}s.`;
       } else {
         this.message = '';
       }
@@ -2577,7 +1643,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
-    if (!this.canAccessUserAdmin()) {
+    if (!this.canAccessUserPanel()) {
       return;
     }
     this.isLoadingUsers = true;
@@ -2641,13 +1707,15 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     if (this.authUsers.length === 0) {
       return;
     }
-    const headers = ['id', 'username', 'role', 'active', 'created_at'];
+    const exportedAt = this.getExportTimestampLabel();
+    const headers = ['id', 'username', 'role', 'active', 'created_at', 'exported_at'];
     const rows = this.authUsers.map((user) => [
       user.id,
       user.username,
       user.role,
       user.active ? 'true' : 'false',
       user.created_at,
+      exportedAt,
     ]);
     this.downloadCsv('usuarios.csv', [headers, ...rows]);
   }
@@ -2752,6 +1820,40 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     }
   }
 
+  canDeleteUser(user: AuthUser): boolean {
+    if (!this.canAccessUserDelete()) {
+      return false;
+    }
+    if (this.isCurrentAuthUser(user)) {
+      return false;
+    }
+    return this.isDeletingUserId === null && this.isUpdatingUserId === null;
+  }
+
+  async deleteUser(user: AuthUser): Promise<void> {
+    if (!this.canDeleteUser(user)) {
+      return;
+    }
+    const confirmed = window.confirm(`Eliminar usuario ${user.username}? Esta accion no se puede deshacer.`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.isDeletingUserId = user.id;
+    this.userAdminStatus = '';
+    this.userAdminError = '';
+    try {
+      await firstValueFrom(this.attendanceService.deleteUser(user.id));
+      this.userAdminStatus = 'Usuario eliminado.';
+      this.loadUsers();
+    } catch (err) {
+      this.userAdminError = this.extractBackendErrorMessage(err) || 'No se pudo eliminar el usuario.';
+    } finally {
+      this.isDeletingUserId = null;
+      this.cdr.detectChanges();
+    }
+  }
+
   isCurrentAuthUser(user: AuthUser): boolean {
     return this.isLoggedIn && !!this.authUsername && user.username === this.authUsername;
   }
@@ -2801,14 +1903,14 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     if (handleAsCreate) {
       const parsedEmployeeId = this.resolveManualEmployeeId();
       if (parsedEmployeeId === null) {
-        this.errorMessage = 'El ID de empleado es obligatorio y debe ser un número entero mayor a 0.';
+        this.errorMessage = 'El ID de empleado es obligatorio y debe ser un numero entero mayor a 0.';
         return;
       }
       const employeeId = String(parsedEmployeeId);
 
       const timestamp = this.normalizeManualTimestamp(this.editingRecord.timestamp);
       if (this.editingRecord.timestamp && !timestamp) {
-        this.errorMessage = 'Fecha/Hora inválida. Usa un valor válido.';
+        this.errorMessage = 'Fecha/Hora invalida. Usa un valor valido.';
         return;
       }
       if (this.editingRecord.timestamp && !this.isTodayDateTime(this.editingRecord.timestamp)) {
@@ -2866,13 +1968,13 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     };
 
     if (parsedEmployeeId === null) {
-      this.errorMessage = 'El ID de empleado es obligatorio y debe ser un número entero mayor a 0.';
+      this.errorMessage = 'El ID de empleado es obligatorio y debe ser un numero entero mayor a 0.';
       return;
     }
 
     const timestamp = this.normalizeManualTimestamp(this.editingRecord.timestamp);
     if (!timestamp) {
-      this.errorMessage = 'Fecha/Hora inválida. Usa un valor válido.';
+      this.errorMessage = 'Fecha/Hora invalida. Usa un valor valido.';
       return;
     }
     if (!this.isTodayDateTime(this.editingRecord.timestamp)) {
@@ -2943,7 +2045,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     }
 
     const displayId = record.id ?? rowId;
-    const confirmed = window.confirm(`¿Seguro que deseas eliminar el registro ${displayId}?`);
+    const confirmed = window.confirm(`Seguro que deseas eliminar el registro ${displayId}?`);
     if (!confirmed) {
       return;
     }
@@ -2971,14 +2073,24 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   }
 
   exportAsExcel(): void {
-    const headers = ['id', 'name', 'timestamp'];
-    const rows = this.attendance.map((record) => [record.id, record.name, this.formatAttendanceTimestamp(record.timestamp)]);
+    const exportedAt = this.getExportTimestampLabel();
+    const headers = ['id', 'name', 'timestamp', 'exported_at'];
+    const rows = this.attendance.map((record) => [
+      record.id,
+      record.name,
+      this.formatAttendanceTimestamp(record.timestamp),
+      exportedAt,
+    ]);
     this.downloadCsv('asistencia.csv', [headers, ...rows]);
   }
 
   exportAsPdf(): void {
+    const exportedAt = this.getExportTimestampLabel();
+    const exportedBy = this.authUsername ? `${this.authUsername} (${this.authRole})` : 'desconocido';
     const tableHtml = `
       <h2>Reporte de asistencia</h2>
+      <p><strong>Exportado el:</strong> ${exportedAt}</p>
+      <p><strong>Exportado por:</strong> ${exportedBy}</p>
       <table border="1" cellspacing="0" cellpadding="6">
         <thead><tr><th>ID</th><th>Nombre</th><th>Fecha/Hora</th></tr></thead>
         <tbody>
@@ -2994,7 +2106,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      this.errorMessage = 'No se pudo abrir ventana de impresión para PDF.';
+      this.errorMessage = 'No se pudo abrir ventana de impresion para PDF.';
       return;
     }
 
@@ -3002,6 +2114,10 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();
+  }
+
+  private getExportTimestampLabel(): string {
+    return this.formatAttendanceTimestamp(new Date().toISOString());
   }
 
   onListImported(event: Event): void {
@@ -3020,7 +2136,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
         if (imported.length > 0) {
           this.applyImportedAttendance(imported, 'CSV');
         } else {
-          this.errorMessage = 'CSV inválido: verifica encabezados y columnas.';
+          this.errorMessage = 'CSV invalido: verifica encabezados y columnas.';
         }
       });
     };
@@ -3177,10 +2293,10 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
 
     const payload = cleaned.join(' | ');
     if (warnings.length > cleaned.length) {
-      return `⚠ Calidad de foto: ${payload} | +${warnings.length - cleaned.length} más`;
+      return `ADVERTENCIA Calidad de foto: ${payload} | +${warnings.length - cleaned.length} mas`;
     }
 
-    return `⚠ Calidad de foto: ${payload}`;
+    return `ADVERTENCIA Calidad de foto: ${payload}`;
   }
 
   private extractPhotoNamesFromEntries(entries: string[]): string[] {
@@ -3318,7 +2434,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   private applyImportedAttendance(imported: AttendanceRecord[], source: 'CSV'): void {
     this.attendance = [...imported];
     this.errorMessage = '';
-    this.message = `✅ ${source} cargado: ${imported.length} registro(s) importado(s).`;
+    this.message = `OK ${source} cargado: ${imported.length} registro(s) importado(s).`;
     this.cdr.detectChanges();
   }
 
@@ -3518,28 +2634,7 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
   }
 
   private extractBackendErrorMessage(err: unknown): string {
-    if (err instanceof HttpErrorResponse) {
-      if (err.status === 0) {
-        return 'Sin conexión con backend/proxy. Verifica que el stack esté arriba (frontend 4200 y backend 8080).';
-      }
-      const statusPart = err.status ? `status ${err.status}` : 'sin status';
-      if (typeof err.error === 'string' && err.error.trim()) {
-        return `${err.error.trim()} (${statusPart})`;
-      }
-      if (err.error && typeof err.error.message === 'string' && err.error.message.trim()) {
-        return `${err.error.message.trim()} (${statusPart})`;
-      }
-      if (err.message?.trim()) {
-        return `${err.message.trim()} (${statusPart})`;
-      }
-      return `Error de backend (${statusPart})`;
-    }
-
-    const asError = err as Error;
-    if (asError?.message?.trim()) {
-      return asError.message.trim();
-    }
-    return '';
+    return extractHttpErrorMessage(err);
   }
 
   private extractFailedPhotoNames(errors: string[]): string[] {
@@ -3580,3 +2675,6 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     this.resetEmbeddingProgress();
   }
 }
+
+
+

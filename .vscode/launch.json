@@ -5,14 +5,14 @@
             "name": "BMPI: Iniciar DEV",
             "type": "node-terminal",
             "request": "launch",
-            "command": "powershell.exe -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/iniciar_bmpi.ps1\" -Mode dev -WindowStyle Minimized",
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/iniciar_bmpi.ps1\" -Mode dev -WindowStyle Hidden",
             "postDebugTask": "BMPI: Detener"
         },
         {
             "name": "BMPI: Iniciar PROD",
             "type": "node-terminal",
             "request": "launch",
-            "command": "powershell.exe -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/iniciar_bmpi.ps1\" -Mode prod -WindowStyle Minimized",
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/iniciar_bmpi.ps1\" -Mode prod -WindowStyle Hidden",
             "postDebugTask": "BMPI: Detener"
         },
         {

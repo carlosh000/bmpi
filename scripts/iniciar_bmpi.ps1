@@ -13,7 +13,7 @@ param(
     [switch]$AutoPrepareIA,
     [string]$EnvFile = "",
     [ValidateSet("Normal", "Minimized", "Hidden")]
-    [string]$WindowStyle = "Minimized"
+    [string]$WindowStyle = "Hidden"
 )
 
 $ErrorActionPreference = "Stop"

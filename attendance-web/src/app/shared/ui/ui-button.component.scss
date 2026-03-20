@@ -1,0 +1,67 @@
+.ui-button {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0.6rem 1rem;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+}
+
+.ui-button:hover {
+  transform: translateY(-1px);
+}
+
+.ui-button:active {
+  transform: translateY(0);
+}
+
+.ui-button.small {
+  padding: 0.4rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.ui-button.section-toggle {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.75rem 1.1rem;
+  background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%);
+  box-shadow: 0 12px 18px rgba(15, 23, 42, 0.2);
+}
+
+.ui-button.session-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #0f172a;
+  color: #f8fafc;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.2);
+}
+
+.ui-button.danger {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 10px 18px rgba(185, 28, 28, 0.22);
+}
+
+.ui-button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 900px) {
+  .ui-button.section-toggle {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ui-button.session-trigger {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
